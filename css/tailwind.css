@@ -4,38 +4,38 @@
 @source "../node_modules/pliny";
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Core theme configuration */
+/* Core theme configuration - Minimal Modern Design */
 @theme {
   /* Font families */
   --font-sans:
     var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
     "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 
-  /* Colors */
-  /* Copied from https://tailwindcss.com/docs/theme#default-theme-variable-reference */
-  --color-primary-50: oklch(0.971 0.014 343.198);
-  --color-primary-100: oklch(0.948 0.028 342.258);
-  --color-primary-200: oklch(0.899 0.061 343.231);
-  --color-primary-300: oklch(0.823 0.12 346.018);
-  --color-primary-400: oklch(0.718 0.202 349.761);
-  --color-primary-500: oklch(0.656 0.241 354.308);
-  --color-primary-600: oklch(0.592 0.249 0.584);
-  --color-primary-700: oklch(0.525 0.223 3.958);
-  --color-primary-800: oklch(0.459 0.187 3.815);
-  --color-primary-900: oklch(0.408 0.153 2.432);
-  --color-primary-950: oklch(0.284 0.109 3.907);
+  /* Modern Two-Tone Color System: Dark Gray + Cyan Blue */
+  --color-primary-50: oklch(0.98 0.01 220);
+  --color-primary-100: oklch(0.95 0.02 220);
+  --color-primary-200: oklch(0.90 0.04 220);
+  --color-primary-300: oklch(0.80 0.08 220);
+  --color-primary-400: oklch(0.70 0.12 220);
+  --color-primary-500: oklch(0.60 0.15 220);
+  --color-primary-600: oklch(0.50 0.13 220);
+  --color-primary-700: oklch(0.40 0.10 220);
+  --color-primary-800: oklch(0.30 0.07 220);
+  --color-primary-900: oklch(0.20 0.05 220);
+  --color-primary-950: oklch(0.15 0.03 220);
 
-  --color-gray-50: oklch(0.985 0.002 247.839);
-  --color-gray-100: oklch(0.967 0.003 264.542);
-  --color-gray-200: oklch(0.928 0.006 264.531);
-  --color-gray-300: oklch(0.872 0.01 258.338);
-  --color-gray-400: oklch(0.707 0.022 261.325);
-  --color-gray-500: oklch(0.551 0.027 264.364);
-  --color-gray-600: oklch(0.446 0.03 256.802);
-  --color-gray-700: oklch(0.373 0.034 259.733);
-  --color-gray-800: oklch(0.278 0.033 256.848);
-  --color-gray-900: oklch(0.21 0.034 264.665);
-  --color-gray-950: oklch(0.13 0.028 261.692);
+  /* Refined Gray Scale */
+  --color-gray-50: oklch(0.99 0 0);
+  --color-gray-100: oklch(0.97 0 0);
+  --color-gray-200: oklch(0.93 0 0);
+  --color-gray-300: oklch(0.87 0 0);
+  --color-gray-400: oklch(0.68 0 0);
+  --color-gray-500: oklch(0.52 0 0);
+  --color-gray-600: oklch(0.42 0 0);
+  --color-gray-700: oklch(0.35 0 0);
+  --color-gray-800: oklch(0.25 0 0);
+  --color-gray-900: oklch(0.18 0 0);
+  --color-gray-950: oklch(0.10 0 0);
 
   /* Line heights */
   --line-height-11: 2.75rem;
@@ -50,12 +50,10 @@
 }
 
 /*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
+  Modern Minimal Design System
+  - Two-tone color palette
+  - Futuristic accents
+  - Clean typography
 */
 @layer base {
   *,
@@ -69,6 +67,7 @@
   a,
   button {
     outline-color: var(--color-primary-500);
+    transition: all 0.2s ease-in-out;
   }
 
   a:focus-visible,
@@ -77,14 +76,61 @@
     border-radius: var(--radius-sm);
     outline-color: var(--color-primary-500);
   }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Modern text rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
 }
 
 @layer utilities {
+  /* Futuristic gradient effects */
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .gradient-border {
+    position: relative;
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(135deg, var(--color-primary-500), transparent);
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+    }
+  }
+
+  /* Glassmorphism effect */
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
   .prose {
     & a {
       color: var(--color-primary-500);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s ease;
       &:hover {
         color: var(--color-primary-600);
+        border-bottom-color: var(--color-primary-500);
       }
       & code {
         color: var(--color-primary-400);
@@ -92,28 +138,37 @@
     }
     & :where(h1, h2) {
       font-weight: 700;
-      letter-spacing: var(--tracking-tight);
+      letter-spacing: -0.025em;
     }
     & h3 {
       font-weight: 600;
     }
     & :where(code):not(pre code) {
-      color: var(--color-indigo-500);
+      color: var(--color-primary-500);
+      background: var(--color-gray-100);
+      padding: 0.2em 0.4em;
+      border-radius: 0.25em;
+      font-size: 0.875em;
     }
   }
 
   .prose-invert {
     & a {
-      color: var(--color-primary-500);
+      color: var(--color-primary-400);
       &:hover {
-        color: var(--color-primary-400);
+        color: var(--color-primary-300);
+        border-bottom-color: var(--color-primary-400);
       }
       & code {
-        color: var(--color-primary-400);
+        color: var(--color-primary-300);
       }
     }
     & :where(h1, h2, h3, h4, h5, h6) {
-      color: var(--color-gray-100);
+      color: var(--color-gray-50);
+    }
+    & :where(code):not(pre code) {
+      color: var(--color-primary-300);
+      background: var(--color-gray-800);
     }
   }
 }
@@ -173,4 +228,58 @@ input:-webkit-autofill:focus {
 .linkicon {
   display: inline-block;
   vertical-align: middle;
+}
+
+/* Gradient animation for hero text */
+@keyframes gradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 6s ease infinite;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Pulse glow animation */
+@keyframes pulseGlow {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulseGlow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
 }
