@@ -3,12 +3,17 @@
 import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
 import Link from 'next/link'
+import { useI18n } from '@/lib/i18n/i18n-context'
+import { translateTag } from '@/lib/i18n/tag-translations'
 
 interface Props {
   text: string
 }
 
 const Tag = ({ text }: Props) => {
+  const { locale } = useI18n()
+  const displayText = translateTag(text, locale)
+
   return (
     <Link href={`/tags/${slug(text)}`}>
       <motion.span
@@ -17,7 +22,7 @@ const Tag = ({ text }: Props) => {
         whileTap={{ scale: 0.95 }}
         transition={{ type: 'spring', stiffness: 400, damping: 20 }}
       >
-        {text.split(' ').join('-')}
+        {displayText}
       </motion.span>
     </Link>
   )

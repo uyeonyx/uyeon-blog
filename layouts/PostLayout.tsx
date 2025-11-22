@@ -1,3 +1,5 @@
+'use client'
+
 import type { Authors, Blog } from 'contentlayer/generated'
 import type { CoreContent } from 'pliny/utils/contentlayer'
 import type { ReactNode } from 'react'
@@ -8,6 +10,7 @@ import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import SectionContainer from '@/components/SectionContainer'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
+import { useI18n } from '@/lib/i18n/i18n-context'
 
 const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
 const discussUrl = (path) =>
@@ -31,6 +34,7 @@ interface LayoutProps {
 export default function PostLayout({ content, authorDetails, next, prev, children }: LayoutProps) {
   const { filePath, path, slug, date, title, tags } = content
   const basePath = path.split('/')[0]
+  const { t } = useI18n()
 
   return (
     <SectionContainer>
@@ -41,7 +45,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
             <div className="space-y-6 text-center">
               <dl className="space-y-4">
                 <div>
-                  <dt className="sr-only">Published on</dt>
+                  <dt className="sr-only">{t('blog.publishedOn')}</dt>
                   <dd className="text-sm font-medium text-gray-500 dark:text-gray-500">
                     <time dateTime={date}>
                       {new Date(date).toLocaleDateString(siteMetadata.locale, postDateTemplate)}
@@ -64,7 +68,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
               {/* Authors */}
               <div className="mb-8 flex justify-center xl:block">
                 <dl>
-                  <dt className="sr-only">Authors</dt>
+                  <dt className="sr-only">{t('blog.authors')}</dt>
                   <dd>
                     <ul className="flex flex-wrap justify-center gap-6 xl:flex-col xl:gap-8">
                       {authorDetails.map((author) => (
@@ -103,7 +107,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                 <div className="mb-8 flex justify-center xl:block">
                   <div>
                     <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">
-                      Tags
+                      {t('blog.tags')}
                     </h2>
                     <div className="flex flex-wrap gap-2">
                       {tags.map((tag) => (
@@ -127,14 +131,14 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                     rel="nofollow"
                     className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
                   >
-                    Discuss on Twitter
+                    {t('blog.discussOnTwitter')}
                   </Link>
                   <span className="text-gray-300 dark:text-gray-700">·</span>
                   <Link
                     href={editUrl(filePath)}
                     className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
                   >
-                    View on GitHub
+                    {t('blog.viewOnGithub')}
                   </Link>
                 </div>
               </div>
@@ -154,7 +158,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                     {prev?.path && (
                       <div className="group relative rounded-xl border border-white/60 dark:border-gray-700/80 bg-white/70 dark:bg-gray-900/70 backdrop-blur-3xl shadow-xl shadow-gray-900/10 dark:shadow-primary-500/10 p-6 transition-all hover:border-primary-500/40 hover:shadow-2xl hover:shadow-primary-500/20 before:absolute before:inset-0 before:rounded-xl before:bg-linear-to-b before:from-white/40 before:to-transparent before:pointer-events-none dark:before:from-white/5">
                         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">
-                          Previous
+                          {t('blog.previous')}
                         </h2>
                         <Link
                           href={`/${prev.path}`}
@@ -167,7 +171,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                     {next?.path && (
                       <div className="group relative rounded-xl border border-white/60 dark:border-gray-700/80 bg-white/70 dark:bg-gray-900/70 backdrop-blur-3xl shadow-xl shadow-gray-900/10 dark:shadow-primary-500/10 p-6 transition-all hover:border-primary-500/40 hover:shadow-2xl hover:shadow-primary-500/20 before:absolute before:inset-0 before:rounded-xl before:bg-linear-to-b before:from-white/40 before:to-transparent before:pointer-events-none dark:before:from-white/5">
                         <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">
-                          Next
+                          {t('blog.next')}
                         </h2>
                         <Link
                           href={`/${next.path}`}
@@ -183,7 +187,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                   <Link
                     href={`/${basePath}`}
                     className="inline-flex items-center gap-2 rounded-full bg-white/70 dark:bg-gray-800/70 backdrop-blur-3xl border border-white/60 dark:border-gray-600/80 shadow-xl shadow-gray-900/10 dark:shadow-primary-500/10 px-6 py-3 text-sm font-semibold text-gray-900 dark:text-gray-100 transition-all hover:scale-105 hover:border-primary-500/50"
-                    aria-label="Back to the blog"
+                    aria-label={t('blog.backToBlog')}
                   >
                     <svg
                       className="h-4 w-4"
@@ -192,7 +196,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                       stroke="currentColor"
                       aria-hidden="true"
                     >
-                      <title>Back arrow</title>
+                      <title>{t('blog.backToBlog')}</title>
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -200,7 +204,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                         d="M7 16l-4-4m0 0l4-4m-4 4h18"
                       />
                     </svg>
-                    Back to blog
+                    {t('blog.backToBlog')}
                   </Link>
                 </div>
               </div>

@@ -1,0 +1,46 @@
+---
+title: 'Next.js 16의 놀라운 기능들'
+date: '2025-01-20'
+tags: ['nextjs', 'web-development', 'react']
+draft: false
+summary: 'Next.js를 프로덕션 환경의 최고의 React 프레임워크로 만드는 강력한 기능들을 살펴봅니다.'
+---
+
+# Next.js 16: React 개발의 미래
+
+Next.js는 프로덕션 준비가 완료된 React 애플리케이션을 구축하기 위한 최고의 프레임워크가 되었습니다. 가장 강력한 기능들을 살펴보겠습니다.
+
+## 서버 컴포넌트
+
+React 서버 컴포넌트를 사용하면 서버에서 컴포넌트를 렌더링하여 클라이언트로 전송되는 JavaScript 번들 크기를 줄일 수 있습니다.
+
+```jsx
+// Next.js 16에서는 기본적으로 서버 컴포넌트입니다
+export default async function Page() {
+  const data = await fetch('https://api.example.com/data')
+  return <div>{data.title}</div>
+}
+```
+
+## App Router
+
+새로운 App Router는 다음을 제공합니다:
+
+- **레이아웃**: 라우트 간 UI 공유
+- **중첩 라우트**: 앱을 논리적으로 구성
+- **로딩 상태**: 내장된 로딩 UI
+- **에러 처리**: 우아한 에러 경계
+
+## 이미지 최적화
+
+`next/image` 컴포넌트는 이미지를 자동으로 최적화합니다:
+
+- 지연 로딩
+- 반응형 이미지
+- WebP 포맷 변환
+- 블러 플레이스홀더
+
+## 결론
+
+Next.js는 React로 가능한 것의 경계를 계속 넓혀가고 있습니다. 한번 시도해보세요!
+

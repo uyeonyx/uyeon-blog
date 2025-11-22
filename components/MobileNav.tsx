@@ -3,11 +3,20 @@
 import { Icon } from '@iconify/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState } from 'react'
-import headerNavLinks from '@/data/headerNavLinks'
+import { useI18n } from '@/lib/i18n/i18n-context'
 import Link from './Link'
+
+const navLinks = [
+  { href: '/', key: 'common.home' },
+  { href: '/blog', key: 'common.blog' },
+  { href: '/tags', key: 'common.tags' },
+  { href: '/projects', key: 'common.projects' },
+  { href: '/about', key: 'common.about' },
+]
 
 const MobileNav = () => {
   const [navShow, setNavShow] = useState(false)
+  const { t } = useI18n()
 
   const onToggleNav = () => {
     setNavShow((prev) => !prev)
@@ -72,9 +81,9 @@ const MobileNav = () => {
 
                 {/* Navigation */}
                 <nav className="relative space-y-2">
-                  {headerNavLinks.map((link, index) => (
+                  {navLinks.map((link, index) => (
                     <motion.div
-                      key={link.title}
+                      key={link.href}
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{
@@ -94,7 +103,7 @@ const MobileNav = () => {
                           whileHover={{ x: 5 }}
                           transition={{ type: 'spring', stiffness: 300 }}
                         >
-                          {link.title}
+                          {t(link.key)}
                         </motion.span>
                       </Link>
                     </motion.div>

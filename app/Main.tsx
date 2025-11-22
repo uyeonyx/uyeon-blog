@@ -3,9 +3,12 @@
 import { motion } from 'framer-motion'
 import NewsletterForm from 'pliny/ui/NewsletterForm'
 import { formatDate } from 'pliny/utils/formatDate'
+import { useMemo } from 'react'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
+import { filterPostsByLanguage } from '@/lib/i18n/filter-posts'
+import { useI18n } from '@/lib/i18n/i18n-context'
 
 const MAX_DISPLAY = 5
 
@@ -25,6 +28,11 @@ const item = {
 }
 
 export default function Home({ posts }) {
+  const { locale, t } = useI18n()
+
+  // 현재 언어로 포스트 필터링
+  const filteredPosts = useMemo(() => filterPostsByLanguage(posts, locale), [posts, locale])
+
   return (
     <>
       {/* Hero Section - Futuristic & Minimal */}
@@ -42,7 +50,7 @@ export default function Home({ posts }) {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <span className="block bg-linear-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-gray-50 dark:via-gray-300 dark:to-gray-50 bg-clip-text text-transparent">
-              Latest
+              {t('blog.latestPosts')}
             </span>
           </motion.h1>
           <motion.p
@@ -58,16 +66,22 @@ export default function Home({ posts }) {
 
       {/* Posts Grid - Modern Card Layout */}
       <motion.div className="space-y-6" variants={container} initial="hidden" animate="show">
-        {!posts.length && (
+        {!filteredPosts.length && (
           <motion.div
             className="py-20 text-center text-gray-500 dark:text-gray-400"
             variants={item}
           >
-            No posts found.
+            {t('blog.noPostsFound')}
           </motion.div>
         )}
-        {posts.slice(0, MAX_DISPLAY).map((post, index) => {
-          const { slug, date, title, summary, tags } = post
+        {filteredPosts.slice(0, MAX_DISPLAY).map((post, index) => {
+          const { slug, date, title, summary, tags } = post as {
+            slug: string
+            date: string
+            title: string
+            summary?: string
+            tags?: string[]
+          }
           return (
             <motion.article
               key={slug}
@@ -108,7 +122,7 @@ export default function Home({ posts }) {
                 </motion.h2>
 
                 {/* Tags */}
-                {tags?.length > 0 && (
+                {tags && tags.length > 0 && (
                   <motion.div
                     className="flex flex-wrap gap-2"
                     initial={{ opacity: 0 }}
@@ -154,7 +168,7 @@ export default function Home({ posts }) {
                     className="group inline-flex items-center gap-2 font-semibold text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                     aria-label={`Read more: "${title}"`}
                   >
-                    Read article
+                    {t('blog.readMore')}
                     <svg
                       className="h-4 w-4 transition-transform group-hover:translate-x-1"
                       fill="none"
@@ -179,7 +193,7 @@ export default function Home({ posts }) {
       </motion.div>
 
       {/* View All Posts Link */}
-      {posts.length > MAX_DISPLAY && (
+      {filteredPosts.length > MAX_DISPLAY && (
         <motion.div
           className="flex justify-center pt-12"
           initial={{ opacity: 0, y: 20 }}
@@ -192,7 +206,7 @@ export default function Home({ posts }) {
               className="inline-flex items-center gap-3 rounded-full bg-white/70 dark:bg-gray-800/70 backdrop-blur-3xl border border-white/60 dark:border-gray-600/80 shadow-xl shadow-gray-900/10 dark:shadow-primary-500/10 px-8 py-4 font-semibold text-gray-900 dark:text-gray-100 hover:border-primary-500/50 hover:shadow-2xl hover:shadow-primary-500/20 transition-all before:absolute before:inset-0 before:rounded-full before:bg-linear-to-b before:from-white/40 before:to-transparent before:pointer-events-none dark:before:from-white/5 relative"
               aria-label="All posts"
             >
-              View all posts
+              {t('blog.viewAllPosts')}
               <motion.svg
                 className="h-5 w-5"
                 fill="none"

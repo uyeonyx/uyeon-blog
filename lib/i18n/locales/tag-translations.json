@@ -1,0 +1,22 @@
+{
+  "welcome": {
+    "en": "Welcome",
+    "ko": "환영"
+  },
+  "introduction": {
+    "en": "Introduction",
+    "ko": "소개"
+  },
+  "nextjs": {
+    "en": "Next.js",
+    "ko": "Next.js"
+  },
+  "web-development": {
+    "en": "Web Development",
+    "ko": "웹개발"
+  },
+  "react": {
+    "en": "React",
+    "ko": "React"
+  }
+}

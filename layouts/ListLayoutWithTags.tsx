@@ -6,9 +6,13 @@ import { slug } from 'github-slugger'
 import { usePathname } from 'next/navigation'
 import type { CoreContent } from 'pliny/utils/contentlayer'
 import { formatDate } from 'pliny/utils/formatDate'
+import { useMemo } from 'react'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
+import { filterPostsByLanguage } from '@/lib/i18n/filter-posts'
+import { useI18n } from '@/lib/i18n/i18n-context'
+import { translateTag } from '@/lib/i18n/tag-translations'
 
 interface PaginationProps {
   totalPages: number
@@ -23,6 +27,7 @@ interface ListLayoutProps {
 
 function Pagination({ totalPages, currentPage }: PaginationProps) {
   const pathname = usePathname()
+  const { t } = useI18n()
   const segments = pathname.split('/')
   const _lastSegment = segments[segments.length - 1]
   const basePath = pathname
@@ -48,7 +53,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
               stroke="currentColor"
               aria-hidden="true"
             >
-              <title>Previous page</title>
+              <title>{t('pagination.previous')}</title>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -56,7 +61,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
                 d="M7 16l-4-4m0 0l4-4m-4 4h18"
               />
             </svg>
-            Previous
+            {t('pagination.previous')}
           </Link>
         ) : (
           <div className="inline-flex items-center gap-2 rounded-full bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl border border-white/40 dark:border-gray-700/40 px-6 py-3 font-semibold text-gray-400 dark:text-gray-600">
@@ -67,7 +72,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
               stroke="currentColor"
               aria-hidden="true"
             >
-              <title>Previous page disabled</title>
+              <title>{t('pagination.previous')}</title>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -75,7 +80,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
                 d="M7 16l-4-4m0 0l4-4m-4 4h18"
               />
             </svg>
-            Previous
+            {t('pagination.previous')}
           </div>
         )}
         <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -87,7 +92,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
             rel="next"
             className="inline-flex items-center gap-2 rounded-full bg-white/70 dark:bg-gray-800/70 backdrop-blur-3xl border border-white/60 dark:border-gray-600/80 shadow-xl shadow-gray-900/10 dark:shadow-primary-500/10 px-6 py-3 font-semibold text-gray-900 dark:text-gray-100 transition-all hover:scale-105 hover:border-primary-500/50"
           >
-            Next
+            {t('pagination.next')}
             <svg
               className="h-4 w-4"
               fill="none"
@@ -95,7 +100,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
               stroke="currentColor"
               aria-hidden="true"
             >
-              <title>Next page</title>
+              <title>{t('pagination.next')}</title>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -106,7 +111,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
           </Link>
         ) : (
           <div className="inline-flex items-center gap-2 rounded-full bg-white/40 dark:bg-gray-900/40 backdrop-blur-2xl border border-white/40 dark:border-gray-700/40 px-6 py-3 font-semibold text-gray-400 dark:text-gray-600">
-            Next
+            {t('pagination.next')}
             <svg
               className="h-4 w-4"
               fill="none"
@@ -114,7 +119,7 @@ function Pagination({ totalPages, currentPage }: PaginationProps) {
               stroke="currentColor"
               aria-hidden="true"
             >
-              <title>Next page disabled</title>
+              <title>{t('pagination.next')}</title>
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -136,11 +141,27 @@ export default function ListLayoutWithTags({
   pagination,
 }: ListLayoutProps) {
   const pathname = usePathname()
+  const { locale, t } = useI18n()
+
+  // 언어별로 포스트 필터링
+  const filteredPosts = useMemo(
+    // biome-ignore lint/suspicious/noExplicitAny: Contentlayer types will include language at runtime
+    () => filterPostsByLanguage(posts as any, locale) as CoreContent<Blog>[],
+    [posts, locale]
+  )
+
+  const filteredInitialDisplayPosts = useMemo(
+    // biome-ignore lint/suspicious/noExplicitAny: Contentlayer types will include language at runtime
+    () => filterPostsByLanguage(initialDisplayPosts as any, locale) as CoreContent<Blog>[],
+    [initialDisplayPosts, locale]
+  )
+
   const tagCounts = tagData as Record<string, number>
   const tagKeys = Object.keys(tagCounts)
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
 
-  const displayPosts = initialDisplayPosts.length > 0 ? initialDisplayPosts : posts
+  const displayPosts =
+    filteredInitialDisplayPosts.length > 0 ? filteredInitialDisplayPosts : filteredPosts
 
   return (
     <div>
@@ -160,32 +181,33 @@ export default function ListLayoutWithTags({
             <div className="space-y-6">
               {pathname.startsWith('/blog') ? (
                 <h3 className="text-sm font-bold uppercase tracking-wider text-primary-500">
-                  All Posts
+                  {t('blog.allPosts')}
                 </h3>
               ) : (
                 <Link
                   href={`/blog`}
                   className="block text-sm font-bold uppercase tracking-wider text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
                 >
-                  All Posts
+                  {t('blog.allPosts')}
                 </Link>
               )}
               <ul className="space-y-2">
-                {sortedTags.map((t) => {
-                  const isActive = decodeURI(pathname.split('/tags/')[1]) === slug(t)
+                {sortedTags.map((tagSlug) => {
+                  const isActive = decodeURI(pathname.split('/tags/')[1]) === slug(tagSlug)
+                  const displayName = translateTag(tagSlug, locale)
                   return (
-                    <li key={t}>
+                    <li key={tagSlug}>
                       {isActive ? (
                         <span className="inline-flex items-center rounded-lg bg-primary-500/10 px-3 py-2 text-sm font-semibold text-primary-600 dark:text-primary-400">
-                          {t} ({tagCounts[t]})
+                          {displayName} ({tagCounts[tagSlug]})
                         </span>
                       ) : (
                         <Link
-                          href={`/tags/${slug(t)}`}
+                          href={`/tags/${slug(tagSlug)}`}
                           className="inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-primary-500 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-primary-400 transition-all"
-                          aria-label={`View posts tagged ${t}`}
+                          aria-label={`View posts tagged ${displayName}`}
                         >
-                          {t} ({tagCounts[t]})
+                          {displayName} ({tagCounts[tagSlug]})
                         </Link>
                       )}
                     </li>

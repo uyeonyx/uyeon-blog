@@ -24,6 +24,7 @@ import remarkGfm from 'remark-gfm'
 import { remarkAlert } from 'remark-github-blockquote-alert'
 import remarkMath from 'remark-math'
 import siteMetadata from './data/siteMetadata'
+import { extractLanguageFromFilename, removeLanguageFromPath } from './lib/i18n/utils'
 
 const root = process.cwd()
 const isProduction = process.env.NODE_ENV === 'production'
@@ -45,37 +46,73 @@ const computedFields: ComputedFields = {
   readingTime: { type: 'json', resolve: (doc) => readingTime(doc.body.raw) },
   slug: {
     type: 'string',
-    resolve: (doc) => doc._raw.flattenedPath.replace(/^.+?(\/)/, ''),
+    resolve: (doc) => {
+      const path = doc._raw.flattenedPath.replace(/^.+?(\/)/, '')
+      return removeLanguageFromPath(path)
+    },
   },
   path: {
     type: 'string',
-    resolve: (doc) => doc._raw.flattenedPath,
+    resolve: (doc) => {
+      return removeLanguageFromPath(doc._raw.flattenedPath)
+    },
   },
   filePath: {
     type: 'string',
     resolve: (doc) => doc._raw.sourceFilePath,
   },
   toc: { type: 'json', resolve: (doc) => extractTocHeadings(doc.body.raw) },
+  language: {
+    type: 'string',
+    resolve: (doc) => {
+      const lang = extractLanguageFromFilename(doc._raw.sourceFileName)
+      // 언어 코드가 없으면 빈 문자열 반환 (모든 언어에서 표시됨)
+      return lang || ''
+    },
+  },
+  localizedPath: {
+    type: 'string',
+    resolve: (doc) => {
+      const lang = extractLanguageFromFilename(doc._raw.sourceFileName) || 'en'
+      const basePath = removeLanguageFromPath(doc._raw.flattenedPath)
+      return `${basePath}?lang=${lang}`
+    },
+  },
 }
 
 /**
  * Count the occurrences of all tags across blog posts and write to json file
+ * 언어별로 태그 카운트 생성
  */
 function createTagCount(allBlogs) {
-  const tagCount: Record<string, number> = {}
+  const tagCountEn: Record<string, number> = {}
+  const tagCountKo: Record<string, number> = {}
+
   allBlogs.forEach((file) => {
     if (file.tags && (!isProduction || file.draft !== true)) {
+      const lang = file.language || 'en'
+      const targetCount = lang === 'ko' ? tagCountKo : tagCountEn
+
       file.tags.forEach((tag) => {
         const formattedTag = slug(tag)
-        if (formattedTag in tagCount) {
-          tagCount[formattedTag] += 1
+        if (formattedTag in targetCount) {
+          targetCount[formattedTag] += 1
         } else {
-          tagCount[formattedTag] = 1
+          targetCount[formattedTag] = 1
         }
       })
     }
   })
-  writeFileSync('./app/tag-data.json', JSON.stringify(tagCount, null, 2))
+
+  // 전체 태그 카운트 (기존 호환성)
+  const allTagCount = { ...tagCountEn }
+  Object.entries(tagCountKo).forEach(([tag, count]) => {
+    allTagCount[tag] = (allTagCount[tag] || 0) + count
+  })
+
+  writeFileSync('./app/tag-data.json', JSON.stringify(allTagCount, null, 2))
+  writeFileSync('./app/tag-data-en.json', JSON.stringify(tagCountEn, null, 2))
+  writeFileSync('./app/tag-data-ko.json', JSON.stringify(tagCountKo, null, 2))
 }
 
 function createSearchIndex(allBlogs) {

@@ -1,0 +1,69 @@
+{
+  "common": {
+    "home": "Home",
+    "blog": "Blog",
+    "tags": "Tags",
+    "projects": "Projects",
+    "about": "About",
+    "search": "Search",
+    "language": "Language"
+  },
+  "pages": {
+    "tags": {
+      "title": "Tags",
+      "description": "Things I blog about"
+    },
+    "projects": {
+      "title": "Projects",
+      "description": "Showcase your projects with a hero image (16 x 9)"
+    },
+    "about": {
+      "title": "About"
+    }
+  },
+  "blog": {
+    "allPosts": "All Posts",
+    "allTags": "All Tags",
+    "latestPosts": "Latest Posts",
+    "readMore": "Read more",
+    "noPostsFound": "No posts found.",
+    "noTagsFound": "No tags found.",
+    "postsWithTag": "Posts tagged with",
+    "viewAllPosts": "View all posts",
+    "viewAllTags": "View all tags",
+    "backToBlog": "Back to blog",
+    "publishedOn": "Published on",
+    "authors": "Authors",
+    "draft": "Draft",
+    "tags": "Tags",
+    "readingTime": "min read",
+    "notAvailable": "Post not available in",
+    "notAvailableDesc": "This post is not available in the selected language.",
+    "discussOnTwitter": "Discuss on Twitter",
+    "viewOnGithub": "View on GitHub",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "footer": {
+    "copyright": "All rights reserved."
+  },
+  "newsletter": {
+    "title": "Stay up to date",
+    "description": "Subscribe to the newsletter to stay up to date with articles, courses and much more!",
+    "emailPlaceholder": "Enter your email",
+    "subscribe": "Subscribe",
+    "success": "Successfully subscribed!",
+    "error": "Error subscribing. Please try again."
+  },
+  "pagination": {
+    "previous": "Previous",
+    "next": "Next",
+    "page": "Page"
+  },
+  "notFound": {
+    "title": "404",
+    "message": "Sorry we couldn't find this page.",
+    "description": "But dont worry, you can find plenty of other things on our homepage.",
+    "backToHome": "Back to homepage"
+  }
+}
