@@ -1,0 +1,7 @@
+{
+  "approvals": {
+    "contentlayer2": true,
+    "esbuild": true,
+    "sharp": true
+  }
+}
