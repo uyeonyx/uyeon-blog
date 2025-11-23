@@ -1,9 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import NewsletterForm from 'pliny/ui/NewsletterForm'
 import { formatDate } from 'pliny/utils/formatDate'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
@@ -29,6 +28,53 @@ const item = {
 
 export default function Home({ posts }) {
   const { locale, t } = useI18n()
+  const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
+  const [displayedText, setDisplayedText] = useState('')
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  // 언어별 문구들
+  const phrasesKo = [
+    '완성이 아닌 갱신',
+    '해답이 아닌 질문',
+    '깊은 생각, 빠른 실행',
+    '무지에 대한 인식',
+  ]
+
+  const phrasesEn = [
+    'Update, Not Completion',
+    'Questions, Not Answers',
+    'Deep thought, Fast execution',
+    'Awareness of Unknowing',
+  ]
+
+  const phrases = locale === 'ko' ? phrasesKo : phrasesEn
+  const currentPhrase = phrases[currentPhraseIndex]
+
+  // 타이핑 효과
+  useEffect(() => {
+    let timeout: NodeJS.Timeout
+
+    if (!isDeleting && displayedText === currentPhrase) {
+      // 완성된 문구를 2초간 유지
+      timeout = setTimeout(() => setIsDeleting(true), 2000)
+    } else if (isDeleting && displayedText === '') {
+      // 다음 문구로 이동
+      setIsDeleting(false)
+      setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length)
+    } else if (isDeleting) {
+      // 글자 지우기
+      timeout = setTimeout(() => {
+        setDisplayedText(currentPhrase.substring(0, displayedText.length - 1))
+      }, 50)
+    } else {
+      // 글자 타이핑
+      timeout = setTimeout(() => {
+        setDisplayedText(currentPhrase.substring(0, displayedText.length + 1))
+      }, 100)
+    }
+
+    return () => clearTimeout(timeout)
+  }, [displayedText, isDeleting, currentPhrase, phrases.length])
 
   // 현재 언어로 포스트 필터링
   const filteredPosts = useMemo(() => filterPostsByLanguage(posts, locale), [posts, locale])
@@ -44,13 +90,19 @@ export default function Home({ posts }) {
       >
         <div className="space-y-6">
           <motion.h1
-            className="text-5xl leading-tight font-bold tracking-tight sm:text-6xl md:text-7xl lg:text-8xl"
+            className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl min-h-[3rem] sm:min-h-[3.5rem] md:min-h-[4rem] lg:min-h-[4.5rem]"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <span className="block bg-linear-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-gray-50 dark:via-gray-300 dark:to-gray-50 bg-clip-text text-transparent">
-              {t('blog.latestPosts')}
+            <span className="inline-flex items-center gap-2 sm:gap-3">
+              <span className="text-primary-500 dark:text-primary-400 shrink-0">〉</span>
+              <span className="bg-linear-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-gray-50 dark:via-gray-300 dark:to-gray-50 bg-clip-text text-transparent">
+                {displayedText}
+                <span className="inline-block ml-0.5 text-gray-900 dark:text-gray-50 animate-blink">
+                  _
+                </span>
+              </span>
             </span>
           </motion.h1>
           <motion.p
@@ -59,7 +111,7 @@ export default function Home({ posts }) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
           >
-            {siteMetadata.description}
+            {locale === 'ko' ? siteMetadata.description_ko : siteMetadata.description_en}
           </motion.p>
         </div>
       </motion.div>
@@ -226,19 +278,6 @@ export default function Home({ posts }) {
               </motion.svg>
             </Link>
           </motion.div>
-        </motion.div>
-      )}
-
-      {/* Newsletter */}
-      {siteMetadata.newsletter?.provider && (
-        <motion.div
-          className="flex items-center justify-center pt-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-        >
-          <NewsletterForm />
         </motion.div>
       )}
     </>

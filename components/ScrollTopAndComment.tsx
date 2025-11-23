@@ -3,9 +3,11 @@
 import { motion, useScroll, useSpring } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import siteMetadata from '@/data/siteMetadata'
+import { useI18n } from '@/lib/i18n/i18n-context'
 
 const ScrollTopAndComment = () => {
   const [show, setShow] = useState(false)
+  const { t } = useI18n()
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, {
     stiffness: 100,
@@ -70,14 +72,14 @@ const ScrollTopAndComment = () => {
             {siteMetadata.comments?.provider && (
               <motion.button
                 type="button"
-                aria-label="Scroll To Comment"
+                aria-label={t('common.scrollToComments')}
                 onClick={handleScrollToComment}
                 className="rounded-full p-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/10 transition-colors"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
               >
                 <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" role="img">
-                  <title>Scroll to comments</title>
+                  <title>{t('common.scrollToComments')}</title>
                   <path
                     fillRule="evenodd"
                     d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
@@ -88,14 +90,14 @@ const ScrollTopAndComment = () => {
             )}
             <motion.button
               type="button"
-              aria-label="Scroll To Top"
+              aria-label={t('common.scrollToTop')}
               onClick={handleScrollTop}
               className="rounded-full p-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/10 transition-colors"
               whileHover={{ scale: 1.1, y: -2 }}
               whileTap={{ scale: 0.9 }}
             >
               <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" role="img">
-                <title>Scroll to top</title>
+                <title>{t('common.scrollToTop')}</title>
                 <path
                   fillRule="evenodd"
                   d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z"

@@ -1,8 +1,13 @@
+'use client'
+
 import { AlgoliaButton } from 'pliny/search/AlgoliaButton'
 import { KBarButton } from 'pliny/search/KBarButton'
 import siteMetadata from '@/data/siteMetadata'
+import { useI18n } from '@/lib/i18n/i18n-context'
 
 const SearchButton = () => {
+  const { t } = useI18n()
+
   if (
     siteMetadata.search &&
     (siteMetadata.search.provider === 'algolia' || siteMetadata.search.provider === 'kbar')
@@ -11,7 +16,7 @@ const SearchButton = () => {
       siteMetadata.search.provider === 'algolia' ? AlgoliaButton : KBarButton
 
     return (
-      <SearchButtonWrapper aria-label="Search">
+      <SearchButtonWrapper aria-label={t('common.search')}>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -21,7 +26,7 @@ const SearchButton = () => {
           className="h-5 w-5"
           role="img"
         >
-          <title>Search</title>
+          <title>{t('common.search')}</title>
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

@@ -38,6 +38,9 @@
       "recommended": true,
       "suspicious": {
         "noExplicitAny": "warn"
+      },
+      "a11y": {
+        "useImgAlt": "off"
       }
     }
   },

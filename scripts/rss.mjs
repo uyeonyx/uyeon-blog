@@ -47,11 +47,15 @@ async function generateRSS(config, allBlogs, page = 'feed.xml') {
 
   if (publishPosts.length > 0) {
     for (const tag of Object.keys(tagData)) {
-      const filteredPosts = allBlogs.filter((post) => post.tags.map((t) => slug(t)).includes(tag))
-      const rss = generateRss(config, filteredPosts, `tags/${tag}/${page}`)
-      const rssPath = path.join(outputFolder, 'tags', tag)
-      mkdirSync(rssPath, { recursive: true })
-      writeFileSync(path.join(rssPath, page), rss)
+      const filteredPosts = publishPosts.filter((post) =>
+        post.tags?.map((t) => slug(t)).includes(tag)
+      )
+      if (filteredPosts.length > 0) {
+        const rss = generateRss(config, filteredPosts, `tags/${tag}/${page}`)
+        const rssPath = path.join(outputFolder, 'tags', tag)
+        mkdirSync(rssPath, { recursive: true })
+        writeFileSync(path.join(rssPath, page), rss)
+      }
     }
   }
 }

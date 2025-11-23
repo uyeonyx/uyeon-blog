@@ -2,7 +2,7 @@ import type { Authors } from 'contentlayer/generated'
 import { allAuthors, allBlogs } from 'contentlayer/generated'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { allCoreContent, coreContent, sortPosts } from 'pliny/utils/contentlayer'
+import { coreContent } from 'pliny/utils/contentlayer'
 import siteMetadata from '@/data/siteMetadata'
 import BlogPostClient from './BlogPostClient'
 
@@ -67,15 +67,6 @@ export const generateStaticParams = async () => {
 export default async function Page(props: { params: Promise<{ slug: string[] }> }) {
   const params = await props.params
   const slug = decodeURI(params.slug.join('/'))
-  // Filter out drafts in production
-  const sortedCoreContents = allCoreContent(sortPosts(allBlogs))
-  const postIndex = sortedCoreContents.findIndex((p) => p.slug === slug)
-  if (postIndex === -1) {
-    return notFound()
-  }
-
-  const prev = sortedCoreContents[postIndex + 1]
-  const next = sortedCoreContents[postIndex - 1]
 
   // 해당 slug를 가진 포스트가 존재하는지 확인
   const postsWithSlug = allBlogs.filter((p) => p.slug === slug)
@@ -90,13 +81,5 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
     return coreContent(authorResults as Authors)
   })
 
-  return (
-    <BlogPostClient
-      slug={slug}
-      allPosts={allBlogs}
-      authorDetails={authorDetails}
-      prev={prev}
-      next={next}
-    />
-  )
+  return <BlogPostClient slug={slug} allPosts={allBlogs} authorDetails={authorDetails} />
 }

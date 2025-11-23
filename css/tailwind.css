@@ -277,6 +277,22 @@ input:-webkit-autofill:focus {
   animation: pulseGlow 3s ease-in-out infinite;
 }
 
+/* Blink animation for cursor */
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  50.1%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.animate-blink {
+  animation: blink 0.8s steps(2, jump-none) infinite;
+}
+
 /* Smooth transitions */
 * {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;

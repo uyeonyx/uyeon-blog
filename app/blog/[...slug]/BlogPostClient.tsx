@@ -6,7 +6,8 @@ import 'katex/dist/katex.css'
 import type { Authors, Blog } from 'contentlayer/generated'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
 import type { CoreContent } from 'pliny/utils/contentlayer'
-import { useEffect, useState } from 'react'
+import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
+import { useEffect, useMemo, useState } from 'react'
 import { components } from '@/components/MDXComponents'
 import PostBanner from '@/layouts/PostBanner'
 import PostLayout from '@/layouts/PostLayout'
@@ -25,36 +26,37 @@ interface BlogPostClientProps {
   slug: string
   allPosts: Blog[]
   authorDetails: CoreContent<Authors>[]
-  prev: CoreContent<Blog> | null
-  next: CoreContent<Blog> | null
 }
 
-export default function BlogPostClient({
-  slug,
-  allPosts,
-  authorDetails,
-  prev,
-  next,
-}: BlogPostClientProps) {
-  const { locale, t } = useI18n()
-  const [currentPost, setCurrentPost] = useState<Blog | null>(null)
+export default function BlogPostClient({ slug, allPosts, authorDetails }: BlogPostClientProps) {
+  const { locale } = useI18n()
+  // 초기 상태를 현재 locale의 포스트로 설정 (SSR과 클라이언트 모두 동일한 초기값)
+  const [currentPost, setCurrentPost] = useState<Blog | null>(
+    () => findLocalizedPost(allPosts, slug, locale) || null
+  )
 
   useEffect(() => {
     const post = findLocalizedPost(allPosts, slug, locale)
     setCurrentPost(post || null)
   }, [slug, locale, allPosts])
 
+  // 현재 언어에 맞는 포스트만 필터링하여 prev/next 계산
+  const { localizedPrev, localizedNext } = useMemo(() => {
+    // 현재 언어의 포스트만 필터링
+    // biome-ignore lint/suspicious/noExplicitAny: Contentlayer types will include language at runtime
+    const postsInCurrentLanguage = allPosts.filter((p: any) => p.language === locale)
+    const sortedPosts = allCoreContent(sortPosts(postsInCurrentLanguage))
+    const postIndex = sortedPosts.findIndex((p) => p.slug === slug)
+
+    return {
+      localizedPrev: postIndex !== -1 ? sortedPosts[postIndex + 1] || null : null,
+      localizedNext: postIndex !== -1 ? sortedPosts[postIndex - 1] || null : null,
+    }
+  }, [allPosts, slug, locale])
+
+  // 포스트가 없으면 아무것도 표시하지 않음 (레이아웃의 fade-in 효과로 자연스럽게)
   if (!currentPost) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <div className="text-center">
-          <h1 className="mb-4 text-3xl font-bold">
-            {t('blog.notAvailable')} {locale === 'ko' ? '한국어' : 'English'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">{t('blog.notAvailableDesc')}</p>
-        </div>
-      </div>
-    )
+    return null
   }
 
   const mainContent: CoreContent<Blog> = {
@@ -95,7 +97,12 @@ export default function BlogPostClient({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <Layout content={mainContent} authorDetails={authorDetails} next={next} prev={prev}>
+      <Layout
+        content={mainContent}
+        authorDetails={authorDetails}
+        next={localizedNext}
+        prev={localizedPrev}
+      >
         <MDXLayoutRenderer
           code={currentPost.body.code}
           components={components}

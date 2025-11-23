@@ -6,7 +6,14 @@
     "projects": "프로젝트",
     "about": "소개",
     "search": "검색",
-    "language": "언어"
+    "language": "언어",
+    "toggleMenu": "메뉴 토글",
+    "closeMenu": "메뉴 닫기",
+    "toggleLanguage": "언어 변경",
+    "switchTo": "전환:",
+    "current": "현재",
+    "scrollToTop": "맨 위로",
+    "scrollToComments": "댓글로 이동"
   },
   "pages": {
     "tags": {
@@ -15,10 +22,13 @@
     },
     "projects": {
       "title": "프로젝트",
-      "description": "히어로 이미지(16 x 9)로 프로젝트를 소개하세요"
+      "description": "주요 경력과 진행했던 프로젝트들"
     },
     "about": {
-      "title": "소개"
+      "title": "소개",
+      "philosophy": "철학",
+      "techStack": "기술 스택",
+      "timeline": "경력"
     }
   },
   "blog": {
@@ -26,6 +36,7 @@
     "allTags": "모든 태그",
     "latestPosts": "최신 포스트",
     "readMore": "더 읽기",
+    "learnMore": "더 알아보기",
     "noPostsFound": "포스트를 찾을 수 없습니다.",
     "noTagsFound": "태그를 찾을 수 없습니다.",
     "postsWithTag": "태그된 포스트",
@@ -42,7 +53,9 @@
     "discussOnTwitter": "트위터에서 토론하기",
     "viewOnGithub": "GitHub에서 보기",
     "previous": "이전",
-    "next": "다음"
+    "next": "다음",
+    "previousPost": "이전 포스트",
+    "nextPost": "다음 포스트"
   },
   "footer": {
     "copyright": "모든 권리 보유."

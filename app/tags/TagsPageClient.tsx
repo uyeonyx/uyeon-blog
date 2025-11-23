@@ -1,6 +1,7 @@
 'use client'
 
 import tagData from 'app/tag-data.json'
+import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
@@ -13,9 +14,14 @@ export default function TagsPageClient() {
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
 
   return (
-    <div className="flex flex-col items-start justify-start divide-y divide-gray-200 md:mt-24 md:flex-row md:items-center md:justify-center md:space-x-6 md:divide-y-0 dark:divide-gray-700">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="flex flex-col items-start justify-start divide-y divide-gray-200 md:mt-24 md:flex-row md:items-center md:justify-center md:space-x-6 md:divide-y-0 dark:divide-gray-700"
+    >
       <div className="space-x-2 pt-6 pb-8 md:space-y-5">
-        <h1 className="text-3xl leading-9 font-extrabold tracking-tight text-gray-900 sm:text-4xl sm:leading-10 md:border-r-2 md:px-6 md:text-6xl md:leading-14 dark:text-gray-100">
+        <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl md:border-r-2 md:px-6 md:text-5xl lg:text-6xl dark:text-gray-100">
           {t('pages.tags.title')}
         </h1>
       </div>
@@ -36,6 +42,6 @@ export default function TagsPageClient() {
           )
         })}
       </div>
-    </div>
+    </motion.div>
   )
 }

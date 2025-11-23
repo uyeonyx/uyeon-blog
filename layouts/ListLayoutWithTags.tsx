@@ -2,6 +2,7 @@
 
 import tagData from 'app/tag-data.json'
 import type { Blog } from 'contentlayer/generated'
+import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
 import { usePathname } from 'next/navigation'
 import type { CoreContent } from 'pliny/utils/contentlayer'
@@ -164,10 +165,10 @@ export default function ListLayoutWithTags({
     filteredInitialDisplayPosts.length > 0 ? filteredInitialDisplayPosts : filteredPosts
 
   return (
-    <div>
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       {/* Page Title */}
       <div className="pt-12 pb-12">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+        <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
           <span className="block bg-linear-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-gray-50 dark:via-gray-300 dark:to-gray-50 bg-clip-text text-transparent">
             {title}
           </span>
@@ -275,6 +276,6 @@ export default function ListLayoutWithTags({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

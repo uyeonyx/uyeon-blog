@@ -18,5 +18,25 @@
   "react": {
     "en": "React",
     "ko": "React"
+  },
+  "generative-ai": {
+    "en": "Generative AI",
+    "ko": "생성형 AI"
+  },
+  "cognitive-debt": {
+    "en": "Cognitive Debt",
+    "ko": "인지적 부채"
+  },
+  "automation-bias": {
+    "en": "Automation Bias",
+    "ko": "자동화 편향"
+  },
+  "software-engineering": {
+    "en": "Software Engineering",
+    "ko": "소프트웨어 엔지니어링"
+  },
+  "human-in-the-loop": {
+    "en": "Human-in-the-Loop",
+    "ko": "휴먼-인-더-루프"
   }
 }

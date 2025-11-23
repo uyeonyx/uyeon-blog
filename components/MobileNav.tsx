@@ -27,7 +27,7 @@ const MobileNav = () => {
       {/* Mobile Menu Button */}
       <motion.button
         type="button"
-        aria-label="Toggle Menu"
+        aria-label={t('common.toggleMenu')}
         onClick={onToggleNav}
         className="md:hidden p-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/10 rounded-full transition-colors"
         whileHover={{ scale: 1.1 }}
@@ -52,7 +52,7 @@ const MobileNav = () => {
               onKeyDown={(e) => e.key === 'Escape' && onToggleNav()}
               role="button"
               tabIndex={0}
-              aria-label="Close menu"
+              aria-label={t('common.closeMenu')}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -95,7 +95,7 @@ const MobileNav = () => {
                     >
                       <Link
                         href={link.href}
-                        className="block px-4 py-3 text-base font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/10 rounded-xl transition-colors"
+                        className="block px-4 py-3 text-lg font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/10 rounded-xl transition-colors"
                         onClick={onToggleNav}
                       >
                         <motion.span

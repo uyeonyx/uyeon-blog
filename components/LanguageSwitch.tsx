@@ -6,7 +6,7 @@ import { type Locale, useI18n } from '@/lib/i18n/i18n-context'
 import { getLanguageName } from '@/lib/i18n/utils'
 
 const LanguageSwitch = () => {
-  const { locale, setLocale } = useI18n()
+  const { locale, setLocale, t } = useI18n()
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -22,7 +22,7 @@ const LanguageSwitch = () => {
     return (
       <button
         type="button"
-        aria-label="Toggle Language"
+        aria-label={t('common.toggleLanguage')}
         className="rounded-full p-2 transition-colors"
       >
         <span className="text-sm font-medium">EN</span>
@@ -33,10 +33,10 @@ const LanguageSwitch = () => {
   return (
     <button
       type="button"
-      aria-label={`Switch to ${locale === 'en' ? 'Korean' : 'English'}`}
+      aria-label={`${t('common.switchTo')} ${getLanguageName(locale === 'en' ? 'ko' : 'en')}`}
       onClick={toggleLanguage}
       className="group relative flex items-center gap-2 rounded-full p-2 transition-colors"
-      title={`Current: ${getLanguageName(locale)}`}
+      title={`${t('common.current')}: ${getLanguageName(locale)}`}
     >
       <motion.div
         className="flex items-center gap-1.5"

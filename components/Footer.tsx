@@ -9,7 +9,6 @@ const socialIcons = [
   { kind: 'mail' as const, href: `mailto:${siteMetadata.email}`, label: 'Email' },
   { kind: 'github' as const, href: siteMetadata.github, label: 'GitHub' },
   { kind: 'linkedin' as const, href: siteMetadata.linkedin, label: 'LinkedIn' },
-  { kind: 'x' as const, href: siteMetadata.x, label: 'X (Twitter)' },
 ]
 
 export default function Footer() {

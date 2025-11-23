@@ -98,14 +98,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="bg-linear-to-br from-gray-50 via-white to-gray-50 pl-[calc(100vw-100%)] text-black antialiased dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 dark:text-white">
         <ThemeProviders>
           <I18nProvider>
-          <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
-          <SectionContainer>
-            <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
-              <Header />
-              <main className="mb-auto min-h-screen">{children}</main>
-              <Footer />
-            </SearchProvider>
-          </SectionContainer>
+            <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
+            <SectionContainer>
+              <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
+                <Header />
+                <main className="mb-auto min-h-screen">{children}</main>
+                <Footer />
+              </SearchProvider>
+            </SectionContainer>
           </I18nProvider>
         </ThemeProviders>
       </body>

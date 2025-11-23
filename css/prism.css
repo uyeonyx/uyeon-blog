@@ -7,6 +7,21 @@
  * https://github.com/PrismJS/prism-themes
  */
 
+/* Base pre and code styles for glassmorphism */
+pre {
+  @apply bg-gray-900/80 dark:bg-gray-950/80;
+  @apply p-4 m-0;
+  @apply text-sm leading-relaxed;
+  @apply overflow-x-auto;
+}
+
+pre code {
+  @apply bg-transparent;
+  @apply block;
+  @apply text-gray-100;
+  @apply font-mono;
+}
+
 /* Code title styles */
 .remark-code-title {
   @apply rounded-xs bg-gray-700 px-5 py-3 font-mono text-sm font-bold text-gray-200 dark:bg-gray-800;

@@ -2,7 +2,6 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import Logo from '@/data/logo.svg'
 import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import LanguageSwitch from './LanguageSwitch'
@@ -100,28 +99,21 @@ const HeaderClient = () => {
 
           {/* Content */}
           <div className="relative flex items-center gap-6">
-            {/* Logo */}
+            {/* Logo Text */}
             <Link href="/" aria-label={siteMetadata.headerTitle} className="shrink-0">
-              <motion.div
-                className="flex items-center gap-3"
+              <motion.span
+                className="text-xl font-bold tracking-tight text-gray-900 dark:text-white inline-block overflow-hidden whitespace-nowrap"
+                initial={{ opacity: 0, width: 0 }}
+                animate={{
+                  opacity: isHovered ? 1 : 0,
+                  width: isHovered ? 'auto' : 0,
+                }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                transition={mounted ? { duration: 0.3 } : { duration: 0 }}
               >
-                <div className="scale-90">
-                  <Logo />
-                </div>
-                <motion.span
-                  className="text-sm font-bold tracking-tight text-gray-900 dark:text-white"
-                  initial={{ opacity: 0, width: 0 }}
-                  animate={{
-                    opacity: isHovered ? 1 : 0,
-                    width: isHovered ? 'auto' : 0,
-                  }}
-                  transition={mounted ? { duration: 0.3 } : { duration: 0 }}
-                >
-                  {typeof siteMetadata.headerTitle === 'string' ? siteMetadata.headerTitle : ''}
-                </motion.span>
-              </motion.div>
+                {typeof siteMetadata.headerTitle === 'string' ? siteMetadata.headerTitle : ''}
+              </motion.span>
             </Link>
 
             {/* Animated Divider */}
@@ -158,7 +150,7 @@ const HeaderClient = () => {
                   >
                     <Link
                       href={link.href}
-                      className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-900/5 dark:hover:bg-white/10 transition-all"
+                      className="px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-900/5 dark:hover:bg-white/10 transition-all"
                     >
                       {t(link.key)}
                     </Link>

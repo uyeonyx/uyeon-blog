@@ -1,16 +1,25 @@
 'use client'
 
+import { allProjects } from 'contentlayer/generated'
+import { motion } from 'framer-motion'
 import Card from '@/components/Card'
-import projectsData from '@/data/projectsData'
 import { useI18n } from '@/lib/i18n/i18n-context'
 
 export default function ProjectsPageClient() {
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
+
+  // 현재 언어에 맞는 프로젝트 필터링
+  const projects = allProjects.filter((project) => project.language === locale)
 
   return (
-    <div className="divide-y divide-gray-200 dark:divide-gray-700">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="divide-y divide-gray-200 dark:divide-gray-700"
+    >
       <div className="space-y-2 pt-6 pb-8 md:space-y-5">
-        <h1 className="text-3xl leading-9 font-extrabold tracking-tight text-gray-900 sm:text-4xl sm:leading-10 md:text-6xl md:leading-14 dark:text-gray-100">
+        <h1 className="text-3xl leading-tight font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl dark:text-gray-100">
           {t('pages.projects.title')}
         </h1>
         <p className="text-lg leading-7 text-gray-500 dark:text-gray-400">
@@ -19,17 +28,17 @@ export default function ProjectsPageClient() {
       </div>
       <div className="container py-12">
         <div className="-m-4 flex flex-wrap">
-          {projectsData.map((d) => (
+          {projects.map((project) => (
             <Card
-              key={d.title}
-              title={d.title}
-              description={d.description}
-              imgSrc={d.imgSrc}
-              href={d.href}
+              key={project.slug}
+              title={project.title}
+              description={project.description}
+              imgSrc={project.imgSrc}
+              href={project.href}
             />
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

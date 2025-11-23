@@ -6,7 +6,14 @@
     "projects": "Projects",
     "about": "About",
     "search": "Search",
-    "language": "Language"
+    "language": "Language",
+    "toggleMenu": "Toggle Menu",
+    "closeMenu": "Close menu",
+    "toggleLanguage": "Toggle Language",
+    "switchTo": "Switch to",
+    "current": "Current",
+    "scrollToTop": "Scroll to top",
+    "scrollToComments": "Scroll to comments"
   },
   "pages": {
     "tags": {
@@ -15,10 +22,13 @@
     },
     "projects": {
       "title": "Projects",
-      "description": "Showcase your projects with a hero image (16 x 9)"
+      "description": "Key experiences and projects I've worked on"
     },
     "about": {
-      "title": "About"
+      "title": "About",
+      "philosophy": "Philosophy",
+      "techStack": "Tech Stack",
+      "timeline": "Experience"
     }
   },
   "blog": {
@@ -26,6 +36,7 @@
     "allTags": "All Tags",
     "latestPosts": "Latest Posts",
     "readMore": "Read more",
+    "learnMore": "Learn more",
     "noPostsFound": "No posts found.",
     "noTagsFound": "No tags found.",
     "postsWithTag": "Posts tagged with",
@@ -42,7 +53,9 @@
     "discussOnTwitter": "Discuss on Twitter",
     "viewOnGithub": "View on GitHub",
     "previous": "Previous",
-    "next": "Next"
+    "next": "Next",
+    "previousPost": "Previous post",
+    "nextPost": "Next post"
   },
   "footer": {
     "copyright": "All rights reserved."

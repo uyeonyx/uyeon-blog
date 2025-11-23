@@ -82,37 +82,34 @@ const computedFields: ComputedFields = {
 
 /**
  * Count the occurrences of all tags across blog posts and write to json file
- * 언어별로 태그 카운트 생성
+ * slug 기준으로 중복 제거 (같은 포스트의 다른 언어 버전은 1개로 카운트)
  */
 function createTagCount(allBlogs) {
-  const tagCountEn: Record<string, number> = {}
-  const tagCountKo: Record<string, number> = {}
+  const tagCount: Record<string, number> = {}
+  const processedSlugs = new Set<string>()
 
   allBlogs.forEach((file) => {
     if (file.tags && (!isProduction || file.draft !== true)) {
-      const lang = file.language || 'en'
-      const targetCount = lang === 'ko' ? tagCountKo : tagCountEn
+      // slug 기준으로 중복 제거 (언어 버전은 1개로 카운트)
+      const postSlug = file.slug.replace(/\.(ko|en)$/, '')
 
-      file.tags.forEach((tag) => {
-        const formattedTag = slug(tag)
-        if (formattedTag in targetCount) {
-          targetCount[formattedTag] += 1
-        } else {
-          targetCount[formattedTag] = 1
-        }
-      })
+      if (!processedSlugs.has(postSlug)) {
+        processedSlugs.add(postSlug)
+
+        file.tags.forEach((tag) => {
+          const formattedTag = slug(tag)
+          if (formattedTag in tagCount) {
+            tagCount[formattedTag] += 1
+          } else {
+            tagCount[formattedTag] = 1
+          }
+        })
+      }
     }
   })
 
-  // 전체 태그 카운트 (기존 호환성)
-  const allTagCount = { ...tagCountEn }
-  Object.entries(tagCountKo).forEach(([tag, count]) => {
-    allTagCount[tag] = (allTagCount[tag] || 0) + count
-  })
-
-  writeFileSync('./app/tag-data.json', JSON.stringify(allTagCount, null, 2))
-  writeFileSync('./app/tag-data-en.json', JSON.stringify(tagCountEn, null, 2))
-  writeFileSync('./app/tag-data-ko.json', JSON.stringify(tagCountKo, null, 2))
+  // 단일 태그 카운트 파일만 생성 (언어 구분 불필요)
+  writeFileSync('./app/tag-data.json', JSON.stringify(tagCount, null, 2))
 }
 
 function createSearchIndex(allBlogs) {
@@ -182,9 +179,24 @@ export const Authors = defineDocumentType(() => ({
   computedFields,
 }))
 
+export const Projects = defineDocumentType(() => ({
+  name: 'Projects',
+  filePathPattern: 'projects/**/*.mdx',
+  contentType: 'mdx',
+  fields: {
+    title: { type: 'string', required: true },
+    description: { type: 'string', required: true },
+    imgSrc: { type: 'string' },
+    href: { type: 'string' },
+    period: { type: 'string' },
+    role: { type: 'string' },
+  },
+  computedFields,
+}))
+
 export default makeSource({
   contentDirPath: 'data',
-  documentTypes: [Blog, Authors],
+  documentTypes: [Blog, Authors, Projects],
   mdx: {
     cwd: process.cwd(),
     remarkPlugins: [
@@ -216,7 +228,7 @@ export default makeSource({
   },
   onSuccess: async (importData) => {
     const { allBlogs } = await importData()
-    await createTagCount(allBlogs)
+    createTagCount(allBlogs)
     createSearchIndex(allBlogs)
   },
 })

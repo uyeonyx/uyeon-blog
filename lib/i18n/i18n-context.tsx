@@ -36,14 +36,25 @@ function detectBrowserLanguage(): Locale {
 }
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>('en')
+  // 서버와 클라이언트 모두 동일한 초기값으로 시작 (Hydration mismatch 방지)
+  const [locale, setLocaleState] = useState<Locale>('ko')
+  const [mounted, setMounted] = useState(false)
 
-  // 초기 언어 설정
+  // 클라이언트 마운트 후 실제 locale 설정
   useEffect(() => {
     const savedLocale = localStorage.getItem('locale') as Locale | null
     const initialLocale = savedLocale || detectBrowserLanguage()
+
     setLocaleState(initialLocale)
+    setMounted(true)
   }, [])
+
+  // HTML lang 속성 업데이트
+  useEffect(() => {
+    if (mounted && typeof document !== 'undefined') {
+      document.documentElement.lang = locale === 'ko' ? 'ko-KR' : 'en-US'
+    }
+  }, [locale, mounted])
 
   // locale 변경 시 저장
   const setLocale = (newLocale: Locale) => {
