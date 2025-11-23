@@ -19,8 +19,10 @@ const techIcons: Record<string, { icon: string; color: string }> = {
   // Backend
   'Node.js': { icon: 'simple-icons:nodedotjs', color: '#5FA04E' },
   TypeScript: { icon: 'simple-icons:typescript', color: '#3178C6' },
+  Python: { icon: 'simple-icons:python', color: '#3776AB' },
   NestJS: { icon: 'simple-icons:nestjs', color: '#E0234E' },
   Express: { icon: 'simple-icons:express', color: '#000000' },
+  FastAPI: { icon: 'simple-icons:fastapi', color: '#009688' },
   Prisma: { icon: 'simple-icons:prisma', color: '#2D3748' },
   MySQL: { icon: 'simple-icons:mysql', color: '#4479A1' },
   PostgreSQL: { icon: 'simple-icons:postgresql', color: '#4169E1' },
