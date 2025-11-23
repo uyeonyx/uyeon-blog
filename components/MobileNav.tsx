@@ -2,9 +2,12 @@
 
 import { Icon } from '@iconify/react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import LanguageSwitch from './LanguageSwitch'
 import Link from './Link'
+import SearchButton from './SearchButton'
+import ThemeSwitch from './ThemeSwitch'
 
 const navLinks = [
   { href: '/', key: 'common.home' },
@@ -17,108 +20,110 @@ const navLinks = [
 const MobileNav = () => {
   const [navShow, setNavShow] = useState(false)
   const { t } = useI18n()
+  const menuRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   const onToggleNav = () => {
     setNavShow((prev) => !prev)
   }
 
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        navShow &&
+        menuRef.current &&
+        buttonRef.current &&
+        !menuRef.current.contains(event.target as Node) &&
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setNavShow(false)
+      }
+    }
+
+    if (navShow) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [navShow])
+
   return (
-    <>
+    <div className="relative md:hidden">
       {/* Mobile Menu Button */}
-      <motion.button
+      <button
+        ref={buttonRef}
         type="button"
         aria-label={t('common.toggleMenu')}
         onClick={onToggleNav}
-        className="md:hidden p-2 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/10 rounded-full transition-colors"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
+        className="p-2.5 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/10 rounded-full transition-colors border border-gray-300/50 dark:border-gray-500/50"
       >
-        <motion.div animate={{ rotate: navShow ? 180 : 0 }} transition={{ duration: 0.3 }}>
-          <Icon
-            icon={navShow ? 'solar:close-circle-bold' : 'solar:hamburger-menu-bold'}
-            className="h-5 w-5"
-          />
-        </motion.div>
-      </motion.button>
+        <Icon
+          icon={navShow ? 'solar:close-circle-bold' : 'solar:hamburger-menu-bold'}
+          className="h-6 w-6"
+        />
+      </button>
 
       {/* Mobile Dropdown Menu */}
       <AnimatePresence>
         {navShow && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm md:hidden"
-              onClick={onToggleNav}
-              onKeyDown={(e) => e.key === 'Escape' && onToggleNav()}
-              role="button"
-              tabIndex={0}
-              aria-label={t('common.closeMenu')}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            />
+          <motion.div
+            ref={menuRef}
+            className="absolute top-[3.5rem] left-1/2 -translate-x-1/2 w-screen max-w-[calc(100vw-2rem)] sm:max-w-md z-[9999]"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{
+              duration: 0.2,
+              ease: 'easeOut',
+            }}
+          >
+            <div className="relative rounded-2xl bg-white dark:bg-gray-800 shadow-2xl shadow-gray-900/40 dark:shadow-black/60 border border-gray-200 dark:border-gray-600 overflow-hidden">
+              {/* Subtle Gradient Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-primary-600/5" />
 
-            {/* Dropdown Island */}
-            <motion.div
-              className="fixed top-24 left-1/2 z-50 -translate-x-1/2 md:hidden"
-              initial={{ opacity: 0, y: -20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.9 }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 25,
-              }}
-            >
-              <motion.div
-                className="relative rounded-3xl bg-white/70 dark:bg-gray-800/70 backdrop-blur-3xl shadow-2xl shadow-gray-900/20 dark:shadow-primary-500/20 border border-white/60 dark:border-gray-600/80 p-6 min-w-[280px] max-w-[90vw] before:absolute before:inset-0 before:rounded-3xl before:bg-linear-to-b before:from-white/40 before:to-transparent before:pointer-events-none dark:before:from-white/10"
-                whileHover={{ scale: 1.01 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              >
-                {/* Subtle Gradient Background */}
-                <div className="absolute inset-0 bg-linear-to-br from-primary-500/10 via-primary-400/5 to-primary-600/10 rounded-3xl" />
-
-                {/* Navigation */}
-                <nav className="relative space-y-2">
-                  {navLinks.map((link, index) => (
-                    <motion.div
-                      key={link.href}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        delay: index * 0.1,
-                        type: 'spring',
-                        stiffness: 200,
-                        damping: 20,
-                      }}
-                    >
+              {/* Content */}
+              <div className="relative p-4 space-y-1">
+                {/* Navigation Links */}
+                <nav className="space-y-1">
+                  {navLinks.map((link) => (
+                    <div key={link.href}>
                       <Link
                         href={link.href}
-                        className="block px-4 py-3 text-lg font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-900/5 dark:hover:bg-white/10 rounded-xl transition-colors"
+                        className="flex items-center px-4 py-3 text-base font-semibold text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-xl transition-colors active:bg-gray-200 dark:active:bg-white/20"
                         onClick={onToggleNav}
                       >
-                        <motion.span
-                          className="inline-block"
-                          whileHover={{ x: 5 }}
-                          transition={{ type: 'spring', stiffness: 300 }}
-                        >
-                          {t(link.key)}
-                        </motion.span>
+                        {t(link.key)}
                       </Link>
-                    </motion.div>
+                    </div>
                   ))}
                 </nav>
 
-                {/* Subtle Glow Effect */}
-                <div className="absolute -inset-1 rounded-3xl bg-linear-to-r from-primary-500/10 to-primary-600/10 blur-xl opacity-30 -z-10" />
-              </motion.div>
-            </motion.div>
-          </>
+                {/* Divider */}
+                <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent my-2" />
+
+                {/* Action Buttons */}
+                <div className="flex items-center justify-around gap-2 px-2 py-2">
+                  <div className="flex-1 flex justify-center [&>button]:w-full [&>button]:text-gray-700 [&>button]:dark:text-gray-200 [&>button]:hover:text-gray-900 [&>button]:dark:hover:text-white [&>button]:hover:bg-gray-100 [&>button]:dark:hover:bg-white/10 [&>button]:rounded-lg [&>button]:p-2.5 [&>button]:transition-colors [&>button]:active:bg-gray-200 [&>button]:dark:active:bg-white/20">
+                    <SearchButton />
+                  </div>
+                  <div className="flex-1 flex justify-center [&>button]:w-full [&>button]:text-gray-700 [&>button]:dark:text-gray-200 [&>button]:hover:text-gray-900 [&>button]:dark:hover:text-white [&>button]:hover:bg-gray-100 [&>button]:dark:hover:bg-white/10 [&>button]:rounded-lg [&>button]:p-2.5 [&>button]:transition-colors [&>button]:border [&>button]:border-gray-200 [&>button]:dark:border-gray-600/50 [&>button]:active:bg-gray-200 [&>button]:dark:active:bg-white/20">
+                    <LanguageSwitch />
+                  </div>
+                  <div className="flex-1 flex justify-center [&>button]:w-full [&>button]:text-gray-700 [&>button]:dark:text-gray-200 [&>button]:hover:text-gray-900 [&>button]:dark:hover:text-white [&>button]:hover:bg-gray-100 [&>button]:dark:hover:bg-white/10 [&>button]:rounded-lg [&>button]:p-2.5 [&>button]:transition-colors [&>button]:border [&>button]:border-gray-200 [&>button]:dark:border-gray-600/50 [&>button]:active:bg-gray-200 [&>button]:dark:active:bg-white/20">
+                    <ThemeSwitch />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   )
 }
 
 export default MobileNav
+

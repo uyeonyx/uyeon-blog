@@ -49,7 +49,7 @@ const HeaderClient = () => {
   }
 
   return (
-    <header className="flex justify-center pt-8 pb-4">
+    <header className="flex justify-center pt-8 pb-4 relative z-50">
       <motion.div
         className="relative"
         onMouseMove={handleMouseMove}
@@ -99,10 +99,15 @@ const HeaderClient = () => {
 
           {/* Content */}
           <div className="relative flex items-center gap-6">
-            {/* Logo Text */}
+            {/* Logo Text - Always visible on mobile, hover on desktop */}
             <Link href="/" aria-label={siteMetadata.headerTitle} className="shrink-0">
+              {/* Mobile: Always visible */}
+              <span className="md:hidden text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                {typeof siteMetadata.headerTitle === 'string' ? siteMetadata.headerTitle : ''}
+              </span>
+              {/* Desktop: Show on hover */}
               <motion.span
-                className="text-xl font-bold tracking-tight text-gray-900 dark:text-white inline-block overflow-hidden whitespace-nowrap"
+                className="hidden md:inline-block text-xl font-bold tracking-tight text-gray-900 dark:text-white overflow-hidden whitespace-nowrap"
                 initial={{ opacity: 0, width: 0 }}
                 animate={{
                   opacity: isHovered ? 1 : 0,
@@ -116,9 +121,10 @@ const HeaderClient = () => {
               </motion.span>
             </Link>
 
-            {/* Animated Divider */}
+            {/* Animated Divider - Mobile: always visible, Desktop: on hover */}
+            <div className="md:hidden h-6 w-px bg-gray-300 dark:bg-gray-700" />
             <motion.div
-              className="h-6 w-px bg-gray-300 dark:bg-gray-700"
+              className="hidden md:block h-6 w-px bg-gray-300 dark:bg-gray-700"
               initial={{ scaleY: 0, opacity: 0 }}
               animate={{
                 scaleY: isHovered ? 1 : 0,
@@ -169,8 +175,8 @@ const HeaderClient = () => {
               transition={mounted ? { duration: 0.2, delay: 0.1 } : { duration: 0 }}
             />
 
-            {/* Actions */}
-            <div className="flex items-center gap-2">
+            {/* Actions - Desktop only */}
+            <div className="hidden md:flex items-center gap-2">
               <motion.div
                 className="[&>button]:text-gray-700 [&>button]:dark:text-gray-200 [&>button]:hover:text-gray-900 [&>button]:dark:hover:text-white [&>button]:hover:bg-gray-900/5 [&>button]:dark:hover:bg-white/10 [&>button]:rounded-full [&>button]:p-2 [&>button]:transition-colors"
                 whileHover={{ scale: 1.1 }}
@@ -195,9 +201,7 @@ const HeaderClient = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <motion.div className="md:hidden" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <MobileNav />
-            </motion.div>
+            <MobileNav />
           </div>
 
           {/* Subtle Glow Effect */}

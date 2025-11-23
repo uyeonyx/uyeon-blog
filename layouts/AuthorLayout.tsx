@@ -80,52 +80,27 @@ export default function AuthorLayout({ children, content }: Props) {
               }}
             >
               <motion.div
-                className="relative overflow-hidden rounded-3xl bg-white/60 dark:bg-gray-800/50 backdrop-blur-2xl"
+                className="relative"
                 style={{
                   rotateX,
                   rotateY,
                   transformStyle: 'preserve-3d',
-                  boxShadow: `
-                    0 30px 60px -15px rgba(0, 0, 0, 0.25),
-                    0 15px 30px -10px rgba(0, 0, 0, 0.15),
-                    0 5px 15px rgba(0, 0, 0, 0.08),
-                    0 0 0 3px rgba(255, 255, 255, 0.4) inset,
-                    0 0 0 1px rgba(255, 255, 255, 0.7) inset,
-                    0 6px 12px rgba(255, 255, 255, 0.25) inset,
-                    0 -3px 8px rgba(0, 0, 0, 0.15) inset
-                  `,
                 }}
               >
-                {/* 3D beveled edge effect - top */}
-                <div className="absolute top-0 left-0 right-0 h-2 bg-linear-to-b from-white/60 to-transparent dark:from-white/30 rounded-t-3xl pointer-events-none z-20" />
-
-                {/* 3D beveled edge effect - left */}
-                <div className="absolute top-0 left-0 bottom-0 w-2 bg-linear-to-r from-white/60 to-transparent dark:from-white/30 rounded-l-3xl pointer-events-none z-20" />
-
-                {/* 3D beveled edge effect - right */}
-                <div className="absolute top-0 right-0 bottom-0 w-2 bg-linear-to-l from-white/40 to-transparent dark:from-white/20 rounded-r-3xl pointer-events-none z-20" />
-
-                {/* 3D beveled edge effect - bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-2 bg-linear-to-t from-black/20 to-transparent dark:from-black/30 rounded-b-3xl pointer-events-none z-20" />
-
-                {/* Glass reflection overlay */}
-                <div className="absolute top-0 left-0 right-0 h-1/3 bg-linear-to-b from-white/30 to-transparent dark:from-white/10 rounded-t-3xl pointer-events-none z-10" />
-
                 <Image
                   src={avatar}
                   alt="avatar"
                   width={192}
                   height={192}
-                  className="h-48 w-48 rounded-3xl relative"
+                  className="h-48 w-48 rounded-full ring-4 ring-gray-100 dark:ring-gray-900 shadow-xl"
                 />
 
-                {/* Glass shine on hover */}
+                {/* Subtle shine on hover */}
                 <motion.div
-                  className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+                  className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
                   style={{
                     background:
-                      'linear-gradient(135deg, rgba(255,255,255,0.2) 0%, transparent 50%)',
-                    transform: 'translateZ(1px)',
+                      'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%)',
                   }}
                 />
               </motion.div>
