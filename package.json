@@ -5,7 +5,7 @@
   "scripts": {
     "start": "next dev",
     "dev": "cross-env INIT_CWD=$PWD NODE_OPTIONS='--no-deprecation' next dev",
-    "build": "cross-env INIT_CWD=$PWD NODE_OPTIONS='--no-deprecation --experimental-json-modules' next build && cross-env NODE_OPTIONS='--no-deprecation --experimental-json-modules' node ./scripts/postbuild.mjs",
+    "build": "contentlayer2 build && cross-env INIT_CWD=$PWD NODE_OPTIONS='--no-deprecation --experimental-json-modules' next build && cross-env NODE_OPTIONS='--no-deprecation --experimental-json-modules' node ./scripts/postbuild.mjs",
     "serve": "next start",
     "analyze": "cross-env ANALYZE=true NODE_OPTIONS='--no-deprecation' next build",
     "lint": "biome check --write .",
