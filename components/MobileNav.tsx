@@ -71,7 +71,7 @@ const MobileNav = () => {
         {navShow && (
           <motion.div
             ref={menuRef}
-            className="fixed top-[6rem] left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-md z-[9999]"
+            className="fixed top-[6rem] left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-md z-9999"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
@@ -82,7 +82,7 @@ const MobileNav = () => {
           >
             <div className="relative rounded-2xl bg-white dark:bg-gray-800 shadow-2xl shadow-gray-900/40 dark:shadow-black/60 border border-gray-200 dark:border-gray-600 overflow-hidden">
               {/* Subtle Gradient Background */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 via-transparent to-primary-600/5" />
+              <div className="absolute inset-0 bg-linear-to-br from-primary-500/5 via-transparent to-primary-600/5" />
 
               {/* Content */}
               <div className="relative p-4 space-y-1">
@@ -102,7 +102,7 @@ const MobileNav = () => {
                 </nav>
 
                 {/* Divider */}
-                <div className="h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent my-2" />
+                <div className="h-px bg-linear-to-r from-transparent via-gray-300 dark:via-gray-600 to-transparent my-2" />
 
                 {/* Action Buttons */}
                 <div className="flex items-center justify-around gap-2 px-2 py-2">
@@ -126,4 +126,3 @@ const MobileNav = () => {
 }
 
 export default MobileNav
-

@@ -88,6 +88,17 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+
+  /* Smart quotes - 영어와 한국어 모두 지원 */
+  :lang(en) {
+    quotes: '"' '"' ''' ''';
+    hanging-punctuation: first last;
+  }
+
+  :lang(ko) {
+    quotes: '"' '"' ''' ''';
+    hanging-punctuation: first last;
+  }
 }
 
 @layer utilities {
@@ -123,6 +134,10 @@
   }
 
   .prose {
+    /* 타이포그래피 향상 - 올바른 따옴표 사용 */
+    quotes: '"' '"' ''' ''';
+    hanging-punctuation: first last;
+
     & a {
       color: var(--color-primary-500);
       text-decoration: none;

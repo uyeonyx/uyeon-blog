@@ -25,6 +25,8 @@ import { remarkAlert } from 'remark-github-blockquote-alert'
 import remarkMath from 'remark-math'
 import siteMetadata from './data/siteMetadata'
 import { extractLanguageFromFilename, removeLanguageFromPath } from './lib/i18n/utils'
+import rehypeSmartQuotes from './lib/rehype-smart-quotes'
+import { smartQuotes } from './lib/utils'
 
 const root = process.cwd()
 const isProduction = process.env.NODE_ENV === 'production'
@@ -144,15 +146,24 @@ export const Blog = defineDocumentType(() => ({
   },
   computedFields: {
     ...computedFields,
+    // title과 summary에 스마트 따옴표 적용
+    title: {
+      type: 'string',
+      resolve: (doc) => smartQuotes(doc.title),
+    },
+    summary: {
+      type: 'string',
+      resolve: (doc) => smartQuotes(doc.summary),
+    },
     structuredData: {
       type: 'json',
       resolve: (doc) => ({
         '@context': 'https://schema.org',
         '@type': 'BlogPosting',
-        headline: doc.title,
+        headline: smartQuotes(doc.title),
         datePublished: doc.date,
         dateModified: doc.lastmod || doc.date,
-        description: doc.summary,
+        description: smartQuotes(doc.summary),
         image: doc.images ? doc.images[0] : siteMetadata.socialBanner,
         url: `${siteMetadata.siteUrl}/${doc._raw.flattenedPath}`,
       }),
@@ -191,7 +202,18 @@ export const Projects = defineDocumentType(() => ({
     period: { type: 'string' },
     role: { type: 'string' },
   },
-  computedFields,
+  computedFields: {
+    ...computedFields,
+    // title과 description에 스마트 따옴표 적용
+    title: {
+      type: 'string',
+      resolve: (doc) => smartQuotes(doc.title),
+    },
+    description: {
+      type: 'string',
+      resolve: (doc) => smartQuotes(doc.description),
+    },
+  },
 }))
 
 export default makeSource({
@@ -223,6 +245,7 @@ export default makeSource({
       rehypeKatexNoTranslate,
       [rehypeCitation, { path: path.join(root, 'data') }],
       [rehypePrismPlus, { defaultLanguage: 'js', ignoreMissing: true }],
+      rehypeSmartQuotes, // 모든 텍스트 노드에 스마트 따옴표 적용
       rehypePresetMinify,
     ],
   },
