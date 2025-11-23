@@ -2,7 +2,7 @@
 
 import { allProjects } from 'contentlayer/generated'
 import { motion } from 'framer-motion'
-import Card from '@/components/Card'
+import ProjectCard from '@/components/ProjectCard'
 import { useI18n } from '@/lib/i18n/i18n-context'
 
 export default function ProjectsPageClient() {
@@ -29,13 +29,7 @@ export default function ProjectsPageClient() {
       <div className="container py-12">
         <div className="-m-4 flex flex-wrap">
           {projects.map((project) => (
-            <Card
-              key={project.slug}
-              title={project.title}
-              description={project.description}
-              imgSrc={project.imgSrc}
-              href={project.href}
-            />
+            <ProjectCard key={project.slug} project={project} />
           ))}
         </div>
       </div>

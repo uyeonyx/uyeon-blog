@@ -308,6 +308,38 @@ input:-webkit-autofill:focus {
   animation: blink 0.8s steps(2, jump-none) infinite;
 }
 
+/* Custom Scrollbar for Glassmorphism Modal */
+[data-slot="dialog-content"]::-webkit-scrollbar {
+  width: 8px;
+}
+
+[data-slot="dialog-content"]::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+[data-slot="dialog-content"]::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+
+[data-slot="dialog-content"]::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.dark [data-slot="dialog-content"]::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.dark [data-slot="dialog-content"]::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark [data-slot="dialog-content"]::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
 /* Smooth transitions */
 * {
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;

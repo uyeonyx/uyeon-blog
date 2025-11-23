@@ -201,6 +201,8 @@ export const Projects = defineDocumentType(() => ({
     href: { type: 'string' },
     period: { type: 'string' },
     role: { type: 'string' },
+    company: { type: 'string' },
+    tags: { type: 'list', of: { type: 'string' } },
   },
   computedFields: {
     ...computedFields,
