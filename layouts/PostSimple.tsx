@@ -3,14 +3,13 @@
 import type { Blog } from 'contentlayer/generated'
 import { motion } from 'framer-motion'
 import type { CoreContent } from 'pliny/utils/contentlayer'
-import { formatDate } from 'pliny/utils/formatDate'
 import type { ReactNode } from 'react'
 import Link from '@/components/Link'
 import PageTitle from '@/components/PageTitle'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import SectionContainer from '@/components/SectionContainer'
-import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import { formatDate } from '@/lib/i18n/utils'
 
 interface LayoutProps {
   content: CoreContent<Blog>
@@ -21,7 +20,7 @@ interface LayoutProps {
 
 export default function PostLayout({ content, next, prev, children }: LayoutProps) {
   const { date, title } = content
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
@@ -35,7 +34,7 @@ export default function PostLayout({ content, next, prev, children }: LayoutProp
                   <div>
                     <dt className="sr-only">{t('blog.publishedOn')}</dt>
                     <dd className="text-base leading-6 font-medium text-gray-500 dark:text-gray-400">
-                      <time dateTime={date}>{formatDate(date, siteMetadata.locale)}</time>
+                      <time dateTime={date}>{formatDate(date, locale)}</time>
                     </dd>
                   </div>
                 </dl>

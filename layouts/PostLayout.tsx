@@ -11,15 +11,9 @@ import SectionContainer from '@/components/SectionContainer'
 import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import { formatDate } from '@/lib/i18n/utils'
 
 const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
-
-const postDateTemplate: Intl.DateTimeFormatOptions = {
-  weekday: 'long',
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-}
 
 interface LayoutProps {
   content: CoreContent<Blog>
@@ -32,7 +26,7 @@ interface LayoutProps {
 export default function PostLayout({ content, authorDetails, next, prev, children }: LayoutProps) {
   const { filePath, path, date, title, tags } = content
   const basePath = path.split('/')[0]
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
@@ -46,9 +40,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                   <div>
                     <dt className="sr-only">{t('blog.publishedOn')}</dt>
                     <dd className="text-sm font-medium text-gray-500 dark:text-gray-500">
-                      <time dateTime={date}>
-                        {new Date(date).toLocaleDateString(siteMetadata.locale, postDateTemplate)}
-                      </time>
+                      <time dateTime={date}>{formatDate(date, locale)}</time>
                     </dd>
                   </div>
                 </dl>

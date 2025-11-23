@@ -71,7 +71,7 @@ const MobileNav = () => {
         {navShow && (
           <motion.div
             ref={menuRef}
-            className="absolute top-[3.5rem] left-1/2 -translate-x-1/2 w-screen max-w-[calc(100vw-2rem)] sm:max-w-md z-[9999]"
+            className="fixed top-[6rem] left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-md z-[9999]"
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}

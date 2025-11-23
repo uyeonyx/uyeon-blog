@@ -6,14 +6,13 @@ import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
 import { usePathname } from 'next/navigation'
 import type { CoreContent } from 'pliny/utils/contentlayer'
-import { formatDate } from 'pliny/utils/formatDate'
 import { useMemo } from 'react'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
-import siteMetadata from '@/data/siteMetadata'
 import { filterPostsByLanguage } from '@/lib/i18n/filter-posts'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { translateTag } from '@/lib/i18n/tag-translations'
+import { formatDate } from '@/lib/i18n/utils'
 
 interface PaginationProps {
   totalPages: number
@@ -236,7 +235,7 @@ export default function ListLayoutWithTags({
                       suppressHydrationWarning
                       className="text-sm font-medium text-gray-500 dark:text-gray-500"
                     >
-                      {formatDate(date, siteMetadata.locale)}
+                      {formatDate(date, locale)}
                     </time>
 
                     {/* Title */}

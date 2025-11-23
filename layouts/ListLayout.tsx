@@ -3,12 +3,11 @@
 import type { Blog } from 'contentlayer/generated'
 import { usePathname } from 'next/navigation'
 import type { CoreContent } from 'pliny/utils/contentlayer'
-import { formatDate } from 'pliny/utils/formatDate'
 import { useState } from 'react'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
-import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import { formatDate } from '@/lib/i18n/utils'
 
 interface PaginationProps {
   totalPages: number
@@ -74,7 +73,7 @@ export default function ListLayout({
   pagination,
 }: ListLayoutProps) {
   const [searchValue, setSearchValue] = useState('')
-  const { t } = useI18n()
+  const { t, locale } = useI18n()
   const filteredBlogPosts = posts.filter((post) => {
     const searchContent = post.title + post.summary + post.tags?.join(' ')
     return searchContent.toLowerCase().includes(searchValue.toLowerCase())
@@ -130,7 +129,7 @@ export default function ListLayout({
                   <dl>
                     <dt className="sr-only">{t('blog.publishedOn')}</dt>
                     <dd className="text-base leading-6 font-medium text-gray-500 dark:text-gray-400">
-                      <time dateTime={date}>{formatDate(date, siteMetadata.locale)}</time>
+                      <time dateTime={date}>{formatDate(date, locale)}</time>
                     </dd>
                   </dl>
                   <div className="space-y-3 xl:col-span-3">
