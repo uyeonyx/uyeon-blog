@@ -77,8 +77,8 @@
     outline-color: var(--color-primary-500);
   }
 
-  /* Smooth scrolling */
-  html {
+  /* Smooth scrolling - Next.js compatible */
+  html[data-scroll-behavior="smooth"] {
     scroll-behavior: smooth;
   }
 

@@ -44,34 +44,94 @@ export default function FloatingTOC({ toc }: FloatingTOCProps) {
   useEffect(() => {
     if (!toc || toc.length === 0) return
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id)
-          }
+    let mutationObserver: MutationObserver | null = null
+
+    const updateActiveHeading = () => {
+      const headingElements = toc
+        .map((item) => {
+          const id = item.url.replace('#', '')
+          return document.getElementById(id)
         })
-      },
-      {
-        rootMargin: '-80px 0px -80% 0px',
-        threshold: 0,
+        .filter((el): el is HTMLElement => el !== null)
+
+      if (headingElements.length === 0) return
+
+      const scrollY = window.scrollY + 100
+
+      const passedHeadings = headingElements.filter((el) => el.offsetTop <= scrollY)
+
+      if (passedHeadings.length > 0) {
+        const activeId = passedHeadings[passedHeadings.length - 1].id
+        setActiveId(activeId)
+      } else {
+        const firstId = headingElements[0]?.id
+        if (firstId) {
+          setActiveId(firstId)
+        }
       }
-    )
+    }
 
-    // Observe all headings
-    const headingElements = toc.map((item) => {
-      const id = item.url.replace('#', '')
-      return document.getElementById(id)
-    })
+    const setupScrollListener = () => {
+      const headingElements = toc.map((item) => {
+        const id = item.url.replace('#', '')
+        return document.getElementById(id)
+      })
 
-    headingElements.forEach((element) => {
-      if (element) observer.observe(element)
-    })
+      const allHeadingsExist = headingElements.every((el) => el !== null)
+
+      if (!allHeadingsExist) {
+        return false
+      }
+
+      // 초기 activeId 설정
+      updateActiveHeading()
+
+      // 스크롤 이벤트 리스너
+      const handleScroll = () => {
+        updateActiveHeading()
+      }
+
+      window.addEventListener('scroll', handleScroll, { passive: true })
+
+      // cleanup 함수 저장
+      ;(setupScrollListener as any).cleanup = () => {
+        window.removeEventListener('scroll', handleScroll)
+      }
+
+      return true
+    }
+
+    // 즉시 시도
+    let isSetup = setupScrollListener()
+
+    if (!isSetup) {
+      // MutationObserver로 DOM 변경 감지
+      mutationObserver = new MutationObserver(() => {
+        if (isSetup) return
+        
+        const success = setupScrollListener()
+        
+        if (success) {
+          isSetup = true
+          if (mutationObserver) {
+            mutationObserver.disconnect()
+          }
+        }
+      })
+
+      mutationObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+      })
+    }
 
     return () => {
-      headingElements.forEach((element) => {
-        if (element) observer.unobserve(element)
-      })
+      if (mutationObserver) {
+        mutationObserver.disconnect()
+      }
+      if ((setupScrollListener as any).cleanup) {
+        ;(setupScrollListener as any).cleanup()
+      }
     }
   }, [toc])
 
@@ -82,7 +142,8 @@ export default function FloatingTOC({ toc }: FloatingTOCProps) {
       if (activeElement) {
         activeElement.scrollIntoView({
           behavior: 'smooth',
-          block: 'center',
+          block: 'nearest',
+          inline: 'nearest',
         })
       }
     }
