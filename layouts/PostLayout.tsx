@@ -5,7 +5,6 @@ import { motion } from 'framer-motion'
 import type { CoreContent } from 'pliny/utils/contentlayer'
 import type { ReactNode } from 'react'
 import Comments from '@/components/Comments'
-import Image from '@/components/Image'
 import Link from '@/components/Link'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import SectionContainer from '@/components/SectionContainer'
@@ -56,35 +55,28 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
             </header>
             <div className="grid-rows-[auto_1fr] pb-8 xl:grid xl:grid-cols-4 xl:gap-x-12">
               {/* Sidebar */}
-              <aside className="pb-10 xl:pb-0 xl:pt-0">
+              <aside className="pb-8 xl:pb-0 xl:pt-0">
                 {/* Authors */}
-                <div className="mb-8 flex justify-center xl:block">
+                <div className="mb-6 xl:mb-8 xl:flex xl:justify-center">
                   <dl>
-                    <dt className="sr-only">{t('blog.authors')}</dt>
+                    <dt className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 xl:sr-only">
+                      {t('blog.author')}
+                    </dt>
                     <dd>
-                      <ul className="flex flex-wrap justify-center gap-6 xl:flex-col xl:gap-8">
+                      <ul className="flex flex-col gap-3 xl:gap-8">
                         {authorDetails.map((author) => (
-                          <li className="flex flex-col items-center gap-2" key={author.name}>
+                          <li className="flex items-center gap-3 xl:flex-col xl:items-center" key={author.name}>
                             {author.avatar && (
-                              <Image
+                              <img
                                 src={author.avatar}
-                                width={48}
-                                height={48}
-                                alt="avatar"
-                                className="h-12 w-12 rounded-full ring-2 ring-gray-100 dark:ring-gray-900"
+                                alt={`${author.name}의 프로필 사진`}
+                                className="h-14 w-14 shrink-0 rounded-full ring-2 ring-gray-200 dark:ring-gray-700 xl:h-32 xl:w-32 xl:ring-4 xl:ring-gray-100 xl:dark:ring-gray-900"
                               />
                             )}
-                            <div className="text-sm font-medium text-center">
-                              <div className="text-gray-900 dark:text-gray-100">{author.name}</div>
-                              {author.twitter && (
-                                <Link
-                                  href={author.twitter}
-                                  className="text-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                                >
-                                  {author.twitter
-                                    .replace('https://twitter.com/', '@')
-                                    .replace('https://x.com/', '@')}
-                                </Link>
+                            <div className="min-w-0 flex-1 text-sm font-medium xl:text-center">
+                              <div className="font-semibold text-gray-900 dark:text-gray-100">{author.name}</div>
+                              {author.occupation && (
+                                <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-400">{author.occupation}</div>
                               )}
                             </div>
                           </li>
@@ -96,9 +88,9 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
 
                 {/* Tags */}
                 {tags && (
-                  <div className="mb-8 flex justify-center xl:block">
+                  <div className="mb-8 xl:flex xl:justify-center">
                     <div>
-                      <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-500">
+                      <h2 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 xl:mb-3">
                         {t('blog.tags')}
                       </h2>
                       <div className="flex flex-wrap gap-2">

@@ -4,7 +4,6 @@ import type { Authors } from 'contentlayer/generated'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
-import Image from '@/components/Image'
 import SocialIcon from '@/components/social-icons'
 import { useI18n } from '@/lib/i18n/i18n-context'
 
@@ -69,7 +68,7 @@ export default function AuthorLayout({ children, content }: Props) {
           {avatar && (
             <motion.div
               ref={cardRef}
-              className="group relative mb-6"
+              className="group relative mb-4 xl:mb-6"
               onMouseMove={handleMouseMove}
               onMouseLeave={handleMouseLeave}
               whileHover={{ scale: 1.05 }}
@@ -87,12 +86,10 @@ export default function AuthorLayout({ children, content }: Props) {
                   transformStyle: 'preserve-3d',
                 }}
               >
-                <Image
+                <img
                   src={avatar}
-                  alt="avatar"
-                  width={192}
-                  height={192}
-                  className="h-48 w-48 rounded-full ring-4 ring-gray-100 dark:ring-gray-900 shadow-xl"
+                  alt={`${name}의 프로필 사진`}
+                  className="h-32 w-32 rounded-full ring-2 ring-gray-200 shadow-lg dark:ring-gray-700 xl:h-48 xl:w-48 xl:ring-4 xl:ring-gray-100 xl:shadow-xl xl:dark:ring-gray-900"
                 />
 
                 {/* Subtle shine on hover */}
@@ -106,7 +103,7 @@ export default function AuthorLayout({ children, content }: Props) {
               </motion.div>
             </motion.div>
           )}
-          <h3 className="pt-4 pb-2 text-2xl leading-8 font-bold tracking-tight">{name}</h3>
+          <h3 className="pb-2 text-2xl font-bold leading-8 tracking-tight">{name}</h3>
           <div className="text-gray-500 dark:text-gray-400">{occupation}</div>
           <div className="text-gray-500 dark:text-gray-400">{company}</div>
           <div className="flex space-x-3 pt-6">

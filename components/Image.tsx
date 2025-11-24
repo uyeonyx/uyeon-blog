@@ -30,7 +30,7 @@ const Image = ({ src, alt }: ImageProps) => {
       >
         {/* Glassmorphism card - Avatar style */}
         <motion.div
-          className="relative overflow-hidden rounded-2xl bg-white/60 backdrop-blur-2xl dark:bg-gray-800/50"
+          className="relative mx-auto max-w-sm overflow-hidden rounded-2xl bg-white/60 backdrop-blur-2xl dark:bg-gray-800/50 md:max-w-2xl lg:max-w-4xl"
           whileHover={{ scale: 1.02 }}
           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
           style={{
@@ -80,14 +80,14 @@ const Image = ({ src, alt }: ImageProps) => {
           <div className="absolute bottom-4 right-4 z-30 flex h-10 w-10 items-center justify-center rounded-lg bg-black/50 opacity-0 backdrop-blur-md transition-all duration-300 group-hover:opacity-100 hover:bg-black/70 dark:bg-white/20 dark:hover:bg-white/30">
             <Icon icon="mdi:fullscreen" className="text-2xl text-white" />
           </div>
-        </motion.div>
 
-        {/* Caption if alt text exists - shown on hover */}
-        {alt && (
-          <div className="mt-3 text-center text-sm italic text-gray-600 opacity-0 transition-opacity duration-300 group-hover:opacity-100 dark:text-gray-400">
-            {alt}
-          </div>
-        )}
+          {/* Caption overlay - shown on hover */}
+          {alt && (
+            <div className="absolute bottom-0 left-0 right-0 z-30 rounded-b-2xl bg-black/70 px-4 py-3 text-center text-sm italic text-white opacity-0 backdrop-blur-md transition-all duration-300 group-hover:opacity-100 dark:bg-black/80">
+              {alt}
+            </div>
+          )}
+        </motion.div>
       </motion.div>
 
       {/* Lightbox Modal */}
