@@ -6,6 +6,7 @@ import type { CoreContent } from 'pliny/utils/contentlayer'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
 import Comments from '@/components/Comments'
+import FloatingTOC from '@/components/FloatingTOC'
 import Link from '@/components/Link'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import SectionContainer from '@/components/SectionContainer'
@@ -95,7 +96,7 @@ function AuthorAvatar({ author, locale }: { author: CoreContent<Authors>; locale
 }
 
 export default function PostLayout({ content, authorDetails, next, prev, children }: LayoutProps) {
-  const { filePath, path, date, title, tags } = content
+  const { filePath, path, date, title, tags, toc } = content
   const basePath = path.split('/')[0]
   const { t, locale } = useI18n()
 
@@ -103,6 +104,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
       <SectionContainer>
         <ScrollTopAndComment />
+        {toc && <FloatingTOC toc={toc} />}
         <article>
           <div className="xl:divide-y-0">
             <header className="pt-12 pb-12 xl:pb-16">
@@ -188,7 +190,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
               </div>
               {/* Comments Section */}
               {siteMetadata.comments && (
-                <div className="xl:col-span-4 pb-8">
+                <div id="comment" className="xl:col-span-4 pb-8">
                   <div className="border-t border-gray-100 dark:border-gray-900 pt-8">
                     <h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-gray-100">
                       {t('blog.comments')}

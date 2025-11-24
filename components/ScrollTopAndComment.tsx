@@ -42,7 +42,7 @@ const ScrollTopAndComment = () => {
 
       {/* Scroll Buttons */}
       <motion.div
-        className="fixed right-8 bottom-8 hidden md:block"
+        className="fixed right-8 bottom-8 z-70 hidden md:block"
         initial={{ opacity: 0, y: 20, scale: 0.8 }}
         animate={{
           opacity: show ? 1 : 0,

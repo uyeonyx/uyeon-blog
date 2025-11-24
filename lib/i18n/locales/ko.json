@@ -48,6 +48,7 @@
     "authors": "작성자",
     "draft": "초안",
     "tags": "태그",
+    "tableOfContents": "목차",
     "readingTime": "분 읽기",
     "notAvailable": "포스트를 볼 수 없습니다:",
     "notAvailableDesc": "선택한 언어로 작성되지 않은 포스트입니다.",

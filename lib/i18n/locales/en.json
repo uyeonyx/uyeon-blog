@@ -48,6 +48,7 @@
     "authors": "Authors",
     "draft": "Draft",
     "tags": "Tags",
+    "tableOfContents": "On This Page",
     "readingTime": "min read",
     "notAvailable": "Post not available in",
     "notAvailableDesc": "This post is not available in the selected language.",
