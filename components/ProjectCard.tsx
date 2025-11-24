@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { Icon } from '@iconify/react'
@@ -16,8 +16,60 @@ import { components } from '@/components/MDXComponents'
 import Image from './Image'
 import Link from './Link'
 
+// Modal 내 헤더 - hash만 사용하여 헤더 ID 추가
+const ModalHeading = ({ level, children, id, slug, ...props }: any) => {
+  const handleClick = (e: React.MouseEvent<HTMLElement>) => {
+    // 헤더 내부의 링크 클릭 감지
+    const target = e.target as HTMLElement
+    if (target.closest('.content-header-link') && id) {
+      e.preventDefault()
+      
+      // hash만 업데이트 (query param은 유지)
+      window.location.hash = id
+      
+      // 모달 내에서 스크롤
+      const element = document.getElementById(id)
+      if (element) {
+        const modalContent = element.closest('[data-slot="dialog-content"]')
+        if (modalContent) {
+          const elementTop = element.offsetTop
+          modalContent.scrollTo({
+            top: elementTop - 100, // 약간의 여백
+            behavior: 'smooth',
+          })
+        }
+      }
+    }
+  }
+
+  const headingProps = {
+    id,
+    onClick: handleClick,
+    ...props,
+  }
+  
+  // rehypeAutolinkHeadings가 이미 링크를 추가하므로 별도로 추가하지 않음
+  switch (level) {
+    case 1:
+      return <h1 {...headingProps}>{children}</h1>
+    case 2:
+      return <h2 {...headingProps}>{children}</h2>
+    case 3:
+      return <h3 {...headingProps}>{children}</h3>
+    case 4:
+      return <h4 {...headingProps}>{children}</h4>
+    case 5:
+      return <h5 {...headingProps}>{children}</h5>
+    case 6:
+      return <h6 {...headingProps}>{children}</h6>
+    default:
+      return <div {...headingProps}>{children}</div>
+  }
+}
+
 interface ProjectCardProps {
   project: {
+    slug: string
     title: string
     description: string
     imgSrc?: string
@@ -30,12 +82,54 @@ interface ProjectCardProps {
       code: string
     }
   }
+  isOpen?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
-const ProjectCard = ({ project }: ProjectCardProps) => {
+const ProjectCard = ({ project, isOpen: externalIsOpen, onOpenChange }: ProjectCardProps) => {
   const { t } = useI18n()
-  const [isOpen, setIsOpen] = useState(false)
-  const { title, description, imgSrc, href, period, role, company, tags } = project
+  const [internalIsOpen, setInternalIsOpen] = useState(false)
+  const { slug, title, description, imgSrc, href, period, role, company, tags } = project
+
+  // Controlled by parent or internal state
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen
+  const setIsOpen = onOpenChange || setInternalIsOpen
+
+  // 모달 내에서 사용할 커스텀 컴포넌트 (헤더 클릭 시 URL 업데이트)
+  const modalComponents = useMemo(
+    () => ({
+      ...components,
+      h1: (props: any) => <ModalHeading level={1} {...props} />,
+      h2: (props: any) => <ModalHeading level={2} {...props} />,
+      h3: (props: any) => <ModalHeading level={3} {...props} />,
+      h4: (props: any) => <ModalHeading level={4} {...props} />,
+      h5: (props: any) => <ModalHeading level={5} {...props} />,
+      h6: (props: any) => <ModalHeading level={6} {...props} />,
+    }),
+    []
+  )
+
+  // 모달이 열릴 때 URL hash의 헤더 ID로 스크롤
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => {
+        const hash = window.location.hash.slice(1) // Remove '#'
+        if (hash) {
+          const element = document.getElementById(hash)
+          if (element) {
+            const modalContent = element.closest('[data-slot="dialog-content"]')
+            if (modalContent) {
+              const elementTop = element.offsetTop
+              modalContent.scrollTo({
+                top: elementTop - 100,
+                behavior: 'smooth',
+              })
+            }
+          }
+        }
+      }, 100) // 모달이 완전히 렌더링된 후 스크롤
+    }
+  }, [isOpen])
 
   return (
     <>
@@ -203,7 +297,7 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
           </DialogHeader>
 
           <div className="prose dark:prose-invert max-w-none px-6 pb-6 text-gray-700 dark:text-gray-300">
-            <MDXLayoutRenderer code={project.body.code} components={components} />
+            <MDXLayoutRenderer code={project.body.code} components={modalComponents} />
           </div>
         </DialogContent>
       </Dialog>
