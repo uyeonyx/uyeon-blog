@@ -54,8 +54,9 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           'fixed left-[50%] top-[50%] z-50 translate-x-[-50%] translate-y-[-50%]',
-          'w-[95vw] max-w-4xl max-h-[90vh] overflow-y-auto',
+          'w-[95vw] max-w-4xl max-h-[90vh]',
           'rounded-2xl',
+          'flex flex-col',
           // 글래스모피즘 효과
           'border border-white/60 dark:border-gray-700/80',
           'bg-white/80 dark:bg-gray-900/80',
@@ -74,7 +75,7 @@ function DialogContent({
         )}
         {...props}
       >
-        <div className="relative z-10">
+        <div className="relative z-10 overflow-y-auto flex-1">
           {children}
         </div>
         <DialogPrimitive.Close className="absolute top-4 right-4 z-20 rounded-full p-2 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:pointer-events-none hover:scale-110 active:scale-95">

@@ -141,7 +141,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                           <li className="flex items-center gap-3 xl:flex-col xl:items-center" key={author.name}>
                             {author.avatar && <AuthorAvatar author={author} locale={locale} />}
                             <div className="min-w-0 flex-1 text-sm font-medium xl:text-center">
-                              <Link href={`/${locale}/about`} className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
+                              <Link href="/about" className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
                                 <div className="font-semibold text-gray-900 dark:text-gray-100">{author.name}</div>
                               </Link>
                               {author.occupation && (
