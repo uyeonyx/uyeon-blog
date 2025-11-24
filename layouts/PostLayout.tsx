@@ -1,9 +1,10 @@
 'use client'
 
 import type { Authors, Blog } from 'contentlayer/generated'
-import { motion } from 'framer-motion'
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import type { CoreContent } from 'pliny/utils/contentlayer'
 import type { ReactNode } from 'react'
+import { useRef } from 'react'
 import Comments from '@/components/Comments'
 import Link from '@/components/Link'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
@@ -21,6 +22,76 @@ interface LayoutProps {
   next?: { path: string; title: string }
   prev?: { path: string; title: string }
   children: ReactNode
+}
+
+function AuthorAvatar({ author, locale }: { author: CoreContent<Authors>; locale: string }) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [10, -10]), {
+    stiffness: 300,
+    damping: 30,
+  })
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-10, 10]), {
+    stiffness: 300,
+    damping: 30,
+  })
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    const percentX = (e.clientX - centerX) / (rect.width / 2)
+    const percentY = (e.clientY - centerY) / (rect.height / 2)
+    mouseX.set(percentX)
+    mouseY.set(percentY)
+  }
+
+  const handleMouseLeave = () => {
+    mouseX.set(0)
+    mouseY.set(0)
+  }
+
+  return (
+    <Link href={`/about`} className="block">
+      <motion.div
+        ref={cardRef}
+        className="group relative cursor-pointer"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        whileHover={{ scale: 1.05 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+        style={{
+          transformStyle: 'preserve-3d',
+          perspective: 1000,
+        }}
+      >
+        <motion.div
+          className="relative"
+          style={{
+            rotateX,
+            rotateY,
+            transformStyle: 'preserve-3d',
+          }}
+        >
+          <img
+            src={author.avatar}
+            alt={`${author.name}의 프로필 사진`}
+            className="h-14 w-14 shrink-0 rounded-full ring-2 ring-gray-200 shadow-lg dark:ring-gray-700 xl:h-32 xl:w-32 xl:ring-4 xl:ring-gray-100 xl:shadow-xl xl:dark:ring-gray-900"
+          />
+          {/* Subtle shine on hover */}
+          <motion.div
+            className="absolute inset-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.3) 0%, transparent 50%)',
+            }}
+          />
+        </motion.div>
+      </motion.div>
+    </Link>
+  )
 }
 
 export default function PostLayout({ content, authorDetails, next, prev, children }: LayoutProps) {
@@ -66,15 +137,11 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                       <ul className="flex flex-col gap-3 xl:gap-8">
                         {authorDetails.map((author) => (
                           <li className="flex items-center gap-3 xl:flex-col xl:items-center" key={author.name}>
-                            {author.avatar && (
-                              <img
-                                src={author.avatar}
-                                alt={`${author.name}의 프로필 사진`}
-                                className="h-14 w-14 shrink-0 rounded-full ring-2 ring-gray-200 dark:ring-gray-700 xl:h-32 xl:w-32 xl:ring-4 xl:ring-gray-100 xl:dark:ring-gray-900"
-                              />
-                            )}
+                            {author.avatar && <AuthorAvatar author={author} locale={locale} />}
                             <div className="min-w-0 flex-1 text-sm font-medium xl:text-center">
-                              <div className="font-semibold text-gray-900 dark:text-gray-100">{author.name}</div>
+                              <Link href={`/${locale}/about`} className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
+                                <div className="font-semibold text-gray-900 dark:text-gray-100">{author.name}</div>
+                              </Link>
                               {author.occupation && (
                                 <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-400">{author.occupation}</div>
                               )}
