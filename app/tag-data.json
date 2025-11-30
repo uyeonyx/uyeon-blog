@@ -1,7 +1,11 @@
 {
-  "generative-ai": 1,
+  "generative-ai": 2,
   "cognitive-debt": 1,
   "automation-bias": 1,
   "software-engineering": 1,
-  "human-in-the-loop": 1
+  "human-in-the-loop": 1,
+  "google": 1,
+  "vertical-integration": 1,
+  "engineering-culture": 1,
+  "business-model": 1
 }

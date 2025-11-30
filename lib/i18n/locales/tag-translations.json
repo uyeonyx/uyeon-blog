@@ -38,5 +38,21 @@
   "human-in-the-loop": {
     "en": "Human-in-the-Loop",
     "ko": "휴먼-인-더-루프"
+  },
+  "google": {
+    "en": "Google",
+    "ko": "구글"
+  },
+  "vertical-integration": {
+    "en": "Vertical Integration",
+    "ko": "수직적 통합"
+  },
+  "engineering-culture": {
+    "en": "Engineering Culture",
+    "ko": "엔지니어링 문화"
+  },
+  "business-model": {
+    "en": "Business Model",
+    "ko": "비즈니스 모델"
   }
 }
