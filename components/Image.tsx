@@ -2,6 +2,7 @@
 
 import { Icon } from '@iconify/react'
 import { AnimatePresence, motion } from 'framer-motion'
+import NextImage from 'next/image'
 import { useState } from 'react'
 
 const basePath = process.env.BASE_PATH
@@ -14,7 +15,7 @@ interface ImageProps {
   className?: string
 }
 
-const Image = ({ src, alt }: ImageProps) => {
+const Image = ({ src, alt, width, height }: ImageProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const fullSrc = `${basePath || ''}${src}`
 
@@ -60,13 +61,20 @@ const Image = ({ src, alt }: ImageProps) => {
           {/* Glass reflection overlay */}
           <div className="pointer-events-none absolute top-0 left-0 right-0 z-10 h-1/3 rounded-t-2xl bg-linear-to-b from-white/30 to-transparent dark:from-white/10" />
 
-          {/* Image - seamless (using img for perfect fit) */}
-          <img
-            src={fullSrc}
-            alt={alt || ''}
-            className="relative block w-full h-auto rounded-2xl"
-            style={{ display: 'block', margin: 0, padding: 0 }}
-          />
+          {/* Image - seamless (using Next.js Image for optimization) */}
+          <div className="relative w-full" style={{ display: 'block', margin: 0, padding: 0 }}>
+            <NextImage
+              src={fullSrc}
+              alt={alt || ''}
+              width={width || 1200}
+              height={height || 630}
+              className="relative block w-full h-auto rounded-2xl"
+              style={{ display: 'block', margin: 0, padding: 0 }}
+              sizes="(max-width: 640px) 100vw, (max-width: 768px) 640px, (max-width: 1024px) 768px, 1024px"
+              priority={false}
+              quality={90}
+            />
+          </div>
 
           {/* Glass shine on hover */}
           <motion.div
@@ -119,10 +127,14 @@ const Image = ({ src, alt }: ImageProps) => {
               transition={{ type: 'spring', damping: 25 }}
               onClick={(e) => e.stopPropagation()}
             >
-              <img
+              <NextImage
                 src={fullSrc}
                 alt={alt || ''}
+                width={width || 1200}
+                height={height || 630}
                 className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
+                sizes="90vw"
+                quality={95}
               />
               {alt && <div className="mt-4 text-center text-sm text-white/80">{alt}</div>}
             </motion.div>
