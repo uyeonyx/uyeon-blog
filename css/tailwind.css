@@ -6,6 +6,9 @@
 
 /* Core theme configuration - Minimal Modern Design */
 @theme {
+  /* Breakpoints - Custom 3xl for large desktop screens */
+  --breakpoint-3xl: 1920px;
+
   /* Font families */
   --font-sans:
     var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",

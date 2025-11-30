@@ -172,7 +172,7 @@ export default function FloatingTOC({ toc }: FloatingTOCProps) {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.3, delay: 0.2 }}
-        className="toc-scrollbar hidden 2xl:block fixed top-24 left-[calc(50%+640px)] w-64 max-h-[calc(100vh-300px)] overflow-y-auto z-60"
+        className="toc-scrollbar hidden 2xl:block fixed top-24 2xl:left-[calc(50%+530px)] 2xl:w-52 3xl:left-[calc(50%+640px)] 3xl:w-64 max-h-[calc(100vh-300px)] overflow-y-auto z-60"
       >
       <div className="group relative rounded-xl border border-white/60 bg-white/30 backdrop-blur-xl pt-4 px-4 pb-2 shadow-lg dark:border-white/10 dark:bg-gray-900/30">
         {/* Glass reflection overlay */}
