@@ -21,12 +21,25 @@ const navLinks = [
 const HeaderClient = () => {
   const [isHovered, setIsHovered] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
   const { t } = useI18n()
 
   useEffect(() => {
     setMounted(true)
+    
+    // 모바일 여부 감지
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
   }, [])
 
   // Smooth spring animations
@@ -75,8 +88,8 @@ const HeaderClient = () => {
             paddingBottom: isHovered ? '1rem' : '0.75rem',
           }}
           style={{
-            rotateX,
-            rotateY,
+            rotateX: isMobile ? 0 : rotateX,
+            rotateY: isMobile ? 0 : rotateY,
           }}
           transition={
             mounted
