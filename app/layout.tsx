@@ -5,10 +5,10 @@ import 'remark-github-blockquote-alert/alert.css'
 import type { Metadata } from 'next'
 import { Space_Grotesk } from 'next/font/google'
 import { Analytics, type AnalyticsConfig } from 'pliny/analytics'
-import { type SearchConfig, SearchProvider } from 'pliny/search'
 import Footer from '@/components/Footer'
 import Header from '@/components/Header'
 import SectionContainer from '@/components/SectionContainer'
+import { CustomSearchProvider } from '@/components/SearchProvider'
 import siteMetadata from '@/data/siteMetadata'
 import { I18nProvider } from '@/lib/i18n/i18n-context'
 import { ThemeProviders } from './theme-providers'
@@ -101,11 +101,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <I18nProvider>
             <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
             <SectionContainer>
-              <SearchProvider searchConfig={siteMetadata.search as SearchConfig}>
+              <CustomSearchProvider>
                 <Header />
                 <main className="mb-auto min-h-screen">{children}</main>
                 <Footer />
-              </SearchProvider>
+              </CustomSearchProvider>
             </SectionContainer>
           </I18nProvider>
         </ThemeProviders>
