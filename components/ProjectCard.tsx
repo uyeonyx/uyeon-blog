@@ -209,7 +209,7 @@ const ProjectCard = ({ project, isOpen: externalIsOpen, onOpenChange }: ProjectC
             )}
 
             <div className="inline-flex items-center gap-2 text-primary-500 group-hover:text-primary-600 dark:group-hover:text-primary-400 text-base leading-6 font-semibold transition-colors">
-              상세 보기
+              {t('pages.projects.viewDetails')}
               <svg
                 className="h-4 w-4 transition-transform group-hover:translate-x-1"
                 fill="none"
@@ -248,7 +248,7 @@ const ProjectCard = ({ project, isOpen: externalIsOpen, onOpenChange }: ProjectC
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Icon icon="solar:link-bold" className="size-5" />
-                  <span>방문하기</span>
+                  <span>{t('pages.projects.visit')}</span>
                 </Link>
               )}
             </div>

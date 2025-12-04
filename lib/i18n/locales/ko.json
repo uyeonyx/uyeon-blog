@@ -22,7 +22,9 @@
     },
     "projects": {
       "title": "프로젝트",
-      "description": "실제 개발에 참여한 제품 및 서비스들"
+      "description": "실제 개발에 참여한 제품 및 서비스들",
+      "viewDetails": "상세 보기",
+      "visit": "방문하기"
     },
     "about": {
       "title": "소개",
@@ -59,7 +61,8 @@
     "previousPost": "이전 포스트",
     "nextPost": "다음 포스트",
     "comments": "댓글",
-    "loadComments": "댓글 불러오기"
+    "loadComments": "댓글 불러오기",
+    "profilePhoto": "프로필 사진"
   },
   "footer": {
     "copyright": "모든 권리 보유."

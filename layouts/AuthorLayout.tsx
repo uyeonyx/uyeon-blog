@@ -88,7 +88,7 @@ export default function AuthorLayout({ children, content }: Props) {
               >
                 <img
                   src={avatar}
-                  alt={`${name}의 프로필 사진`}
+                  alt={`${name} ${t('blog.profilePhoto')}`}
                   className="h-32 w-32 rounded-full ring-2 ring-gray-200 shadow-lg dark:ring-gray-700 xl:h-48 xl:w-48 xl:ring-4 xl:ring-gray-100 xl:shadow-xl xl:dark:ring-gray-900"
                 />
 

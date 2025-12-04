@@ -22,7 +22,9 @@
     },
     "projects": {
       "title": "Projects",
-      "description": "Products and services I've actually built"
+      "description": "Products and services I've actually built",
+      "viewDetails": "View details",
+      "visit": "Visit"
     },
     "about": {
       "title": "About",
@@ -59,7 +61,8 @@
     "previousPost": "Previous post",
     "nextPost": "Next post",
     "comments": "Comments",
-    "loadComments": "Load Comments"
+    "loadComments": "Load Comments",
+    "profilePhoto": "profile photo"
   },
   "footer": {
     "copyright": "All rights reserved."

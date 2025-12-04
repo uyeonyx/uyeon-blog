@@ -149,7 +149,7 @@ export default function Home({ posts }) {
                   animate={{ opacity: 1 }}
                   transition={{ delay: index * 0.1 + 0.2 }}
                 >
-                  {formatDate(date, siteMetadata.locale)}
+                  {formatDate(date, locale)}
                 </motion.time>
 
                 {/* Title */}

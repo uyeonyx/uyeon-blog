@@ -26,6 +26,7 @@ interface LayoutProps {
 }
 
 function AuthorAvatar({ author, locale }: { author: CoreContent<Authors>; locale: string }) {
+  const { t } = useI18n()
   const cardRef = useRef<HTMLDivElement>(null)
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
@@ -79,7 +80,7 @@ function AuthorAvatar({ author, locale }: { author: CoreContent<Authors>; locale
         >
           <img
             src={author.avatar}
-            alt={`${author.name}의 프로필 사진`}
+            alt={`${author.name} ${t('blog.profilePhoto')}`}
             className="h-14 w-14 shrink-0 rounded-full ring-2 ring-gray-200 shadow-lg dark:ring-gray-700 xl:h-32 xl:w-32 xl:ring-4 xl:ring-gray-100 xl:shadow-xl xl:dark:ring-gray-900"
           />
           {/* Subtle shine on hover */}
