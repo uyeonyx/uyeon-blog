@@ -1,6 +1,5 @@
 'use client'
 
-import { Icon } from '@iconify/react'
 import { motion } from 'framer-motion'
 import NextLink from 'next/link'
 import SocialIcon from '@/components/social-icons'
@@ -71,26 +70,14 @@ export default function Footer() {
           >
             {siteMetadata.author} · {new Date().getFullYear()}
           </motion.p>
-          <span className="inline-flex items-center gap-3 text-xs">
-            <NextLink
-              href="/"
-              className="text-gray-400 dark:text-gray-600 hover:text-primary-500 dark:hover:text-primary-400 transition-colors inline-block"
-            >
-              <motion.span whileHover={{ scale: 1.1 }} className="inline-block">
-                {siteMetadata.title}
-              </motion.span>
-            </NextLink>
-            <span className="text-gray-300 dark:text-gray-700">·</span>
-            <NextLink
-              href="/admin"
-              className="inline-flex items-center gap-1 text-gray-400 dark:text-gray-600 hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
-            >
-              <Icon icon="solar:pen-2-linear" className="size-3" />
-              <motion.span whileHover={{ scale: 1.1 }} className="inline-block">
-                작성자 모드
-              </motion.span>
-            </NextLink>
-          </span>
+          <NextLink
+            href="/"
+            className="text-xs text-gray-400 dark:text-gray-600 hover:text-primary-500 dark:hover:text-primary-400 transition-colors inline-block"
+          >
+            <motion.span whileHover={{ scale: 1.1 }} className="inline-block">
+              {siteMetadata.title}
+            </motion.span>
+          </NextLink>
         </motion.div>
       </motion.div>
     </footer>

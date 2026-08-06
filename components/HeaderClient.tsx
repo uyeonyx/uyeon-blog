@@ -1,5 +1,6 @@
 'use client'
 
+import { Icon } from '@iconify/react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import siteMetadata from '@/data/siteMetadata'
@@ -210,6 +211,15 @@ const HeaderClient = () => {
                 whileTap={{ scale: 0.95 }}
               >
                 <ThemeSwitch />
+              </motion.div>
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                <Link
+                  href="/admin"
+                  aria-label="작성자 모드"
+                  className="flex rounded-full border border-gray-300/50 p-2 text-gray-700 transition-colors hover:bg-gray-900/5 hover:text-gray-900 dark:border-gray-500/50 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  <Icon icon="solar:pen-2-bold" className="h-5 w-5" />
+                </Link>
               </motion.div>
             </div>
 

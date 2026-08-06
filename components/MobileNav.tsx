@@ -115,6 +115,16 @@ const MobileNav = () => {
                   <div className="flex-1 flex justify-center [&>button]:w-full [&>button]:text-gray-700 [&>button]:dark:text-gray-200 [&>button]:hover:text-gray-900 [&>button]:dark:hover:text-white [&>button]:hover:bg-gray-100 [&>button]:dark:hover:bg-white/10 [&>button]:rounded-lg [&>button]:p-2.5 [&>button]:transition-colors [&>button]:border [&>button]:border-gray-200 [&>button]:dark:border-gray-600/50 [&>button]:active:bg-gray-200 [&>button]:dark:active:bg-white/20">
                     <ThemeSwitch />
                   </div>
+                  <div className="flex-1 flex justify-center">
+                    <Link
+                      href="/admin"
+                      aria-label="작성자 모드"
+                      onClick={onToggleNav}
+                      className="flex w-full items-center justify-center rounded-lg border border-gray-200 p-2.5 text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 dark:border-gray-600/50 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white dark:active:bg-white/20"
+                    >
+                      <Icon icon="solar:pen-2-bold" className="h-5 w-5" />
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
