@@ -5,6 +5,7 @@ import { CodeBlockLowlight } from '@tiptap/extension-code-block-lowlight'
 import Image from '@tiptap/extension-image'
 import { BlockMath, InlineMath } from '@tiptap/extension-mathematics'
 import { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'
+import Youtube from '@tiptap/extension-youtube'
 import StarterKit from '@tiptap/starter-kit'
 import { common, createLowlight } from 'lowlight'
 
@@ -97,6 +98,14 @@ export const tableExtensions = [
   TableCell,
 ]
 
+/** 유튜브 임베드 — 붙여넣기 자동 임베드 포함. 크기는 CSS로 반응형 처리 */
+export const YoutubeEmbed = Youtube.configure({
+  nocookie: true,
+  controls: true,
+  modestBranding: true,
+  HTMLAttributes: { class: 'youtube-embed' },
+})
+
 export const baseExtensions = [
   starterKitConfigured,
   CodeBlockWithTitle,
@@ -105,4 +114,5 @@ export const baseExtensions = [
   BlockMath,
   Alert,
   ...tableExtensions,
+  YoutubeEmbed,
 ]

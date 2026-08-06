@@ -23,6 +23,7 @@ import CodeBlockView from './CodeBlockView'
 import MathDialog, { type MathDialogState } from './MathDialog'
 import { createSlashCommand } from './slash-command'
 import { insertImageFromFile } from './upload'
+import YoutubeDialog from './YoutubeDialog'
 
 interface TiptapEditorProps {
   // biome-ignore lint/suspicious/noExplicitAny: Tiptap JSON 문서
@@ -69,6 +70,9 @@ export default function TiptapEditor({ value, onChange, slug, placeholder }: Tip
   mathDialogRef.current = setMathDialog
   const [linkEditing, setLinkEditing] = useState(false)
   const [linkValue, setLinkValue] = useState('')
+  const [youtubeOpen, setYoutubeOpen] = useState(false)
+  const youtubeOpenRef = useRef(setYoutubeOpen)
+  youtubeOpenRef.current = setYoutubeOpen
 
   const uploadWithToast = (files: File[], pos?: number) => {
     const ed = editorRef.current
@@ -112,6 +116,7 @@ export default function TiptapEditor({ value, onChange, slug, placeholder }: Tip
       createSlashCommand({
         onImagePick: () => fileInputRef.current?.click(),
         onMathPick: (type) => mathDialogRef.current({ mode: 'insert', type, latex: '' }),
+        onYoutubePick: () => youtubeOpenRef.current(true),
       }),
     ],
     [placeholder]
@@ -280,6 +285,14 @@ export default function TiptapEditor({ value, onChange, slug, placeholder }: Tip
       )}
       <EditorContent editor={editor} />
       <MathDialog state={mathDialog} onSubmit={submitMath} onClose={() => setMathDialog(null)} />
+      <YoutubeDialog
+        open={youtubeOpen}
+        onSubmit={(url) => {
+          editorRef.current?.chain().focus().setYoutubeVideo({ src: url }).run()
+          setYoutubeOpen(false)
+        }}
+        onClose={() => setYoutubeOpen(false)}
+      />
     </div>
   )
 }

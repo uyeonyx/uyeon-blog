@@ -50,6 +50,9 @@ importers:
       '@tiptap/extension-table':
         specifier: ^3.29.2
         version: 3.29.2(@tiptap/core@3.29.2(@tiptap/pm@3.29.2))(@tiptap/pm@3.29.2)
+      '@tiptap/extension-youtube':
+        specifier: ^3.29.2
+        version: 3.29.2(@tiptap/core@3.29.2(@tiptap/pm@3.29.2))
       '@tiptap/pm':
         specifier: ^3.29.2
         version: 3.29.2
@@ -2754,6 +2757,11 @@ packages:
 
   '@tiptap/extension-underline@3.29.2':
     resolution: {integrity: sha512-K7XwH/xS/5AIREWQ00VTEf/W5U0olp7j6wwit7cdd/8nHv6h6AGr1+iEApHKoLXWQZLfGQKzJlT9W61LAl+fHA==}
+    peerDependencies:
+      '@tiptap/core': 3.29.2
+
+  '@tiptap/extension-youtube@3.29.2':
+    resolution: {integrity: sha512-uROfBCyb0BIY0qxm2FdOAGFYpye7frZAPtfY80lKUB9uUdjJuDTs7cRBvPcnaa8+fOTNwC5wUOMhbPQmOUiLSA==}
     peerDependencies:
       '@tiptap/core': 3.29.2
 
@@ -7677,6 +7685,10 @@ snapshots:
       '@tiptap/core': 3.29.2(@tiptap/pm@3.29.2)
 
   '@tiptap/extension-underline@3.29.2(@tiptap/core@3.29.2(@tiptap/pm@3.29.2))':
+    dependencies:
+      '@tiptap/core': 3.29.2(@tiptap/pm@3.29.2)
+
+  '@tiptap/extension-youtube@3.29.2(@tiptap/core@3.29.2(@tiptap/pm@3.29.2))':
     dependencies:
       '@tiptap/core': 3.29.2(@tiptap/pm@3.29.2)
 

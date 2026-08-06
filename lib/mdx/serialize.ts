@@ -3,6 +3,7 @@ import { getSchema } from '@tiptap/core'
 import { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { MarkdownSerializer, type MarkdownSerializerState } from 'prosemirror-markdown'
 import { baseExtensions } from '../editor/extensions'
+import { extractYoutubeId } from '../youtube'
 
 const schema = getSchema(baseExtensions)
 
@@ -149,6 +150,16 @@ const serializer = new MarkdownSerializer(
     },
     blockMath(state, node) {
       state.write(`$$\n${node.attrs.latex}\n$$`)
+      state.closeBlock(node)
+    },
+    youtube(state, node) {
+      const id = extractYoutubeId(String(node.attrs.src ?? ''))
+      if (id) {
+        state.write(`<YouTube id=${jsxAttr(id)} />`)
+      } else {
+        // ID를 추출할 수 없으면 링크로 보존
+        state.write(`[${node.attrs.src}](${node.attrs.src})`)
+      }
       state.closeBlock(node)
     },
   },

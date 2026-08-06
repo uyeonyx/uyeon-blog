@@ -222,6 +222,19 @@
   border-radius: 0.25rem;
 }
 
+/* 유튜브 임베드 — 에디터 내 반응형 16:9 */
+.tiptap div[data-youtube-video] {
+  margin: 1rem 0;
+}
+.tiptap div[data-youtube-video] iframe {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 0.75rem;
+}
+
 /* 표 편집 보조 */
 .tiptap table {
   border-collapse: collapse;

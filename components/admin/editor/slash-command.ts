@@ -25,9 +25,10 @@ const ALERT_ICONS: Record<AlertVariant, string> = {
 export interface SlashCommandOptions {
   onImagePick: () => void
   onMathPick: (type: 'inline' | 'block') => void
+  onYoutubePick: () => void
 }
 
-function buildItems({ onImagePick, onMathPick }: SlashCommandOptions): SlashItem[] {
+function buildItems({ onImagePick, onMathPick, onYoutubePick }: SlashCommandOptions): SlashItem[] {
   const items: SlashItem[] = [
     ...([1, 2, 3] as const).map((level) => ({
       title: `제목 ${level}`,
@@ -77,6 +78,16 @@ function buildItems({ onImagePick, onMathPick }: SlashCommandOptions): SlashItem
       command: ({ editor, range }) => {
         editor.chain().focus().deleteRange(range).run()
         onImagePick()
+      },
+    },
+    {
+      title: '유튜브',
+      description: '유튜브 영상 임베드',
+      icon: 'solar:videocamera-record-bold',
+      keywords: ['youtube', 'video', 'embed', '유튜브', '영상', '비디오'],
+      command: ({ editor, range }) => {
+        editor.chain().focus().deleteRange(range).run()
+        onYoutubePick()
       },
     },
     {

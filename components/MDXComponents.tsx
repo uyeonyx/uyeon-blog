@@ -8,6 +8,7 @@ import Pre from './Pre'
 import TableWrapper from './TableWrapper'
 import TechStack from './TechStack'
 import Timeline from './Timeline'
+import YouTube from './YouTube'
 
 export const components: MDXComponents = {
   Image,
@@ -19,4 +20,5 @@ export const components: MDXComponents = {
   TechStack,
   IntroCard,
   Timeline,
+  YouTube,
 }
