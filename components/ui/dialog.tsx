@@ -75,11 +75,12 @@ function DialogContent({
         )}
         {...props}
       >
-        <div className="relative z-10 overflow-y-auto flex-1">
-          {children}
-        </div>
+        <div className="relative z-10 overflow-y-auto flex-1">{children}</div>
         <DialogPrimitive.Close className="absolute top-4 right-4 z-20 rounded-full p-2 opacity-70 ring-offset-background transition-all hover:opacity-100 hover:bg-white/50 dark:hover:bg-gray-800/50 hover:backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:pointer-events-none hover:scale-110 active:scale-95">
-          <Icon icon="solar:close-circle-bold" className="size-5 text-gray-700 dark:text-gray-300" />
+          <Icon
+            icon="solar:close-circle-bold"
+            className="size-5 text-gray-700 dark:text-gray-300"
+          />
           <span className="sr-only">Close</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>

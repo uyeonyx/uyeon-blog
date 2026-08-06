@@ -40,7 +40,7 @@
         "noExplicitAny": "warn"
       },
       "a11y": {
-        "useImgAlt": "off"
+        "useAltText": "off"
       }
     }
   },

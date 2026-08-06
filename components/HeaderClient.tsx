@@ -28,15 +28,15 @@ const HeaderClient = () => {
 
   useEffect(() => {
     setMounted(true)
-    
+
     // 모바일 여부 감지
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    
+
     return () => {
       window.removeEventListener('resize', checkMobile)
     }

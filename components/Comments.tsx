@@ -1,7 +1,7 @@
 'use client'
 
-import { Comments as CommentsComponent } from 'pliny/comments'
 import { useTheme } from 'next-themes'
+import { Comments as CommentsComponent } from 'pliny/comments'
 import { useMemo } from 'react'
 import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'

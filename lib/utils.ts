@@ -31,7 +31,7 @@ export function smartQuotes(text: string | undefined): string {
   // 소유격과 축약형 먼저 처리 (don't, it's, '90s 등)
   result = result.replace(/(\w)'(\w)/g, '$1\u2019$2')
   result = result.replace(/'(\d\d)/g, '\u2019$1')
-  
+
   // 여는 작은따옴표: 공백, 시작, 또는 특수문자 다음에 오는 '
   result = result.replace(/(^|[-–—\s([{*_])'/g, '$1\u2018')
   // 닫는 작은따옴표: 나머지 모든 '

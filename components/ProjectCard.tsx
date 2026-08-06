@@ -1,18 +1,18 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { useI18n } from '@/lib/i18n/i18n-context'
 import { Icon } from '@iconify/react'
+import { motion } from 'framer-motion'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
+import { useEffect, useMemo, useState } from 'react'
+import { components } from '@/components/MDXComponents'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from '@/components/ui/dialog'
-import { components } from '@/components/MDXComponents'
+import { useI18n } from '@/lib/i18n/i18n-context'
 import Image from './Image'
 import Link from './Link'
 
@@ -23,10 +23,10 @@ const ModalHeading = ({ level, children, id, slug, ...props }: any) => {
     const target = e.target as HTMLElement
     if (target.closest('.content-header-link') && id) {
       e.preventDefault()
-      
+
       // hash만 업데이트 (query param은 유지)
       window.location.hash = id
-      
+
       // 모달 내에서 스크롤
       const element = document.getElementById(id)
       if (element) {
@@ -47,7 +47,7 @@ const ModalHeading = ({ level, children, id, slug, ...props }: any) => {
     onClick: handleClick,
     ...props,
   }
-  
+
   // rehypeAutolinkHeadings가 이미 링크를 추가하므로 별도로 추가하지 않음
   switch (level) {
     case 1:
@@ -162,6 +162,7 @@ const ProjectCard = ({ project, isOpen: externalIsOpen, onOpenChange }: ProjectC
               </h2>
               {href && (
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation()
                     window.open(href, '_blank', 'noopener,noreferrer')
@@ -176,18 +177,24 @@ const ProjectCard = ({ project, isOpen: externalIsOpen, onOpenChange }: ProjectC
 
             {(period || role || company) && (
               <div className="mb-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
-                {period && <div className="flex items-center gap-2">
-                  <Icon icon="solar:calendar-bold" className="size-4" />
-                  <span>{period}</span>
-                </div>}
-                {role && <div className="flex items-center gap-2">
-                  <Icon icon="solar:user-bold" className="size-4" />
-                  <span>{role}</span>
-                </div>}
-                {company && <div className="flex items-center gap-2">
-                  <Icon icon="solar:buildings-2-bold" className="size-4" />
-                  <span>{company}</span>
-                </div>}
+                {period && (
+                  <div className="flex items-center gap-2">
+                    <Icon icon="solar:calendar-bold" className="size-4" />
+                    <span>{period}</span>
+                  </div>
+                )}
+                {role && (
+                  <div className="flex items-center gap-2">
+                    <Icon icon="solar:user-bold" className="size-4" />
+                    <span>{role}</span>
+                  </div>
+                )}
+                {company && (
+                  <div className="flex items-center gap-2">
+                    <Icon icon="solar:buildings-2-bold" className="size-4" />
+                    <span>{company}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -258,7 +265,10 @@ const ProjectCard = ({ project, isOpen: externalIsOpen, onOpenChange }: ProjectC
                 {period && (
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                     <div className="flex items-center justify-center w-6 h-6 rounded-md bg-primary-100/80 dark:bg-primary-900/30">
-                      <Icon icon="solar:calendar-bold" className="size-4 shrink-0 text-primary-600 dark:text-primary-400" />
+                      <Icon
+                        icon="solar:calendar-bold"
+                        className="size-4 shrink-0 text-primary-600 dark:text-primary-400"
+                      />
                     </div>
                     <span className="font-medium">{period}</span>
                   </div>
@@ -266,7 +276,10 @@ const ProjectCard = ({ project, isOpen: externalIsOpen, onOpenChange }: ProjectC
                 {role && (
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                     <div className="flex items-center justify-center w-6 h-6 rounded-md bg-primary-100/80 dark:bg-primary-900/30">
-                      <Icon icon="solar:user-bold" className="size-4 shrink-0 text-primary-600 dark:text-primary-400" />
+                      <Icon
+                        icon="solar:user-bold"
+                        className="size-4 shrink-0 text-primary-600 dark:text-primary-400"
+                      />
                     </div>
                     <span className="font-medium">{role}</span>
                   </div>
@@ -274,7 +287,10 @@ const ProjectCard = ({ project, isOpen: externalIsOpen, onOpenChange }: ProjectC
                 {company && (
                   <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                     <div className="flex items-center justify-center w-6 h-6 rounded-md bg-primary-100/80 dark:bg-primary-900/30">
-                      <Icon icon="solar:buildings-2-bold" className="size-4 shrink-0 text-primary-600 dark:text-primary-400" />
+                      <Icon
+                        icon="solar:buildings-2-bold"
+                        className="size-4 shrink-0 text-primary-600 dark:text-primary-400"
+                      />
                     </div>
                     <span className="font-medium">{company}</span>
                   </div>
@@ -306,4 +322,3 @@ const ProjectCard = ({ project, isOpen: externalIsOpen, onOpenChange }: ProjectC
 }
 
 export default ProjectCard
-

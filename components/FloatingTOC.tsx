@@ -108,9 +108,9 @@ export default function FloatingTOC({ toc }: FloatingTOCProps) {
       // MutationObserver로 DOM 변경 감지
       mutationObserver = new MutationObserver(() => {
         if (isSetup) return
-        
+
         const success = setupScrollListener()
-        
+
         if (success) {
           isSetup = true
           if (mutationObserver) {
@@ -174,49 +174,49 @@ export default function FloatingTOC({ toc }: FloatingTOCProps) {
         transition={{ duration: 0.3, delay: 0.2 }}
         className="toc-scrollbar hidden 2xl:block fixed top-24 2xl:left-[calc(50%+530px)] 2xl:w-52 3xl:left-[calc(50%+640px)] 3xl:w-64 max-h-[calc(100vh-300px)] overflow-y-auto z-60"
       >
-      <div className="group relative rounded-xl border border-white/60 bg-white/30 backdrop-blur-xl pt-4 px-4 pb-2 shadow-lg dark:border-white/10 dark:bg-gray-900/30">
-        {/* Glass reflection overlay */}
-        <div className="pointer-events-none absolute inset-0 rounded-xl bg-linear-to-br from-white/40 to-transparent dark:from-white/5" />
-        
-        {/* Content */}
-        <div className="relative">
-          <h3 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-            {t('blog.tableOfContents') || 'On This Page'}
-          </h3>
-        <ul className="space-y-0.5">
-          {toc.map((item) => {
-            const id = item.url.replace('#', '')
-            const isActive = activeId === id
-            const paddingLeft = `${(item.depth - 1) * 0.75}rem`
-            
-            // depth에 따른 스타일 결정
-            const depthStyles = {
-              1: 'text-sm font-bold', // h1
-              2: 'text-xs font-semibold', // h2
-              3: 'text-xs font-normal', // h3
-            }[item.depth] || 'text-xs font-normal'
+        <div className="group relative rounded-xl border border-white/60 bg-white/30 backdrop-blur-xl pt-4 px-4 pb-2 shadow-lg dark:border-white/10 dark:bg-gray-900/30">
+          {/* Glass reflection overlay */}
+          <div className="pointer-events-none absolute inset-0 rounded-xl bg-linear-to-br from-white/40 to-transparent dark:from-white/5" />
 
-            return (
-              <li key={item.url} style={{ paddingLeft }}>
-                <a
-                  href={item.url}
-                  onClick={(e) => handleClick(e, item.url)}
-                  className={`block py-1 transition-all duration-200 line-clamp-2 ${depthStyles} ${
-                    isActive
-                      ? 'text-primary-600 dark:text-primary-400 opacity-100 scale-[1.02] translate-x-0.5'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 opacity-50 hover:opacity-75'
-                  }`}
-                >
-                  {item.value}
-                </a>
-              </li>
-            )
-          })}
-        </ul>
+          {/* Content */}
+          <div className="relative">
+            <h3 className="mb-2.5 text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+              {t('blog.tableOfContents') || 'On This Page'}
+            </h3>
+            <ul className="space-y-0.5">
+              {toc.map((item) => {
+                const id = item.url.replace('#', '')
+                const isActive = activeId === id
+                const paddingLeft = `${(item.depth - 1) * 0.75}rem`
+
+                // depth에 따른 스타일 결정
+                const depthStyles =
+                  {
+                    1: 'text-sm font-bold', // h1
+                    2: 'text-xs font-semibold', // h2
+                    3: 'text-xs font-normal', // h3
+                  }[item.depth] || 'text-xs font-normal'
+
+                return (
+                  <li key={item.url} style={{ paddingLeft }}>
+                    <a
+                      href={item.url}
+                      onClick={(e) => handleClick(e, item.url)}
+                      className={`block py-1 transition-all duration-200 line-clamp-2 ${depthStyles} ${
+                        isActive
+                          ? 'text-primary-600 dark:text-primary-400 opacity-100 scale-[1.02] translate-x-0.5'
+                          : 'text-gray-500 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-300 opacity-50 hover:opacity-75'
+                      }`}
+                    >
+                      {item.value}
+                    </a>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
         </div>
-      </div>
       </motion.nav>
     </>
   )
 }
-
