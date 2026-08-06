@@ -1,29 +1,34 @@
 'use client'
 
-import { type Authors, allAuthors } from 'contentlayer/generated'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
-import { coreContent } from 'pliny/utils/contentlayer'
+import IntroCard from '@/components/IntroCard'
 import { components } from '@/components/MDXComponents'
+import TechStack from '@/components/TechStack'
+import Timeline from '@/components/Timeline'
 import AuthorLayout from '@/layouts/AuthorLayout'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import type { Author } from '@/lib/types/author'
 
-export default function AboutPageClient() {
+export default function AboutPageClient({ authors }: { authors: Author[] }) {
   const { locale } = useI18n()
 
-  // 현재 언어에 맞는 작성자 찾기
-  const author = allAuthors.find((p) => p.slug === 'default' && p.language === locale) as Authors
+  // 현재 언어 우선, 없으면 영어 폴백
+  const selectedAuthor =
+    authors.find((a) => a.language === locale) ??
+    authors.find((a) => a.language === 'en') ??
+    authors[0]
 
-  // 언어별 파일이 없으면 영어 버전을 기본으로 사용
-  const fallbackAuthor = allAuthors.find(
-    (p) => p.slug === 'default' && p.language === 'en'
-  ) as Authors
+  if (!selectedAuthor) return null
 
-  const selectedAuthor = author || fallbackAuthor
-  const mainContent = coreContent(selectedAuthor)
+  const { techStack, timeline, body, ...content } = selectedAuthor
 
   return (
-    <AuthorLayout content={mainContent}>
-      <MDXLayoutRenderer code={selectedAuthor.body.code} components={components} />
+    <AuthorLayout content={content}>
+      <IntroCard>
+        {body.code && <MDXLayoutRenderer code={body.code} components={components} />}
+      </IntroCard>
+      {techStack.length > 0 && <TechStack categories={techStack} />}
+      {timeline.length > 0 && <Timeline items={timeline} />}
     </AuthorLayout>
   )
 }

@@ -27,13 +27,36 @@ export default function AdminHeader({ login }: { login: string }) {
             작성자 모드
           </button>
           <div className="h-6 w-px bg-gray-300 dark:bg-gray-700" />
-          <button
-            type="button"
-            onClick={() => guardedNavigate('/')}
-            className="rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-900/5 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white"
-          >
-            블로그 보기
-          </button>
+          <nav className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => guardedNavigate('/admin')}
+              className="rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-900/5 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              글
+            </button>
+            <button
+              type="button"
+              onClick={() => guardedNavigate('/admin/projects')}
+              className="rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-900/5 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              프로젝트
+            </button>
+            <button
+              type="button"
+              onClick={() => guardedNavigate('/admin/about')}
+              className="rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-900/5 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              소개
+            </button>
+            <button
+              type="button"
+              onClick={() => guardedNavigate('/')}
+              className="hidden rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-900/5 hover:text-gray-900 sm:block dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              블로그 보기
+            </button>
+          </nav>
           <div className="ml-auto flex items-center gap-2">
             <span className="hidden text-sm text-gray-500 sm:inline dark:text-gray-400">
               @{login}

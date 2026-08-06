@@ -2,9 +2,8 @@ import { and, eq } from 'drizzle-orm'
 import { revalidateTag } from 'next/cache'
 import { getDb } from '@/lib/db/client'
 import { posts, postTranslations } from '@/lib/db/schema'
-import { compilePostMdx } from '@/lib/mdx/compile'
-import { serializeToMdx } from '@/lib/mdx/serialize'
 import { smartQuotes } from '@/lib/utils'
+import { prepareContent } from './content-compile'
 
 export const LANGUAGES = ['ko', 'en'] as const
 export type Language = (typeof LANGUAGES)[number]
@@ -34,25 +33,7 @@ export async function saveTranslation(
   const title = smartQuotes(input.title ?? '')
   const summary = input.summary ? smartQuotes(input.summary) : null
 
-  let contentMd = ''
-  let serializeError: string | null = null
-  if (input.contentJson) {
-    try {
-      contentMd = serializeToMdx(input.contentJson)
-    } catch (e) {
-      serializeError = e instanceof Error ? e.message : String(e)
-    }
-  }
-
-  let compiled: { code: string; toc: unknown; readingTime: unknown } | null = null
-  let compileError: string | null = serializeError
-  if (!compileError) {
-    try {
-      compiled = await compilePostMdx(contentMd)
-    } catch (e) {
-      compileError = e instanceof Error ? e.message : String(e)
-    }
-  }
+  const prepared = await prepareContent(input.contentJson)
 
   await db
     .update(postTranslations)
@@ -60,15 +41,15 @@ export async function saveTranslation(
       title,
       summary,
       contentJson: input.contentJson ?? null,
-      contentMd,
-      compiledCode: compiled?.code ?? null,
-      toc: compiled?.toc ?? null,
-      readingTime: compiled?.readingTime ?? null,
-      compiledAt: compiled ? new Date() : null,
+      contentMd: prepared.contentMd,
+      compiledCode: prepared.compiledCode,
+      toc: prepared.toc,
+      readingTime: prepared.readingTime,
+      compiledAt: prepared.compiledAt,
     })
     .where(and(eq(postTranslations.postId, postId), eq(postTranslations.language, language)))
 
-  return { language, ok: !compileError, error: compileError ?? undefined }
+  return { language, ok: !prepared.error, error: prepared.error ?? undefined }
 }
 
 /** 게시 가능 여부: 양 언어 모두 제목과 컴파일 성공한 본문 필요 */

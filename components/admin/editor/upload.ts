@@ -6,10 +6,17 @@ export interface UploadedImage {
   height?: number
 }
 
-export async function uploadImageFile(file: File, slug?: string): Promise<UploadedImage> {
+export type UploadScope = 'posts' | 'projects' | 'about'
+
+export async function uploadImageFile(
+  file: File,
+  slug?: string,
+  scope: UploadScope = 'posts'
+): Promise<UploadedImage> {
   const formData = new FormData()
   formData.append('file', file)
   if (slug) formData.append('slug', slug)
+  formData.append('scope', scope)
 
   const res = await fetch('/api/admin/upload', { method: 'POST', body: formData })
   const data = await res.json()
@@ -19,8 +26,14 @@ export async function uploadImageFile(file: File, slug?: string): Promise<Upload
   return data
 }
 
-export async function insertImageFromFile(editor: Editor, file: File, slug?: string, pos?: number) {
-  const uploaded = await uploadImageFile(file, slug)
+export async function insertImageFromFile(
+  editor: Editor,
+  file: File,
+  slug?: string,
+  pos?: number,
+  scope: UploadScope = 'posts'
+) {
+  const uploaded = await uploadImageFile(file, slug, scope)
   const attrs = {
     src: uploaded.url,
     alt: file.name.replace(/\.[a-z0-9]+$/i, ''),

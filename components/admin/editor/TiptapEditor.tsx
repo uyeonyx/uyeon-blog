@@ -32,6 +32,7 @@ interface TiptapEditorProps {
   onChange: (json: any) => void
   slug?: string
   placeholder?: string
+  scope?: 'posts' | 'projects' | 'about'
 }
 
 function isImageFile(file: File) {
@@ -62,7 +63,13 @@ function BubbleButton({
   )
 }
 
-export default function TiptapEditor({ value, onChange, slug, placeholder }: TiptapEditorProps) {
+export default function TiptapEditor({
+  value,
+  onChange,
+  slug,
+  placeholder,
+  scope = 'posts',
+}: TiptapEditorProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { loading, update } = useAdminToast()
   const [mathDialog, setMathDialog] = useState<MathDialogState | null>(null)
@@ -79,7 +86,7 @@ export default function TiptapEditor({ value, onChange, slug, placeholder }: Tip
     if (!ed) return
     for (const file of files) {
       const toastId = loading(`'${file.name}' 업로드 중…`)
-      insertImageFromFile(ed, file, slug, pos)
+      insertImageFromFile(ed, file, slug, pos, scope)
         .then(() => update(toastId, 'success', '이미지가 삽입되었습니다'))
         .catch((e) =>
           update(toastId, 'error', e instanceof Error ? e.message : '이미지 업로드에 실패했습니다')

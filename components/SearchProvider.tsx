@@ -2,10 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 import { KBarSearchProvider } from 'pliny/search/KBar'
-import type { CoreContent } from 'pliny/utils/contentlayer'
 import { useMemo } from 'react'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { translateTags } from '@/lib/i18n/tag-translations'
+import type { CoreContent } from '@/lib/types/content'
 import type { Blog } from '@/lib/types/post'
 
 export const CustomSearchProvider = ({ children }: { children: React.ReactNode }) => {

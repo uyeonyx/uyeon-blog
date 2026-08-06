@@ -50,7 +50,13 @@ export async function POST(request: NextRequest) {
 
   const slug = formData?.get('slug')
   const prefix = typeof slug === 'string' && slug ? slug : 'uploads'
-  const blob = await put(`posts/${prefix}/${crypto.randomUUID()}.${ext}`, buffer, {
+  // scope: Blob 경로 최상위 디렉터리 (posts/projects/about) — 기본 posts (하위호환)
+  const rawScope = formData?.get('scope')
+  const scope =
+    typeof rawScope === 'string' && ['posts', 'projects', 'about'].includes(rawScope)
+      ? rawScope
+      : 'posts'
+  const blob = await put(`${scope}/${prefix}/${crypto.randomUUID()}.${ext}`, buffer, {
     access: 'public',
     contentType: file.type,
   })

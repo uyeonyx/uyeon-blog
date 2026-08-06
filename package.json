@@ -5,13 +5,12 @@
   "scripts": {
     "start": "next dev",
     "dev": "cross-env INIT_CWD=$PWD NODE_OPTIONS='--no-deprecation' next dev",
-    "build": "contentlayer2 build && cross-env INIT_CWD=$PWD NODE_OPTIONS='--no-deprecation --experimental-json-modules' next build",
+    "build": "cross-env INIT_CWD=$PWD NODE_OPTIONS='--no-deprecation --experimental-json-modules' next build",
     "serve": "next start",
     "analyze": "cross-env ANALYZE=true NODE_OPTIONS='--no-deprecation' next build",
     "lint": "biome check --write .",
     "format": "biome format --write .",
-    "db:push": "drizzle-kit push",
-    "db:migrate-content": "tsx scripts/migrate-content.ts"
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
     "@iconify-json/solar": "^1.2.5",
@@ -36,7 +35,6 @@
     "@vercel/blob": "^2.6.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "contentlayer2": "0.5.8",
     "drizzle-orm": "^0.45.2",
     "esbuild": "0.27.0",
     "framer-motion": "^12.23.24",
@@ -47,9 +45,9 @@
     "jose": "^6.2.8",
     "katex": "^0.16.25",
     "lowlight": "^3.3.0",
+    "mcp-handler": "^2.1.0",
     "mdx-bundler": "10.1.1",
     "next": "16.3.0",
-    "next-contentlayer2": "0.5.8",
     "next-themes": "^0.4.6",
     "pg": "^8.22.0",
     "pliny": "0.4.1",
@@ -69,9 +67,13 @@
     "remark-gfm": "^4.0.1",
     "remark-github-blockquote-alert": "^2.0.0",
     "remark-math": "^6.0.0",
+    "remark-mdx": "^3.1.1",
+    "remark-parse": "^11.0.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.17",
-    "unist-util-visit": "^5.0.0"
+    "unified": "^11.0.5",
+    "unist-util-visit": "^5.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.7",
@@ -82,10 +84,8 @@
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
-    "remark-parse": "^11.0.0",
     "tsx": "^4.23.8",
-    "typescript": "^5.9.3",
-    "unified": "^11.0.5"
+    "typescript": "^5.9.3"
   },
   "packageManager": "pnpm@10.23.0"
 }

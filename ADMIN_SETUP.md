@@ -32,11 +32,10 @@ ADMIN_GITHUB_LOGIN=uyeonyx                        # 로그인 허용 계정 (본
 pnpm db:push          # drizzle-kit push — posts / post_translations 테이블 생성
 ```
 
-### 6. 기존 글 마이그레이션
+### 6. MCP 토큰 (AI 에이전트 관리)
 ```bash
-pnpm db:migrate-content          # data/blog/*.mdx → DB (idempotent, --force로 재실행)
+MCP_AUTH_TOKEN=$(openssl rand -hex 32)   # Vercel 환경변수 + 로컬 .env.local에 설정
 ```
-실행 후 `/admin`에서 두 글이 게시됨 상태로 보이면 성공. 에디터에서 열어 변환 결과(표/코드블록 등)를 한 번 검수할 것.
 
 ## 사용법
 
@@ -47,6 +46,20 @@ pnpm db:migrate-content          # data/blog/*.mdx → DB (idempotent, --force�
 - `⌘S` 저장, 미리보기는 실제 블로그와 동일한 MDX 렌더링
 - 게시/수정/삭제는 즉시 공개 사이트에 반영 (`revalidateTag`)
 
+## MCP (AI 에이전트 관리)
+
+Claude Code 같은 AI 에이전트가 블로그 전체(글·프로젝트·소개)를 관리할 수 있는 MCP 서버가 `/api/mcp`에 내장되어 있다 (Streamable HTTP + Bearer 토큰).
+
+```bash
+claude mcp add --transport http blog https://uyeon.dev/api/mcp \
+  --header "Authorization: Bearer $MCP_AUTH_TOKEN"
+```
+
+- 도구: `posts_list/post_get/post_create/post_update/post_set_status/post_delete/upload_image` + `projects_*` + `about_get/about_update`
+- 본문은 **마크다운**으로 읽고 쓴다 — 서버가 Tiptap JSON으로 역변환(`lib/mdx/markdown-to-tiptap.ts`) 후 admin과 동일한 파이프라인으로 컴파일하므로 에디터와 완전 호환
+- `<Image …/>`, `<YouTube id/>`, `<u>`, alert, 수식, 코드 타이틀 문법이 왕복 보존된다
+- 캐시 무효화는 도구가 `/api/mcp-revalidate`로 내부 요청을 보내 처리한다 (MCP 스트리밍 응답 안에서는 `revalidateTag`가 유실되기 때문 — `lib/mcp/request-context.ts` 참고)
+
 ## 구조 요약
 
 | 항목 | 위치 |
@@ -54,12 +67,13 @@ pnpm db:migrate-content          # data/blog/*.mdx → DB (idempotent, --force�
 | 편집 원본 | `post_translations.content_json` (Tiptap JSON) |
 | 저장 시 파생 | JSON → MDX 직렬화(`lib/mdx/serialize.ts`) → mdx-bundler 컴파일(`lib/mdx/compile.ts`) → `compiled_code` |
 | 공개 조회 | `lib/db/posts.ts` — `unstable_cache(tags:['posts'])` |
-| 인증 | `proxy.ts` + `lib/admin/session.ts` (jose JWT 쿠키) |
+| 인증 | `proxy.ts` + `lib/admin/session.ts` (jose JWT 쿠키) / MCP는 `lib/mcp/auth.ts` (Bearer) |
+| 프로젝트 | `projects`/`project_translations` — `lib/admin/project-service.ts`, tags:['projects'] |
+| 소개(about) | `authors`/`author_translations` — techStack/timeline은 jsonb, tags:['authors'] |
 | 검색/RSS/사이트맵 | `/search.json`, `/feed.xml`, `/tags/<tag>/feed.xml`, `/sitemap.xml` — 전부 DB 기반 동적 |
 
 ## 주의
 
-- `data/blog/`는 마이그레이션 백업용으로만 남아 있다 (contentlayer에서 제외됨). 안정화 후 삭제 가능.
-- projects/authors는 기존대로 contentlayer(MDX 파일) 기반.
+- **contentlayer는 완전히 제거되었다** (2026-08). 글·프로젝트·소개 전부 DB + Vercel Blob 기반이며, `data/`에는 siteMetadata 등 설정 파일만 남는다.
 - static export(`EXPORT=1`)는 더 이상 지원되지 않는다 (DB 런타임 조회 + 서버 API 필요).
 - 게시된 글의 slug는 변경 불가 (URL 보호) — 초안 상태에서만 수정 가능.

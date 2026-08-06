@@ -1,12 +1,12 @@
 'use client'
 
-import { allProjects } from 'contentlayer/generated'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import ProjectCard from '@/components/ProjectCard'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import type { Project } from '@/lib/types/project'
 
-export default function ProjectsPageClient() {
+export default function ProjectsPageClient({ projects: allProjects }: { projects: Project[] }) {
   const { t, locale } = useI18n()
   const [openProjectSlug, setOpenProjectSlug] = useState<string | null>(null)
 

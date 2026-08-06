@@ -3,7 +3,6 @@
 import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
 import { usePathname } from 'next/navigation'
-import type { CoreContent } from 'pliny/utils/contentlayer'
 import { useMemo } from 'react'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
@@ -11,6 +10,7 @@ import { filterPostsByLanguage } from '@/lib/i18n/filter-posts'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { translateTag } from '@/lib/i18n/tag-translations'
 import { formatDate } from '@/lib/i18n/utils'
+import type { CoreContent } from '@/lib/types/content'
 import type { Blog } from '@/lib/types/post'
 
 interface PaginationProps {

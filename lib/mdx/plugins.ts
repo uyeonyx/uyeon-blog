@@ -28,9 +28,9 @@ const icon = fromHtmlIsomorphic(
   { fragment: true }
 )
 
-// contentlayer(빌드타임)와 관리자 저장 파이프라인(런타임)이 공유하는 플러그인 체인.
-// remarkExtractFrontmatter는 contentlayer 전용이라 여기에 포함하지 않는다.
-// biome-ignore lint/suspicious/noExplicitAny: 플러그인 튜플 타입은 소비처(contentlayer/mdx-bundler)마다 다르다
+// 관리자 저장/미리보기/MCP 파이프라인이 공유하는 remark/rehype 플러그인 체인.
+
+// biome-ignore lint/suspicious/noExplicitAny: 플러그인 튜플 타입은 소비처마다 다르다
 export const sharedRemarkPlugins: any[] = [
   remarkGfm,
   remarkCodeTitles,
@@ -39,7 +39,7 @@ export const sharedRemarkPlugins: any[] = [
   remarkAlert,
 ]
 
-// biome-ignore lint/suspicious/noExplicitAny: 플러그인 튜플 타입은 소비처(contentlayer/mdx-bundler)마다 다르다
+// biome-ignore lint/suspicious/noExplicitAny: 플러그인 튜플 타입은 소비처마다 다르다
 export const sharedRehypePlugins: any[] = [
   rehypeSlug,
   [

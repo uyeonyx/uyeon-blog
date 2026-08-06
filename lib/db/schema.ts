@@ -1,7 +1,9 @@
 import { sql } from 'drizzle-orm'
 import {
+  boolean,
   check,
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -53,5 +55,86 @@ export const postTranslations = pgTable(
   ]
 )
 
+export const projects = pgTable(
+  'projects',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: text('slug').notNull().unique(),
+    published: boolean('published').notNull().default(true),
+    displayOrder: integer('display_order').notNull().default(0),
+    imgSrc: text('img_src'),
+    href: text('href'),
+    tags: text('tags').array().notNull().default([]),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('idx_projects_order').on(table.published, table.displayOrder)]
+)
+
+export const projectTranslations = pgTable(
+  'project_translations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    projectId: uuid('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    language: text('language').notNull(),
+    title: text('title').notNull().default(''),
+    description: text('description').notNull().default(''),
+    period: text('period'),
+    role: text('role'),
+    company: text('company'),
+    contentJson: jsonb('content_json'), // Tiptap 문서 — 편집 source of truth
+    contentMd: text('content_md').notNull().default(''),
+    compiledCode: text('compiled_code'),
+    compiledAt: timestamp('compiled_at', { withTimezone: true }),
+  },
+  (table) => [
+    unique('uq_project_translations_project_language').on(table.projectId, table.language),
+    check('ck_project_translations_language', sql`${table.language} IN ('ko','en')`),
+  ]
+)
+
+export const authors = pgTable('authors', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  slug: text('slug').notNull().unique(), // 현재 'default' 단일 행, 확장 대비
+  avatarUrl: text('avatar_url'),
+  email: text('email'),
+  github: text('github'),
+  linkedin: text('linkedin'),
+  twitter: text('twitter'),
+  bluesky: text('bluesky'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const authorTranslations = pgTable(
+  'author_translations',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    authorId: uuid('author_id')
+      .notNull()
+      .references(() => authors.id, { onDelete: 'cascade' }),
+    language: text('language').notNull(),
+    name: text('name').notNull().default(''),
+    occupation: text('occupation'),
+    company: text('company'),
+    techStack: jsonb('tech_stack'), // TechCategory[] — components/TechStack.tsx shape
+    timeline: jsonb('timeline'), // TimelineItem[] — components/Timeline.tsx shape
+    contentJson: jsonb('content_json'), // 소개글(IntroCard 내부) Tiptap 문서
+    contentMd: text('content_md').notNull().default(''),
+    compiledCode: text('compiled_code'),
+    compiledAt: timestamp('compiled_at', { withTimezone: true }),
+  },
+  (table) => [
+    unique('uq_author_translations_author_language').on(table.authorId, table.language),
+    check('ck_author_translations_language', sql`${table.language} IN ('ko','en')`),
+  ]
+)
+
 export type PostRow = typeof posts.$inferSelect
 export type PostTranslationRow = typeof postTranslations.$inferSelect
+export type ProjectRow = typeof projects.$inferSelect
+export type ProjectTranslationRow = typeof projectTranslations.$inferSelect
+export type AuthorRow = typeof authors.$inferSelect
+export type AuthorTranslationRow = typeof authorTranslations.$inferSelect

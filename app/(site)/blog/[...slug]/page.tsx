@@ -1,9 +1,7 @@
-import type { Authors } from 'contentlayer/generated'
-import { allAuthors } from 'contentlayer/generated'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { coreContent } from 'pliny/utils/contentlayer'
 import siteMetadata from '@/data/siteMetadata'
+import { getAuthorCores } from '@/lib/db/authors'
 import { getPostPair, getPostStatusBySlug, getPublishedCores } from '@/lib/db/posts'
 import BlogPostClient from './BlogPostClient'
 import PrivatePostNotice from './PrivatePostNotice'
@@ -24,11 +22,12 @@ export async function generateMetadata(props: {
     }
     return
   }
-  const authorList = post.authors || ['default']
-  const authorDetails = authorList.map((author) => {
-    const authorResults = allAuthors.find((p) => p.slug === author)
-    return coreContent(authorResults as Authors)
-  })
+  // 글 언어와 일치하는 작성자 정보 사용 (없으면 en 폴백)
+  const authorCores = await getAuthorCores('default')
+  const authorDetails = [
+    authorCores.find((a) => a.language === post.language) ??
+      authorCores.find((a) => a.language === 'en'),
+  ].filter((a) => a !== undefined)
 
   const publishedAt = new Date(post.date).toISOString()
   const modifiedAt = new Date(post.lastmod || post.date).toISOString()
@@ -81,12 +80,8 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
     return notFound()
   }
 
-  const post = pair[0]
-  const authorList = post.authors || ['default']
-  const authorDetails = authorList.map((author) => {
-    const authorResults = allAuthors.find((p) => p.slug === author)
-    return coreContent(authorResults as Authors)
-  })
+  // 양 언어 작성자 정보를 전달하고 클라이언트에서 locale에 맞게 선택
+  const authorCores = await getAuthorCores('default')
 
   // BlogPostClient는 현재 slug 문서에서만 body를 사용하므로 나머지는 본문 없이 전달
   const allPosts = [
@@ -94,5 +89,5 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
     ...cores.filter((c) => c.slug !== slug).map((c) => ({ ...c, body: { code: '' } })),
   ]
 
-  return <BlogPostClient slug={slug} allPosts={allPosts} authorDetails={authorDetails} />
+  return <BlogPostClient slug={slug} allPosts={allPosts} authorCores={authorCores} />
 }

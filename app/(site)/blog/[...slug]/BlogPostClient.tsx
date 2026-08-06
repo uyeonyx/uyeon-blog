@@ -3,9 +3,7 @@
 import 'css/prism.css'
 import 'katex/dist/katex.css'
 
-import type { Authors } from 'contentlayer/generated'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
-import type { CoreContent } from 'pliny/utils/contentlayer'
 import { useEffect, useMemo, useState } from 'react'
 import { components } from '@/components/MDXComponents'
 import PostBanner from '@/layouts/PostBanner'
@@ -13,6 +11,8 @@ import PostLayout from '@/layouts/PostLayout'
 import PostSimple from '@/layouts/PostSimple'
 import { findLocalizedPost } from '@/lib/i18n/filter-posts'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import type { AuthorCore } from '@/lib/types/author'
+import type { CoreContent } from '@/lib/types/content'
 import type { Blog } from '@/lib/types/post'
 
 const defaultLayout = 'PostLayout'
@@ -25,10 +25,10 @@ const layouts = {
 interface BlogPostClientProps {
   slug: string
   allPosts: Blog[]
-  authorDetails: CoreContent<Authors>[]
+  authorCores: AuthorCore[]
 }
 
-export default function BlogPostClient({ slug, allPosts, authorDetails }: BlogPostClientProps) {
+export default function BlogPostClient({ slug, allPosts, authorCores }: BlogPostClientProps) {
   const { locale } = useI18n()
   // 초기 상태를 현재 locale의 포스트로 설정 (SSR과 클라이언트 모두 동일한 초기값)
   const [currentPost, setCurrentPost] = useState<Blog | null>(
@@ -58,6 +58,11 @@ export default function BlogPostClient({ slug, allPosts, authorDetails }: BlogPo
   if (!currentPost) {
     return null
   }
+
+  // 현재 locale에 맞는 작성자 정보 선택 (없으면 en 폴백)
+  const authorDetails = [
+    authorCores.find((a) => a.language === locale) ?? authorCores.find((a) => a.language === 'en'),
+  ].filter((a) => a !== undefined)
 
   const mainContent: CoreContent<Blog> = {
     slug: currentPost.slug,

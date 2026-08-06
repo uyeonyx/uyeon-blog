@@ -1,8 +1,6 @@
 'use client'
 
-import type { Authors } from 'contentlayer/generated'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import type { CoreContent } from 'pliny/utils/contentlayer'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
 import Comments from '@/components/Comments'
@@ -14,19 +12,21 @@ import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { formatDate } from '@/lib/i18n/utils'
+import type { AuthorCore } from '@/lib/types/author'
+import type { CoreContent } from '@/lib/types/content'
 import type { Blog } from '@/lib/types/post'
 
 const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
 
 interface LayoutProps {
   content: CoreContent<Blog>
-  authorDetails: CoreContent<Authors>[]
+  authorDetails: AuthorCore[]
   next?: { path: string; title: string }
   prev?: { path: string; title: string }
   children: ReactNode
 }
 
-function AuthorAvatar({ author, locale }: { author: CoreContent<Authors>; locale: string }) {
+function AuthorAvatar({ author, locale }: { author: AuthorCore; locale: string }) {
   const { t } = useI18n()
   const cardRef = useRef<HTMLDivElement>(null)
   const mouseX = useMotionValue(0)

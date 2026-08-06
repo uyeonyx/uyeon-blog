@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import type { CoreContent } from 'pliny/utils/contentlayer'
 import type { ReactNode } from 'react'
 import Comments from '@/components/Comments'
 import Link from '@/components/Link'
@@ -11,6 +10,7 @@ import SectionContainer from '@/components/SectionContainer'
 import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { formatDate } from '@/lib/i18n/utils'
+import type { CoreContent } from '@/lib/types/content'
 import type { Blog } from '@/lib/types/post'
 
 interface LayoutProps {

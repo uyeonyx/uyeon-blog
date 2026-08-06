@@ -1,15 +1,15 @@
 'use client'
 
-import type { Authors } from 'contentlayer/generated'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
 import SocialIcon from '@/components/social-icons'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import type { AuthorCore } from '@/lib/types/author'
 
 interface Props {
   children: ReactNode
-  content: Omit<Authors, '_id' | '_raw' | 'body'>
+  content: AuthorCore
 }
 
 export default function AuthorLayout({ children, content }: Props) {
