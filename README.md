@@ -1,4 +1,4 @@
-![tailwind-nextjs-banner](/public/static/images/twitter-card.png)
+![uyeon.dev](/public/static/images/og-banner.png)
 
 # Tailwind Nextjs Starter Blog
 
