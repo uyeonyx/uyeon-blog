@@ -1,13 +1,15 @@
 # 작성자 모드 설정 가이드
 
-`/admin`에서 글을 작성/편집/게시하는 관리자 모드가 추가되었다. 글은 더 이상 `data/blog/*.mdx`가 아니라 **Neon Postgres**에 저장되고, 이미지는 **Vercel Blob**에 업로드되며, 게시하면 재빌드 없이 즉시 반영된다.
+`/admin`에서 글을 작성/편집/게시하는 관리자 모드가 추가되었다. 글은 더 이상 `data/blog/*.mdx`가 아니라 **Railway Postgres**(싱가포르 리전, 상시 가동)에 저장되고, 이미지는 **Vercel Blob**에 업로드되며, 게시하면 재빌드 없이 즉시 반영된다. Vercel 함수 리전은 DB와 같은 `sin1`으로 고정되어 있다(vercel.json).
+
+> 처음엔 Neon(Vercel Marketplace)을 썼으나 무료 티어의 5분 유휴 콜드스타트(첫 요청 ~2.5초) 때문에 Railway로 이전했다 (2026-08).
 
 ## 1회 준비 (필수)
 
-### 1. Neon Postgres 연결
-1. Vercel 대시보드 → 프로젝트 → **Storage** 탭 → **Create Database** → **Neon (Postgres)**
-2. 연결하면 `DATABASE_URL`이 프로젝트 환경변수에 자동 주입된다
-3. 로컬 개발용: 값을 복사해 `.env`에 추가
+### 1. Railway Postgres
+1. Railway 프로젝트 `uyeon-blog`(dev.UY's Projects 워크스페이스)의 `Postgres` 서비스
+2. 외부 접속은 TCP proxy 경유 — `railway variables --service Postgres`로 접속 정보 확인
+3. `DATABASE_URL`(public proxy URL)을 Vercel 환경변수와 로컬 `.env.local`에 설정
 
 ### 2. Vercel Blob 스토어 생성
 1. 같은 **Storage** 탭 → **Create Store** → **Blob**
