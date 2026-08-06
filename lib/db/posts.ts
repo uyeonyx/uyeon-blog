@@ -7,6 +7,16 @@ import type { Post, PostCore } from '@/lib/types/post'
 import { getDb } from './client'
 import { posts, postTranslations } from './schema'
 
+// images jsonb는 과거 데이터에 문자열로 저장된 경우가 있어 항상 string[]로 정규화
+function normalizeImages(value: unknown): string[] | undefined {
+  if (typeof value === 'string') return value ? [value] : undefined
+  if (Array.isArray(value)) {
+    const urls = value.filter((v): v is string => typeof v === 'string' && v.length > 0)
+    return urls.length > 0 ? urls : undefined
+  }
+  return undefined
+}
+
 const loadPublishedPosts = unstable_cache(
   async (): Promise<Post[]> => {
     const db = getDb()
@@ -26,6 +36,7 @@ const loadPublishedPosts = unstable_cache(
     for (const post of rows) {
       const date = (post.date ?? post.createdAt).toISOString()
       const lastmod = post.lastmod?.toISOString()
+      const images = normalizeImages(post.images)
       for (const tr of translations.filter((t) => t.postId === post.id)) {
         if (!tr.compiledCode || !tr.title.trim()) continue
         result.push({
@@ -40,7 +51,7 @@ const loadPublishedPosts = unstable_cache(
           draft: false,
           language: tr.language,
           layout: post.layout ?? undefined,
-          images: post.images ?? undefined,
+          images,
           toc: tr.toc ?? [],
           readingTime: tr.readingTime ?? { text: '', minutes: 0, time: 0, words: 0 },
           structuredData: {
@@ -50,7 +61,7 @@ const loadPublishedPosts = unstable_cache(
             datePublished: date,
             dateModified: lastmod || date,
             description: tr.summary ?? undefined,
-            image: post.images ? (post.images as string[])[0] : siteMetadata.socialBanner,
+            image: images?.[0] ?? siteMetadata.socialBanner,
             url: `${siteMetadata.siteUrl}/blog/${post.slug}`,
           },
           body: { code: tr.compiledCode },

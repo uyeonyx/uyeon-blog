@@ -32,15 +32,13 @@ export async function generateMetadata(props: {
   const publishedAt = new Date(post.date).toISOString()
   const modifiedAt = new Date(post.lastmod || post.date).toISOString()
   const authors = authorDetails.map((author) => author.name)
-  let imageList = [siteMetadata.socialBanner]
-  if (post.images) {
-    imageList = typeof post.images === 'string' ? [post.images] : post.images
-  }
-  const ogImages = imageList.map((img) => {
-    return {
-      url: img?.includes('http') ? img : siteMetadata.siteUrl + img,
-    }
-  })
+  // 대표이미지가 있으면 그걸, 없으면 동적 생성 OG(/og/[slug])를 사용
+  const cover = post.images?.[0]
+  const ogImage = cover
+    ? cover.startsWith('http')
+      ? cover
+      : siteMetadata.siteUrl + cover
+    : `${siteMetadata.siteUrl}/og/${post.slug}`
 
   return {
     title: post.title,
@@ -54,14 +52,14 @@ export async function generateMetadata(props: {
       publishedTime: publishedAt,
       modifiedTime: modifiedAt,
       url: './',
-      images: ogImages,
+      images: [cover ? { url: ogImage } : { url: ogImage, width: 1200, height: 630 }],
       authors: authors.length > 0 ? authors : [siteMetadata.author],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.title,
       description: post.summary,
-      images: imageList,
+      images: [ogImage],
     },
   }
 }

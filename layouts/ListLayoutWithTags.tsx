@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { useMemo } from 'react'
 import Link from '@/components/Link'
@@ -222,13 +223,31 @@ export default function ListLayoutWithTags({
         <div className="flex-1 min-w-0">
           <div className="space-y-6">
             {displayPosts.map((post) => {
-              const { path, date, title, summary, tags } = post
+              const { path, date, title, summary, tags, images } = post
+              const cover = images?.[0]
               return (
                 <article
                   key={path}
                   className="group relative rounded-2xl border border-white/60 dark:border-gray-700/80 bg-white/70 dark:bg-gray-900/70 backdrop-blur-3xl shadow-xl shadow-gray-900/10 dark:shadow-primary-500/10 p-8 transition-all duration-300 hover:border-primary-500/40 hover:shadow-2xl hover:shadow-primary-500/20 before:absolute before:inset-0 before:rounded-2xl before:bg-linear-to-b before:from-white/40 before:to-transparent before:pointer-events-none dark:before:from-white/5"
                 >
                   <div className="space-y-4">
+                    {/* Cover Image */}
+                    {cover && (
+                      <Link
+                        href={`/${path}`}
+                        className="relative block aspect-2/1 w-full overflow-hidden rounded-xl"
+                        aria-label={title}
+                      >
+                        <Image
+                          src={cover}
+                          alt={title}
+                          fill
+                          sizes="(max-width: 1024px) 100vw, 672px"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      </Link>
+                    )}
+
                     {/* Date */}
                     <time
                       dateTime={date}

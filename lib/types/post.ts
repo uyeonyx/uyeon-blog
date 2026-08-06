@@ -17,8 +17,8 @@ export interface Post {
   draft?: boolean
   language: string
   layout?: string
-  // biome-ignore lint/suspicious/noExplicitAny: 자유형 json 필드
-  images?: any
+  /** images[0]이 대표이미지(OG/썸네일/배너) */
+  images?: string[]
   authors?: string[]
   bibliography?: string
   canonicalUrl?: string

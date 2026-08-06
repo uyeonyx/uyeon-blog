@@ -113,6 +113,7 @@ export function registerPostTools(server: McpServer) {
         layout: post.layout,
         date: post.date,
         lastmod: post.lastmod,
+        coverImage: (post.images as string[] | null)?.[0] ?? null,
         translations: Object.fromEntries(
           translations.map((t) => [
             t.language,
@@ -171,12 +172,18 @@ export function registerPostTools(server: McpServer) {
         tags: z.array(z.string()).optional(),
         layout: z.enum(['PostLayout', 'PostSimple', 'PostBanner']).nullable().optional(),
         date: z.string().optional().describe('게시일 (ISO 8601)'),
+        coverImage: z
+          .string()
+          .url()
+          .nullable()
+          .optional()
+          .describe('대표 이미지 URL (OG/썸네일, 권장 1200×630) — null이면 제거'),
         translations: z
           .object({ ko: translationInputSchema.optional(), en: translationInputSchema.optional() })
           .optional(),
       },
     },
-    async ({ idOrSlug, slug, tags, layout, date, translations }) => {
+    async ({ idOrSlug, slug, tags, layout, date, coverImage, translations }) => {
       const post = await resolvePost(idOrSlug)
       if (!post) return err(`글을 찾을 수 없습니다: ${idOrSlug}`)
       const db = getDb()
@@ -201,6 +208,7 @@ export function registerPostTools(server: McpServer) {
           ...(tags !== undefined ? { tags: tags.map((t) => t.trim()).filter(Boolean) } : {}),
           ...(layout !== undefined ? { layout } : {}),
           ...(parsedDate ? { date: parsedDate } : {}),
+          ...(coverImage !== undefined ? { images: coverImage ? [coverImage] : null } : {}),
           lastmod: new Date(),
           updatedAt: new Date(),
         })
@@ -314,6 +322,7 @@ export function registerPostTools(server: McpServer) {
         '이미지를 Vercel Blob에 업로드하고 본문에 넣을 마크다운 스니펫을 반환한다.',
         'url(서버가 직접 다운로드, 권장) 또는 base64(소형 이미지 전용 — 요청 바디 ~4.5MB 제한) 중 하나를 제공한다.',
         '지원 형식: png/jpg/gif/webp/avif/svg, 최대 10MB.',
+        '반환된 url을 post_update의 coverImage로 전달하면 대표 이미지로 설정할 수 있다.',
       ].join('\n'),
       inputSchema: {
         scope: z

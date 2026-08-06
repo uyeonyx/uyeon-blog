@@ -34,6 +34,7 @@ export interface PostEditorData {
   tags: string[]
   layout: string | null
   date: string | null
+  coverImage: string | null
   translations: Partial<
     Record<Language, { title: string; summary: string | null; contentJson: unknown }>
   >
@@ -99,6 +100,7 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
   const [tags, setTags] = useState(initial.tags.join(', '))
   const [layout, setLayout] = useState(initial.layout ?? '')
   const [date, setDate] = useState(initial.date ? initial.date.slice(0, 10) : '')
+  const [coverImage, setCoverImage] = useState(initial.coverImage ?? '')
   const [activeLang, setActiveLang] = useState<Language>('ko')
   const [translations, setTranslations] = useState<Record<Language, TranslationState>>({
     ko: {
@@ -122,8 +124,8 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
 
   // dirty 추적 — 마지막 저장본 스냅샷과 현재 상태를 비교
   const snapshot = useMemo(
-    () => JSON.stringify({ slug, tags, layout, date, translations }),
-    [slug, tags, layout, date, translations]
+    () => JSON.stringify({ slug, tags, layout, date, coverImage, translations }),
+    [slug, tags, layout, date, coverImage, translations]
   )
   const [lastSaved, setLastSaved] = useState(snapshot)
   const isDirty = snapshot !== lastSaved
@@ -144,7 +146,7 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
       if (savingRef.current) return false
       savingRef.current = true
       setSaving(true)
-      const currentSnapshot = JSON.stringify({ slug, tags, layout, date, translations })
+      const currentSnapshot = JSON.stringify({ slug, tags, layout, date, coverImage, translations })
       try {
         const res = await fetch(`/api/admin/posts/${initial.id}`, {
           method: 'PUT',
@@ -157,6 +159,7 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
               .filter(Boolean),
             layout: layout || null,
             date: date || null,
+            coverImage: coverImage.trim() || null,
             translations,
           }),
         })
@@ -188,7 +191,7 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
         setSaving(false)
       }
     },
-    [initial.id, slug, tags, layout, date, translations, toast]
+    [initial.id, slug, tags, layout, date, coverImage, translations, toast]
   )
 
   const saveRef = useRef(save)
@@ -298,6 +301,8 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
           setDate={setDate}
           layout={layout}
           setLayout={setLayout}
+          coverImage={coverImage}
+          setCoverImage={setCoverImage}
         />
       </motion.div>
 

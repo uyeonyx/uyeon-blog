@@ -41,6 +41,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
     layout: post.layout,
     date: post.date,
     lastmod: post.lastmod,
+    coverImage: (post.images as string[] | null)?.[0] ?? null,
     translations: Object.fromEntries(
       translations.map((t) => [
         t.language,
@@ -93,6 +94,13 @@ export async function PUT(request: NextRequest, { params }: Params) {
       ? body.layout
       : null
   const date = body.date ? new Date(body.date) : post.date
+  // coverImage: 문자열 → images[0]에 저장, null/빈문자 → 제거, undefined → 유지
+  const images =
+    body.coverImage === undefined
+      ? post.images
+      : typeof body.coverImage === 'string' && body.coverImage.trim()
+        ? [body.coverImage.trim()]
+        : null
 
   await db
     .update(posts)
@@ -100,6 +108,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
       slug: typeof body.slug === 'string' && post.status === 'draft' ? body.slug : post.slug,
       tags,
       layout,
+      images,
       date: date && !Number.isNaN(date.getTime()) ? date : post.date,
       lastmod: new Date(),
       updatedAt: new Date(),

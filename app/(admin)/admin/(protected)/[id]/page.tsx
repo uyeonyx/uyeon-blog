@@ -26,6 +26,7 @@ export default async function EditPostPage(props: { params: Promise<{ id: string
     tags: post.tags,
     layout: post.layout,
     date: post.date ? post.date.toISOString() : null,
+    coverImage: (post.images as string[] | null)?.[0] ?? null,
     translations: Object.fromEntries(
       translations.map((t) => [
         t.language,

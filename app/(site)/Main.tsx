@@ -1,6 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import Image from 'next/image'
 import { formatDate } from 'pliny/utils/formatDate'
 import { useEffect, useMemo, useState } from 'react'
 import Link from '@/components/Link'
@@ -127,13 +128,15 @@ export default function Home({ posts }) {
           </motion.div>
         )}
         {filteredPosts.slice(0, MAX_DISPLAY).map((post, index) => {
-          const { slug, date, title, summary, tags } = post as {
+          const { slug, date, title, summary, tags, images } = post as {
             slug: string
             date: string
             title: string
             summary?: string
             tags?: string[]
+            images?: string[]
           }
+          const cover = images?.[0]
           return (
             <motion.article
               key={slug}
@@ -141,6 +144,29 @@ export default function Home({ posts }) {
               variants={item}
             >
               <div className="relative space-y-5">
+                {/* Cover Image */}
+                {cover && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: index * 0.1 + 0.15 }}
+                  >
+                    <Link
+                      href={`/blog/${slug}`}
+                      className="relative block aspect-2/1 w-full overflow-hidden rounded-xl"
+                      aria-label={title}
+                    >
+                      <Image
+                        src={cover}
+                        alt={title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 768px"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </Link>
+                  </motion.div>
+                )}
+
                 {/* Date */}
                 <motion.time
                   dateTime={date}
