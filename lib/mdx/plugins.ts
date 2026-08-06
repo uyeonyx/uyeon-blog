@@ -34,7 +34,9 @@ const icon = fromHtmlIsomorphic(
 export const sharedRemarkPlugins: any[] = [
   remarkGfm,
   remarkCodeTitles,
-  remarkMath,
+  // 홑달러($…$)는 수식으로 보지 않는다 — 본문의 통화 표기("$1 billion … $2.5 billion")가
+  // 수식으로 잡히는 오탐이 훨씬 흔하다. 인라인 수식은 $$…$$, 블록 수식은 줄 단위 $$.
+  [remarkMath, { singleDollarTextMath: false }],
   remarkImgToJsx,
   remarkAlert,
 ]

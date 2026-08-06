@@ -105,7 +105,8 @@ const serializer = new MarkdownSerializer(
       state.closeBlock(node)
     },
     inlineMath(state, node) {
-      state.write(`$${node.attrs.latex}$`)
+      // 인라인 수식은 $$…$$ — 파서에서 홑달러 수식($…$)을 끈 것과 짝을 이룬다
+      state.write(`$$${node.attrs.latex}$$`)
     },
     table(state, node) {
       const rows: string[][] = []
@@ -186,8 +187,9 @@ const serializer = new MarkdownSerializer(
     },
   },
   {
-    // MDX에서는 <와 {가 JSX/표현식 시작 문자라 추가로 이스케이프
-    escapeExtraCharacters: /[<{]/g,
+    // MDX에서는 <와 {가 JSX/표현식 시작 문자라 추가로 이스케이프.
+    // $는 remark-math가 수식으로 삼키므로("$1 billion … $2.5 billion" → KaTeX) 본문 텍스트에서는 항상 이스케이프한다.
+    escapeExtraCharacters: /[<{$]/g,
   }
 )
 
