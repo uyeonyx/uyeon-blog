@@ -2,6 +2,7 @@
 // DB 조회 페이지 — 요청 시 렌더 (데이터는 'posts' 태그로 캐시됨)
 import siteMetadata from '@/data/siteMetadata'
 import { getAllPublishedMarkdown } from '@/lib/db/posts'
+import { localeUrl } from '@/lib/seo/urls'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,7 +15,7 @@ export async function GET() {
     return [
       '---',
       `title: ${tr.title}`,
-      `url: ${siteMetadata.siteUrl}/blog/${post.slug}`,
+      `url: ${localeUrl(post.translations.ko ? 'ko' : 'en', `blog/${post.slug}`)}`,
       `date: ${post.date.slice(0, 10)}`,
       ...(post.tags.length > 0 ? [`tags: ${post.tags.join(', ')}`] : []),
       '---',

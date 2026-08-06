@@ -68,6 +68,10 @@ module.exports = () => {
     basePath,
     reactStrictMode: true,
     trailingSlash: false,
+    experimental: {
+      // 루트 레이아웃이 둘(공개/관리자)이라 합성할 단일 레이아웃이 없다 → app/global-not-found.tsx
+      globalNotFound: true,
+    },
     pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
     // 관리자 저장/미리보기의 런타임 MDX 컴파일(mdx-bundler + esbuild)은 번들링 대상에서 제외
     serverExternalPackages: ['esbuild', 'mdx-bundler', 'rehype-preset-minify'],
@@ -98,6 +102,36 @@ module.exports = () => {
           source: '/(.*)',
           headers: securityHeaders,
         },
+      ]
+    },
+    // 공개 라우트는 전부 /ko, /en 아래에 있다. 무접두사 URL은 여기서 흡수한다.
+    // proxy.ts는 admin 인증 전용으로 남긴다 — matcher를 넓히면 모든 공개 요청에 JWT 검증이 걸린다.
+    async redirects() {
+      const LEGACY = [
+        '/blog/:path*',
+        '/tags/:path*',
+        '/projects',
+        '/about',
+        '/ai',
+        '/feed.xml',
+        '/search.json',
+      ]
+      return [
+        // 쿠키 기반 응답이므로 영구(308)로 주면 브라우저가 캐시해 언어가 고착된다
+        {
+          source: '/',
+          has: [{ type: 'cookie', key: 'NEXT_LOCALE', value: '(?<loc>ko|en)' }],
+          destination: '/:loc',
+          permanent: false,
+        },
+        { source: '/', destination: '/ko', permanent: false },
+        ...LEGACY.map((source) => ({
+          source,
+          destination: `/ko${source}`,
+          permanent: true,
+        })),
+        // 소셜 플랫폼 캐시에 박혀 있는 기존 OG URL
+        { source: '/og/:slug', destination: '/og/ko/:slug', permanent: true },
       ]
     },
     webpack: (config, _options) => {

@@ -110,5 +110,15 @@
     "message": "Sorry we couldn't find this page.",
     "description": "But dont worry, you can find plenty of other things on our homepage.",
     "backToHome": "Back to homepage"
+  },
+  "seo": {
+    "siteDescription": "Engineering principles, system design, and deep focus on what matters",
+    "blogDescription": "Everything I've written on engineering and system design",
+    "aboutDescription": "Lee Uyeon — engineering principles and the path so far",
+    "tagDescription": "Posts tagged with '{tag}'",
+    "pageSuffix": "Page {n}",
+    "untranslatedTitle": "Not available in this language yet",
+    "untranslatedBody": "This post hasn't been translated into this language yet. You can read it in the language below.",
+    "readInOtherLanguage": "Read in {language}"
   }
 }

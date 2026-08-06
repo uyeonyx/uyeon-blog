@@ -110,5 +110,15 @@
     "message": "페이지를 찾을 수 없습니다.",
     "description": "걱정하지 마세요. 홈페이지에서 다른 콘텐츠를 찾을 수 있습니다.",
     "backToHome": "홈으로 돌아가기"
+  },
+  "seo": {
+    "siteDescription": "엔지니어링 원칙, 시스템 설계, 그리고 중요한 것에 대한 깊은 몰입",
+    "blogDescription": "엔지니어링과 시스템 설계에 대해 쓴 글 전체",
+    "aboutDescription": "이우연 — 엔지니어링 원칙과 지금까지의 경로",
+    "tagDescription": "'{tag}' 태그가 붙은 글",
+    "pageSuffix": "{n}페이지",
+    "untranslatedTitle": "이 언어로는 아직 제공되지 않는 글",
+    "untranslatedBody": "이 글은 아직 이 언어로 번역되지 않았습니다. 아래에서 제공되는 언어로 읽을 수 있습니다.",
+    "readInOtherLanguage": "{language}로 읽기"
   }
 }

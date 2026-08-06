@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import NextLink from 'next/link'
+import Link from '@/components/Link'
 import SocialIcon from '@/components/social-icons'
 import siteMetadata from '@/data/siteMetadata'
 
@@ -70,21 +70,21 @@ export default function Footer() {
           >
             {siteMetadata.author} · {new Date().getFullYear()}
           </motion.p>
-          <NextLink
+          <Link
             href="/"
             className="text-xs text-gray-400 dark:text-gray-600 hover:text-primary-500 dark:hover:text-primary-400 transition-colors inline-block"
           >
             <motion.span whileHover={{ scale: 1.1 }} className="inline-block">
               {siteMetadata.title}
             </motion.span>
-          </NextLink>
+          </Link>
           <div className="text-xs text-gray-400 dark:text-gray-600">
-            <NextLink
+            <Link
               href="/ai"
               className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
             >
               Connect to AI ✦
-            </NextLink>
+            </Link>
           </div>
         </motion.div>
       </motion.div>

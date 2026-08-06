@@ -1,23 +1,4 @@
-import type { Locale } from './i18n-context'
-
-/**
- * 파일명에서 언어 코드 추출
- * 예: "my-post.ko.mdx" -> "ko"
- * 예: "my-post.en.mdx" -> "en"
- * 예: "my-post.mdx" -> null
- */
-export function extractLanguageFromFilename(filename: string): Locale | null {
-  const match = filename.match(/\.(en|ko)\.mdx?$/)
-  return match ? (match[1] as Locale) : null
-}
-
-/**
- * 파일 경로에서 언어 코드 제거
- * 예: "blog/my-post.ko" -> "blog/my-post"
- */
-export function removeLanguageFromPath(path: string): string {
-  return path.replace(/\.(en|ko)$/, '')
-}
+import { HTML_LANG, type Locale } from './config'
 
 /**
  * 언어별 날짜 포맷
@@ -30,7 +11,7 @@ export function formatDate(date: string, locale: Locale): string {
     day: 'numeric',
   }
 
-  return d.toLocaleDateString(locale === 'ko' ? 'ko-KR' : 'en-US', options)
+  return d.toLocaleDateString(HTML_LANG[locale], options)
 }
 
 /**

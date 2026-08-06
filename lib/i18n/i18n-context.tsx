@@ -1,86 +1,33 @@
 'use client'
 
 import type React from 'react'
-import { createContext, useContext, useEffect, useState } from 'react'
-import enTranslations from './locales/en.json'
-import koTranslations from './locales/ko.json'
+import { createContext, useCallback, useContext, useMemo } from 'react'
+import type { Locale } from './config'
+import { translate } from './translate'
 
-export type Locale = 'en' | 'ko'
+// 단일 소스는 './config' — 서버 코드가 'use client' 모듈을 import하지 않도록 여기서 재수출만 한다
+export type { Locale }
 
 interface I18nContextType {
   locale: Locale
-  setLocale: (locale: Locale) => void
-  t: (key: string) => string
+  t: (key: string, vars?: Record<string, string | number>) => string
 }
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined)
 
-const translations = {
-  en: enTranslations,
-  ko: koTranslations,
-}
+/**
+ * locale은 URL(`/ko`, `/en`)에서 서버가 확정해 주입한다.
+ * localStorage·navigator 감지를 하지 않으므로 SSR HTML의 언어가 URL과 항상 일치하고,
+ * "ko로 그렸다가 en으로 교체되는" 초기 깜빡임이 없다.
+ */
+export function I18nProvider({ locale, children }: { locale: Locale; children: React.ReactNode }) {
+  const t = useCallback(
+    (key: string, vars?: Record<string, string | number>) => translate(locale, key, vars),
+    [locale]
+  )
+  const value = useMemo(() => ({ locale, t }), [locale, t])
 
-// 브라우저 언어 감지 함수
-function detectBrowserLanguage(): Locale {
-  if (typeof window === 'undefined') return 'en'
-
-  const browserLang = navigator.language.toLowerCase()
-
-  // 한국어 감지
-  if (browserLang.startsWith('ko')) {
-    return 'ko'
-  }
-
-  // 기본값은 영어
-  return 'en'
-}
-
-export function I18nProvider({ children }: { children: React.ReactNode }) {
-  // 서버와 클라이언트 모두 동일한 초기값으로 시작 (Hydration mismatch 방지)
-  const [locale, setLocaleState] = useState<Locale>('ko')
-  const [mounted, setMounted] = useState(false)
-
-  // 클라이언트 마운트 후 실제 locale 설정
-  useEffect(() => {
-    const savedLocale = localStorage.getItem('locale') as Locale | null
-    const initialLocale = savedLocale || detectBrowserLanguage()
-
-    setLocaleState(initialLocale)
-    setMounted(true)
-  }, [])
-
-  // HTML lang 속성 업데이트
-  useEffect(() => {
-    if (mounted && typeof document !== 'undefined') {
-      document.documentElement.lang = locale === 'ko' ? 'ko-KR' : 'en-US'
-    }
-  }, [locale, mounted])
-
-  // locale 변경 시 저장
-  const setLocale = (newLocale: Locale) => {
-    setLocaleState(newLocale)
-    localStorage.setItem('locale', newLocale)
-    // HTML lang 속성 업데이트
-    if (typeof document !== 'undefined') {
-      document.documentElement.lang = newLocale === 'ko' ? 'ko-KR' : 'en-US'
-    }
-  }
-
-  // 번역 함수
-  const t = (key: string): string => {
-    const keys = key.split('.')
-    // biome-ignore lint/suspicious/noExplicitAny: Dynamic translation key access requires any type
-    let value: any = translations[locale]
-
-    for (const k of keys) {
-      value = value?.[k]
-      if (value === undefined) break
-    }
-
-    return value || key
-  }
-
-  return <I18nContext.Provider value={{ locale, setLocale, t }}>{children}</I18nContext.Provider>
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
 }
 
 export function useI18n() {

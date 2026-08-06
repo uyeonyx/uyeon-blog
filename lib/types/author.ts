@@ -31,6 +31,8 @@ export interface AuthorCore {
   linkedin?: string
   twitter?: string
   bluesky?: string
+  /** sitemap lastmod용 */
+  updatedAt?: string
 }
 
 /** about 페이지용 — 구조화 데이터(techStack/timeline) + 컴파일된 소개글 */

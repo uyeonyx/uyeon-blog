@@ -3,6 +3,7 @@
 import { Icon } from '@iconify/react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import navLinks from '@/data/headerNavLinks'
 import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import LanguageSwitch from './LanguageSwitch'
@@ -11,14 +12,6 @@ import Logo from './Logo'
 import MobileNav from './MobileNav'
 import SearchButton from './SearchButton'
 import ThemeSwitch from './ThemeSwitch'
-
-const navLinks = [
-  { href: '/', key: 'common.home' },
-  { href: '/blog', key: 'common.blog' },
-  { href: '/tags', key: 'common.tags' },
-  { href: '/projects', key: 'common.projects' },
-  { href: '/about', key: 'common.about' },
-]
 
 const HeaderClient = () => {
   const [isHovered, setIsHovered] = useState(false)

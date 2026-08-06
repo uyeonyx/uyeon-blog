@@ -13,6 +13,8 @@ export interface Post {
   summary?: string
   date: string
   lastmod?: string
+  /** DB 저장 시각 — sitemap lastmod의 실질 소스 (lastmod는 수동 nullable이라 신뢰도가 낮다) */
+  updatedAt?: string
   tags: string[]
   draft?: boolean
   language: string
@@ -26,8 +28,6 @@ export interface Post {
   toc: any
   // biome-ignore lint/suspicious/noExplicitAny: reading-time 결과
   readingTime: any
-  // biome-ignore lint/suspicious/noExplicitAny: JSON-LD
-  structuredData: any
   body: PostBody
 }
 

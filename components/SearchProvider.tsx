@@ -2,9 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 import { KBarSearchProvider } from 'pliny/search/KBar'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { useTagLabel } from '@/components/TagLabelsProvider'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import { withLocale } from '@/lib/i18n/paths'
 import type { CoreContent } from '@/lib/types/content'
 import type { Blog } from '@/lib/types/post'
 
@@ -12,6 +13,9 @@ export const CustomSearchProvider = ({ children }: { children: React.ReactNode }
   const router = useRouter()
   const { locale, t } = useI18n()
   const tagLabel = useTagLabel()
+
+  // router.push는 components/Link을 우회하므로 여기서 직접 로케일을 붙인다
+  const go = useCallback((href: string) => router.push(withLocale(href, locale)), [router, locale])
 
   const defaultActions = useMemo(
     () => [
@@ -21,7 +25,7 @@ export const CustomSearchProvider = ({ children }: { children: React.ReactNode }
         keywords: '',
         shortcut: ['h'],
         section: 'Navigate',
-        perform: () => router.push('/'),
+        perform: () => go('/'),
       },
       {
         id: 'blog',
@@ -29,7 +33,7 @@ export const CustomSearchProvider = ({ children }: { children: React.ReactNode }
         keywords: '',
         shortcut: ['b'],
         section: 'Navigate',
-        perform: () => router.push('/blog'),
+        perform: () => go('/blog'),
       },
       {
         id: 'tags',
@@ -37,7 +41,7 @@ export const CustomSearchProvider = ({ children }: { children: React.ReactNode }
         keywords: '',
         shortcut: ['t'],
         section: 'Navigate',
-        perform: () => router.push('/tags'),
+        perform: () => go('/tags'),
       },
       {
         id: 'projects',
@@ -45,7 +49,7 @@ export const CustomSearchProvider = ({ children }: { children: React.ReactNode }
         keywords: '',
         shortcut: ['p'],
         section: 'Navigate',
-        perform: () => router.push('/projects'),
+        perform: () => go('/projects'),
       },
       {
         id: 'about',
@@ -53,35 +57,28 @@ export const CustomSearchProvider = ({ children }: { children: React.ReactNode }
         keywords: '',
         shortcut: ['a'],
         section: 'Navigate',
-        perform: () => router.push('/about'),
+        perform: () => go('/about'),
       },
     ],
-    [t, router]
+    [t, go]
   )
 
   return (
     <KBarSearchProvider
       key={locale}
       kbarConfig={{
-        searchDocumentsPath: `${process.env.BASE_PATH || ''}/search.json`,
+        // 인덱스가 이미 언어별로 나뉘어 있다 — 클라이언트 필터가 필요 없다
+        searchDocumentsPath: `${process.env.BASE_PATH || ''}/${locale}/search.json`,
         defaultActions,
         onSearchDocumentsLoad(json) {
-          // 현재 언어에 맞는 포스트만 필터링
-          return json
-            .filter((post: CoreContent<Blog>) => {
-              // language 필드가 없으면 모든 언어에서 표시
-              if (!post.language) return true
-              // language 필드가 있으면 현재 locale과 일치하는 것만 표시
-              return post.language === locale
-            })
-            .map((post: CoreContent<Blog>) => ({
-              id: post.path,
-              name: post.title,
-              keywords: post?.summary || '',
-              section: t('common.blog'),
-              subtitle: post.tags ? post.tags.map(tagLabel).join(', ') : '',
-              perform: () => router.push(`/${post.path}`),
-            }))
+          return json.map((post: CoreContent<Blog>) => ({
+            id: post.path,
+            name: post.title,
+            keywords: post?.summary || '',
+            section: t('common.blog'),
+            subtitle: post.tags ? post.tags.map(tagLabel).join(', ') : '',
+            perform: () => go(`/${post.path}`),
+          }))
         },
       }}
     >

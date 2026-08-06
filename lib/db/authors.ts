@@ -1,6 +1,7 @@
 // 공개 페이지용 작성자 조회 — 'authors' 태그로 캐시, mutation 시 revalidateTag('authors')
 import { eq } from 'drizzle-orm'
 import { unstable_cache } from 'next/cache'
+import type { Locale } from '@/lib/i18n/config'
 import type { Author, AuthorCore, TechCategory, TimelineItem } from '@/lib/types/author'
 import { getDb } from './client'
 import { authors, authorTranslations } from './schema'
@@ -32,6 +33,7 @@ const loadAuthor = unstable_cache(
         bluesky: row.bluesky ?? undefined,
         techStack: (tr.techStack as TechCategory[]) ?? [],
         timeline: (tr.timeline as TimelineItem[]) ?? [],
+        updatedAt: row.updatedAt.toISOString(),
         body: { code: tr.compiledCode ?? '' },
       })
     }
@@ -41,16 +43,21 @@ const loadAuthor = unstable_cache(
   { tags: ['authors'] }
 )
 
-/** about 페이지용 — 양 언어 전부 (클라이언트에서 locale 선택 + en 폴백) */
-export async function getAuthorPair(slug = 'default'): Promise<Author[]> {
-  return loadAuthor(slug)
+/** about 페이지용 — 해당 언어(없으면 en 폴백) */
+export async function getAuthor(language: Locale, slug = 'default'): Promise<Author | null> {
+  const rows = await loadAuthor(slug)
+  return rows.find((a) => a.language === language) ?? rows.find((a) => a.language === 'en') ?? null
 }
 
 /** 블로그 글 하단/메타데이터용 — 본문·구조화 데이터 제외 */
-export async function getAuthorCores(slug = 'default'): Promise<AuthorCore[]> {
-  return (await loadAuthor(slug)).map(
-    ({ techStack: _techStack, timeline: _timeline, body: _body, ...core }) => core
-  )
+export async function getAuthorCore(
+  language: Locale,
+  slug = 'default'
+): Promise<AuthorCore | null> {
+  const author = await getAuthor(language, slug)
+  if (!author) return null
+  const { techStack: _techStack, timeline: _timeline, body: _body, ...core } = author
+  return core
 }
 
 /** 공개 MCP about_get·llms.txt용 — 프로필 + 언어별 소개 마크다운 원문 */

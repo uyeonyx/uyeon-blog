@@ -1,6 +1,7 @@
 // 공개 페이지용 프로젝트 조회 — 'projects' 태그로 캐시, mutation 시 revalidateTag('projects')
 import { asc, eq, inArray } from 'drizzle-orm'
 import { unstable_cache } from 'next/cache'
+import type { Locale } from '@/lib/i18n/config'
 import type { Project } from '@/lib/types/project'
 import { getDb } from './client'
 import { projects, projectTranslations } from './schema'
@@ -39,6 +40,7 @@ const loadPublishedProjects = unstable_cache(
           role: tr.role ?? undefined,
           company: tr.company ?? undefined,
           tags: project.tags,
+          updatedAt: project.updatedAt.toISOString(),
           body: { code: tr.compiledCode },
         })
       }
@@ -49,8 +51,13 @@ const loadPublishedProjects = unstable_cache(
   { tags: ['projects'] }
 )
 
-/** 양 언어 전부 반환 — 클라이언트에서 locale 필터 (기존 allProjects 소비 패턴) */
-export async function getPublishedProjects(): Promise<Project[]> {
+/** 해당 언어의 프로젝트만 (표시 순서) */
+export async function getPublishedProjects(language: Locale): Promise<Project[]> {
+  return (await loadPublishedProjects()).filter((p) => p.language === language)
+}
+
+/** 언어 무관 — sitemap의 lastModified 산출용 */
+export async function getAllProjects(): Promise<Project[]> {
   return loadPublishedProjects()
 }
 

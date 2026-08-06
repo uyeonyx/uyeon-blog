@@ -3,19 +3,12 @@
 import { Icon } from '@iconify/react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
+import navLinks from '@/data/headerNavLinks'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import LanguageSwitch from './LanguageSwitch'
 import Link from './Link'
 import SearchButton from './SearchButton'
 import ThemeSwitch from './ThemeSwitch'
-
-const navLinks = [
-  { href: '/', key: 'common.home' },
-  { href: '/blog', key: 'common.blog' },
-  { href: '/tags', key: 'common.tags' },
-  { href: '/projects', key: 'common.projects' },
-  { href: '/about', key: 'common.about' },
-]
 
 const MobileNav = () => {
   const [navShow, setNavShow] = useState(false)

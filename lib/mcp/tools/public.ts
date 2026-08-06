@@ -2,18 +2,16 @@
 // draft/private/archived 필터는 lib/db/*의 로더가 SQL 레벨에서 강제하므로 여기서 상태를 다루지 않는다.
 import { slug as slugify } from 'github-slugger'
 import { z } from 'zod'
-import siteMetadata from '@/data/siteMetadata'
 import { getAuthorMarkdown } from '@/lib/db/authors'
-import {
-  getAllPublishedMarkdown,
-  getPublishedCores,
-  getPublishedPostMarkdown,
-} from '@/lib/db/posts'
+import { getAllCores, getAllPublishedMarkdown, getPublishedPostMarkdown } from '@/lib/db/posts'
 import { getAllPublishedProjectMarkdown, getPublishedProjectMarkdown } from '@/lib/db/projects'
+import type { Locale } from '@/lib/i18n/config'
+import { localeUrl } from '@/lib/seo/urls'
 import { err, type McpServer, ok } from './shared'
 
-const postUrl = (slug: string) => `${siteMetadata.siteUrl}/blog/${slug}`
-const projectUrl = () => `${siteMetadata.siteUrl}/projects`
+// 공개 URL은 전부 로케일 접두사를 갖는다. 대표 링크는 x-default와 같은 ko.
+const postUrl = (slug: string, locale: Locale = 'ko') => localeUrl(locale, `blog/${slug}`)
+const projectUrl = () => localeUrl('ko', 'projects')
 
 interface PostListItem {
   slug: string
@@ -28,7 +26,7 @@ interface PostListItem {
 
 /** 언어별 행으로 펼쳐진 cores를 slug당 1건으로 그룹핑 (최신순 유지) */
 async function listPublishedPosts(): Promise<PostListItem[]> {
-  const cores = await getPublishedCores()
+  const cores = await getAllCores()
   const bySlug = new Map<string, PostListItem>()
   for (const core of cores) {
     let item = bySlug.get(core.slug)
@@ -207,7 +205,7 @@ export function registerPublicTools(server: McpServer) {
     async () => {
       const author = await getAuthorMarkdown('default')
       if (!author) return err('소개 정보가 없습니다')
-      return ok({ ...author, url: `${siteMetadata.siteUrl}/about` })
+      return ok({ ...author, url: localeUrl('ko', 'about') })
     }
   )
 }

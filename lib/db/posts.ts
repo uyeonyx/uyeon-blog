@@ -2,7 +2,7 @@
 import { eq, inArray } from 'drizzle-orm'
 import { slug as slugify } from 'github-slugger'
 import { unstable_cache } from 'next/cache'
-import siteMetadata from '@/data/siteMetadata'
+import { isLocale, LOCALES, type Locale } from '@/lib/i18n/config'
 import type { Post, PostCore } from '@/lib/types/post'
 import { getDb } from './client'
 import { posts, postTranslations } from './schema'
@@ -36,6 +36,7 @@ const loadPublishedPosts = unstable_cache(
     for (const post of rows) {
       const date = (post.date ?? post.createdAt).toISOString()
       const lastmod = post.lastmod?.toISOString()
+      const updatedAt = post.updatedAt?.toISOString()
       const images = normalizeImages(post.images)
       for (const tr of translations.filter((t) => t.postId === post.id)) {
         if (!tr.compiledCode || !tr.title.trim()) continue
@@ -47,6 +48,7 @@ const loadPublishedPosts = unstable_cache(
           summary: tr.summary ?? undefined,
           date,
           lastmod,
+          updatedAt,
           tags: post.tags,
           draft: false,
           language: tr.language,
@@ -54,16 +56,6 @@ const loadPublishedPosts = unstable_cache(
           images,
           toc: tr.toc ?? [],
           readingTime: tr.readingTime ?? { text: '', minutes: 0, time: 0, words: 0 },
-          structuredData: {
-            '@context': 'https://schema.org',
-            '@type': 'BlogPosting',
-            headline: tr.title,
-            datePublished: date,
-            dateModified: lastmod || date,
-            description: tr.summary ?? undefined,
-            image: images?.[0] ?? siteMetadata.socialBanner,
-            url: `${siteMetadata.siteUrl}/blog/${post.slug}`,
-          },
           body: { code: tr.compiledCode },
         })
       }
@@ -80,24 +72,42 @@ function stripBody(post: Post): PostCore {
   return core
 }
 
-/** 목록/검색/RSS용 — 본문 제외 */
-export async function getPublishedCores(): Promise<PostCore[]> {
+/**
+ * 목록/검색/RSS용 — 본문 제외, 해당 언어만.
+ *
+ * 캐시 로더는 양 언어를 통째로 들고 있고 필터는 여기서 한다. 언어별로 캐시 키를 쪼개면
+ * revalidateTag('posts') 시 ko/en 중 한쪽만 신선한 창이 생기고 콜드스타트 DB 왕복도 2배가 된다.
+ */
+export async function getPublishedCores(language: Locale): Promise<PostCore[]> {
+  return (await loadPublishedPosts()).filter((p) => p.language === language).map(stripBody)
+}
+
+/** 언어 무관 — sitemap처럼 양 언어를 함께 봐야 하는 곳에서만 쓴다 */
+export async function getAllCores(): Promise<PostCore[]> {
   return (await loadPublishedPosts()).map(stripBody)
 }
 
-/** 상세 페이지용 — 해당 slug의 언어별 문서(컴파일된 본문 포함) */
-export async function getPostPair(slug: string): Promise<Post[]> {
-  return (await loadPublishedPosts()).filter((p) => p.slug === slug)
+/** 상세 페이지용 — 해당 언어의 문서(컴파일된 본문 포함). 없으면 null */
+export async function getPost(slug: string, language: Locale): Promise<Post | null> {
+  return (
+    (await loadPublishedPosts()).find((p) => p.slug === slug && p.language === language) ?? null
+  )
 }
 
-/** 태그 카운트 — slug당 1회 카운트 (기존 createTagCount 로직) */
-export async function getTagCounts(): Promise<Record<string, number>> {
-  const cores = await getPublishedCores()
+/** 이 글이 존재하는 언어 목록 — hreflang과 미번역 안내에 쓴다 */
+export async function getPostLocales(slug: string): Promise<Locale[]> {
+  const langs = (await loadPublishedPosts())
+    .filter((p) => p.slug === slug)
+    .map((p) => p.language)
+    .filter(isLocale)
+  return LOCALES.filter((l) => langs.includes(l))
+}
+
+/** 태그 카운트 — 해당 언어로 존재하는 글만 센다 */
+export async function getTagCounts(language: Locale): Promise<Record<string, number>> {
+  const cores = await getPublishedCores(language)
   const tagCount: Record<string, number> = {}
-  const processed = new Set<string>()
   for (const post of cores) {
-    if (processed.has(post.slug)) continue
-    processed.add(post.slug)
     for (const tag of post.tags) {
       const formatted = slugify(tag)
       tagCount[formatted] = (tagCount[formatted] ?? 0) + 1
@@ -107,8 +117,8 @@ export async function getTagCounts(): Promise<Record<string, number>> {
 }
 
 /** 특정 태그의 글 목록 (본문 제외, 최신순) */
-export async function getCoresByTag(tag: string): Promise<PostCore[]> {
-  const cores = await getPublishedCores()
+export async function getCoresByTag(tag: string, language: Locale): Promise<PostCore[]> {
+  const cores = await getPublishedCores(language)
   return cores.filter((p) => p.tags.map((t) => slugify(t)).includes(tag))
 }
 

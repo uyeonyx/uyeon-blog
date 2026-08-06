@@ -10,5 +10,7 @@ export interface Project {
   role?: string
   company?: string
   tags: string[]
+  /** sitemap lastmod용 */
+  updatedAt?: string
   body: { code: string }
 }

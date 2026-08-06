@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
-import Link from 'next/link'
+import Link from '@/components/Link'
 import { useTagLabel } from '@/components/TagLabelsProvider'
 
 interface Props {

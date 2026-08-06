@@ -1,176 +1,78 @@
-# 다국어 블로그 가이드
+# 다국어 가이드
 
-이 블로그는 영어(en)와 한국어(ko) 두 가지 언어를 지원합니다.
+이 블로그는 한국어(ko)와 영어(en)를 지원하며, **언어는 URL로 결정된다**.
 
-## 주요 기능
-
-### 1. 언어 자동 감지
-- 처음 방문 시 브라우저의 언어 설정을 감지하여 자동으로 언어 설정
-- 한국어 브라우저 → 한국어로 표시
-- 그 외 → 영어로 표시
-
-### 2. 언어 전환
-- 헤더의 언어 전환 버튼(🌐)을 클릭하여 언어 변경
-- 선택한 언어는 브라우저에 저장되어 다음 방문 시 유지
-
-### 3. 언어별 포스트
-- 각 포스트는 언어별로 별도 작성
-- 해당 언어로 작성되지 않은 포스트는 표시되지 않음
-
-## 블로그 포스트 작성 방법
-
-### 파일명 규칙
-포스트 파일은 언어 코드를 포함한 파일명으로 작성합니다:
+## URL 규칙
 
 ```
-data/blog/포스트제목.en.mdx  (영어 버전)
-data/blog/포스트제목.ko.mdx  (한국어 버전)
+https://uyeon.dev/ko/blog/some-post   ← 한국어
+https://uyeon.dev/en/blog/some-post   ← 영어
 ```
 
-### 예시
+- 모든 공개 라우트는 `app/(site)/[locale]/**` 아래에 있다. 새 페이지를 추가할 때도 반드시 이 아래에 만든다.
+- 무접두사 URL(`/blog/x`, `/about`, `/feed.xml` …)은 `next.config.js`의 `redirects()`가 **308**로 `/ko/...`에 보낸다.
+- 루트 `/`는 `NEXT_LOCALE` 쿠키가 있으면 그 언어로, 없으면 `/ko`로 **307**(비영구) 보낸다.
+  쿠키 의존 응답이라 영구 리다이렉트를 쓰면 브라우저가 캐시해 언어가 고착된다.
+- **브라우저 언어 자동 감지는 하지 않는다.** 크롤러가 항상 같은 콘텐츠를 보게 해서 hreflang 신호를 깨끗하게 유지하기 위함이다.
+  사용자가 헤더의 언어 스위처를 누르면 그 선택이 쿠키에 기록되고, 다음번 루트 진입에만 쓰인다.
 
-**영어 포스트** (`data/blog/my-post.en.mdx`):
-```mdx
----
-title: 'My First Post'
-date: '2024-01-15'
-tags: ['welcome', 'tutorial']
-draft: false
-summary: 'This is my first blog post in English.'
----
+- 어떤 라우트에도 매칭되지 않는 URL(`/foo/bar`)은 `app/global-not-found.tsx`가 404를 준다.
+  로케일 세그먼트 안에서 난 `notFound()`는 `app/(site)/[locale]/not-found.tsx`가 받는다.
 
-# Welcome!
+로케일 세그먼트를 갖지 않는 경로(프로토콜 엔드포인트):
+`/admin`, `/api/**`, `/mcp`, `/og/[locale]/[slug]`, `/robots.txt`, `/sitemap.xml`, `/llms.txt`, `/llms-full.txt`, `/.well-known/**`
 
-This is the content of my post in English.
-```
+## 콘텐츠
 
-**한국어 포스트** (`data/blog/my-post.ko.mdx`):
-```mdx
----
-title: '나의 첫 포스트'
-date: '2024-01-15'
-tags: ['welcome', 'tutorial']
-draft: false
-summary: '한국어로 작성한 첫 번째 블로그 포스트입니다.'
----
+글·프로젝트·소개는 전부 Postgres에 있고 `*_translations` 테이블이 언어별 행을 갖는다.
+MDX 파일이나 `.ko.mdx` 파일명 규칙은 더 이상 존재하지 않는다 — 작성은 `/admin` 또는 MCP로 한다.
 
-# 환영합니다!
+- 한쪽 언어만 있는 글: 반대 언어 URL은 **200 + noindex** 안내 페이지(`PostNotice variant="untranslated"`)를 주고,
+  hreflang과 sitemap에는 실제 존재하는 언어만 싣는다.
+- 태그는 `tags` 마스터 테이블이 slug → `labelKo`/`labelEn`을 갖는다. 글의 frontmatter 태그는 slug 기준이다.
 
-한국어로 작성된 포스트 내용입니다.
-```
+## 코드에서 언어 다루기
 
-> **중요**: 태그는 영어와 한국어 포스트 모두 **동일한 영어 slug**를 사용합니다!
+| 상황 | 방법 |
+|---|---|
+| 서버 컴포넌트/라우트 | `params.locale` → `assertLocale()` (`lib/i18n/route.ts`) |
+| 서버에서 번역 문자열 | `getTranslations(locale)` (`lib/i18n/translate.ts`) |
+| 클라이언트 컴포넌트 | `useI18n()` → `{ locale, t }` |
+| DB 조회 | `getPublishedCores(locale)`, `getPost(slug, locale)`, `getTagCounts(locale)` … |
+| 내부 링크 | `@/components/Link` — 로케일 접두사를 자동으로 붙인다 (멱등) |
+| `router.push` 등 Link 우회 | `withLocale(href, locale)` (`lib/i18n/paths.ts`) |
+| 절대 URL / hreflang | `lib/seo/urls.ts`의 `localeUrl`, `hreflangMap`, `absoluteUrl` |
 
-### 주의사항
-
-1. **파일명**: 언어 코드(`.en` 또는 `.ko`)를 반드시 `.mdx` 앞에 포함
-2. **동일한 slug**: 같은 포스트의 다른 언어 버전은 언어 코드를 제외한 파일명이 동일해야 함
-3. **필수 필드**: `title`, `date`, `summary`는 필수 항목
-4. **태그**: **영어 slug로만 작성** (예: `['welcome', 'introduction']`)
-
-## 프로젝트 구조
-
-```
-lib/
-  i18n/
-    i18n-context.tsx             # 언어 컨텍스트
-    filter-posts.ts              # 포스트 필터링 함수
-    tag-translations.ts          # 태그 번역 함수
-    utils.ts                     # i18n 유틸리티
-    locales/
-      en.json                    # 영어 UI 번역
-      ko.json                    # 한국어 UI 번역
-      tag-translations.json      # 태그 번역
-
-components/
-  LanguageSwitch.tsx             # 언어 전환 컴포넌트
-
-data/
-  blog/
-    welcome.en.mdx               # 영어 포스트 예시
-    welcome.ko.mdx               # 한국어 포스트 예시
-```
-
-## 태그 번역 관리
-
-태그는 **영어 slug로 통일**하고, 표시할 때만 현재 언어로 번역됩니다.
-
-### 태그 번역 추가/수정
-
-`lib/i18n/locales/tag-translations.json` 파일을 편집합니다:
-
-```json
-{
-  "welcome": {
-    "en": "Welcome",
-    "ko": "환영"
-  },
-  "web-development": {
-    "en": "Web Development",
-    "ko": "웹개발"
-  }
-}
-```
-
-### 포스트에서 태그 사용
-
-포스트의 frontmatter에는 **영어 slug만** 사용합니다:
-
-```mdx
----
-title: '나의 첫 포스트'
-tags: ['welcome', 'web-development']
----
-```
-
-태그는 자동으로 현재 언어에 맞게 번역되어 표시됩니다:
-- 영어: Welcome, Web Development
-- 한국어: 환영, 웹개발
-
-## UI 텍스트 번역
-
-UI 텍스트를 추가하거나 수정하려면 다음 파일을 편집합니다:
-
-- `lib/i18n/locales/en.json` (영어)
-- `lib/i18n/locales/ko.json` (한국어)
-
-### 사용 예시
-
-```typescript
-import { useI18n } from '@/lib/i18n/i18n-context'
-
-function MyComponent() {
-  const { t } = useI18n()
-  
-  return <div>{t('blog.readMore')}</div>
-}
-```
-
-## 빌드 및 실행
+`next/link`를 직접 import하는 곳은 `components/Link.tsx`와 `components/LanguageSwitch.tsx`(이미 완성된 절대경로를 쓴다) 둘뿐이어야 한다:
 
 ```bash
-# 개발 서버 실행
-pnpm dev
-
-# 프로덕션 빌드
-pnpm build
-
-# 프로덕션 서버 실행
-pnpm serve
+grep -rn "from 'next/link'" app components layouts | grep -v admin
 ```
 
-## 문제 해결
+`I18nProvider`는 `locale`을 prop으로 받는다. localStorage·`navigator.language`를 읽지 않으므로
+SSR HTML의 언어가 URL과 항상 일치하고 초기 깜빡임이 없다.
 
-### 포스트가 표시되지 않는 경우
-1. 파일명에 언어 코드(`.en.mdx` 또는 `.ko.mdx`)가 올바르게 포함되어 있는지 확인
-2. frontmatter의 `draft` 필드가 `false`인지 확인
-3. 현재 선택된 언어와 포스트 언어가 일치하는지 확인
+## UI 문자열
 
-### 언어 전환이 작동하지 않는 경우
-1. 브라우저의 로컬 스토리지를 확인
-2. 페이지를 새로고침
+`lib/i18n/locales/{ko,en}.json`. `t('a.b.c')`로 조회하고, `{n}`·`{tag}` 같은 플레이스홀더는
+`t('seo.pageSuffix', { n: 2 })` 형태로 치환한다. 미스 시 키를 그대로 반환한다.
 
-### 빌드 오류
-1. Contentlayer 캐시 삭제: `.contentlayer` 폴더 삭제 후 재빌드
-2. 의존성 재설치: `pnpm install`
+## SEO 관련 규칙
 
+- 페이지 메타데이터는 반드시 `genPageMetadata({ locale, seg, ... })`(`app/seo.tsx`)로 만든다.
+  canonical·hreflang·RSS `alternates`를 한 곳에서 조립한다 — Metadata는 세그먼트 간 shallow merge라
+  자식이 `alternates`를 직접 건드리면 부모의 RSS types가 사라진다.
+- 페이지네이션(`/blog/page/N`)은 self-canonical + `noHreflang: true`이고 sitemap에는 넣지 않는다.
+  언어별 글 수가 달라 N페이지끼리는 번역 관계가 아니다.
+- 구조화 데이터는 `lib/seo/jsonld.ts`에서 만들고 서버 컴포넌트(`components/JsonLd.tsx`)로 렌더한다.
+  DB 계층에 두지 않는다 — author/locale/canonical은 페이지 레벨 정보다.
+
+## 검증
+
+```bash
+curl -sI localhost:3000/blog/x                    # 308 → /ko/blog/x
+curl -sI -H 'Cookie: NEXT_LOCALE=en' localhost:3000/   # 307 → /en
+curl -s localhost:3000/en/blog | grep -c '/ko/ko/'     # 0
+curl -s localhost:3000/sitemap.xml | xmllint --noout -
+grep -rn "usePathname" layouts                     # 0 (경로 역산 금지)
+```
