@@ -12,17 +12,18 @@ export async function GET(request: NextRequest) {
   const db = getDb()
   const status = request.nextUrl.searchParams.get('status')
 
-  const rows = await db
-    .select()
-    .from(posts)
-    .where(
-      status === 'draft' || status === 'published' || status === 'archived'
-        ? eq(posts.status, status)
-        : undefined
-    )
-    .orderBy(desc(posts.updatedAt))
-
-  const translations = rows.length > 0 ? await db.select().from(postTranslations) : []
+  const [rows, translations] = await Promise.all([
+    db
+      .select()
+      .from(posts)
+      .where(
+        status === 'draft' || status === 'published' || status === 'archived'
+          ? eq(posts.status, status)
+          : undefined
+      )
+      .orderBy(desc(posts.updatedAt)),
+    db.select().from(postTranslations),
+  ])
 
   const items = rows.map((post) => {
     const trs = translations.filter((t) => t.postId === post.id)

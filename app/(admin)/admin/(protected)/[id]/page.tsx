@@ -13,13 +13,11 @@ export default async function EditPostPage(props: { params: Promise<{ id: string
   if (!UUID_PATTERN.test(id)) notFound()
 
   const db = getDb()
-  const [post] = await db.select().from(posts).where(eq(posts.id, id))
+  const [[post], translations] = await Promise.all([
+    db.select().from(posts).where(eq(posts.id, id)),
+    db.select().from(postTranslations).where(eq(postTranslations.postId, id)),
+  ])
   if (!post) notFound()
-
-  const translations = await db
-    .select()
-    .from(postTranslations)
-    .where(eq(postTranslations.postId, id))
 
   const initial: PostEditorData = {
     id: post.id,

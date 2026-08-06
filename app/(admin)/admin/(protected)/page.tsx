@@ -32,12 +32,14 @@ export default async function AdminPostListPage(props: {
     status === 'draft' || status === 'published' || status === 'archived' ? status : undefined
 
   const db = getDb()
-  const rows = await db
-    .select()
-    .from(posts)
-    .where(filter ? eq(posts.status, filter) : undefined)
-    .orderBy(desc(posts.updatedAt))
-  const translations = rows.length > 0 ? await db.select().from(postTranslations) : []
+  const [rows, translations] = await Promise.all([
+    db
+      .select()
+      .from(posts)
+      .where(filter ? eq(posts.status, filter) : undefined)
+      .orderBy(desc(posts.updatedAt)),
+    db.select().from(postTranslations),
+  ])
 
   return (
     <div className="space-y-6">
