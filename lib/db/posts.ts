@@ -112,6 +112,67 @@ export async function getCoresByTag(tag: string): Promise<PostCore[]> {
   return cores.filter((p) => p.tags.map((t) => slugify(t)).includes(tag))
 }
 
+/** 공개 MCP·llms.txt용 마크다운 원문 — published만 SQL 레벨에서 필터 */
+export interface PublishedPostMarkdown {
+  slug: string
+  tags: string[]
+  date: string
+  lastmod?: string
+  translations: Partial<Record<'ko' | 'en', { title: string; summary?: string; markdown: string }>>
+}
+
+const loadPublishedMarkdown = unstable_cache(
+  async (): Promise<PublishedPostMarkdown[]> => {
+    const db = getDb()
+    const rows = await db.select().from(posts).where(eq(posts.status, 'published'))
+    if (rows.length === 0) return []
+    const translations = await db
+      .select()
+      .from(postTranslations)
+      .where(
+        inArray(
+          postTranslations.postId,
+          rows.map((r) => r.id)
+        )
+      )
+
+    const result: PublishedPostMarkdown[] = []
+    for (const post of rows) {
+      const item: PublishedPostMarkdown = {
+        slug: post.slug,
+        tags: post.tags,
+        date: (post.date ?? post.createdAt).toISOString(),
+        lastmod: post.lastmod?.toISOString(),
+        translations: {},
+      }
+      for (const tr of translations.filter((t) => t.postId === post.id)) {
+        if (!tr.compiledCode || !tr.title.trim()) continue
+        item.translations[tr.language as 'ko' | 'en'] = {
+          title: tr.title,
+          summary: tr.summary ?? undefined,
+          markdown: tr.contentMd,
+        }
+      }
+      if (Object.keys(item.translations).length > 0) result.push(item)
+    }
+    return result.sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
+  },
+  ['published-posts-markdown'],
+  { tags: ['posts'] }
+)
+
+/** 공개 post_get용 — published가 아니면 null (draft/private/archived 구분 없이 미존재 취급) */
+export async function getPublishedPostMarkdown(
+  slug: string
+): Promise<PublishedPostMarkdown | null> {
+  return (await loadPublishedMarkdown()).find((p) => p.slug === slug) ?? null
+}
+
+/** llms-full.txt·공개 검색용 — 전체 published 글 (최신순) */
+export async function getAllPublishedMarkdown(): Promise<PublishedPostMarkdown[]> {
+  return loadPublishedMarkdown()
+}
+
 /**
  * 상세 페이지에서 404와 비공개 안내를 구분하기 위한 조회.
  * published/private만 반환하고 draft/archived/미존재는 null (=404 유지).

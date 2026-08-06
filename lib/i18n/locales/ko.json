@@ -31,6 +31,31 @@
       "philosophy": "철학",
       "techStack": "기술 스택",
       "timeline": "경력"
+    },
+    "ai": {
+      "title": "AI에 연결",
+      "description": "이 블로그를 당신의 Claude에 연결하세요",
+      "intro": "이 블로그는 공개 read-only MCP 서버를 제공합니다. 아래 방법으로 연결하면 당신의 AI가 이 블로그의 글·프로젝트·소개를 직접 읽고 검색할 수 있습니다. 인증은 필요 없습니다.",
+      "claudeAiTitle": "claude.ai에서 연결",
+      "claudeAiSteps": "설정 → 커넥터 → 커스텀 커넥터 추가에서 아래 URL을 붙여넣으세요.",
+      "claudeCodeTitle": "Claude Code에서 연결",
+      "claudeCodeSteps": "터미널에서 아래 명령을 실행하세요.",
+      "otherTitle": "다른 MCP 클라이언트",
+      "otherSteps": "Streamable HTTP 트랜스포트를 지원하는 클라이언트라면 아래 설정을 사용하세요.",
+      "toolsTitle": "제공되는 도구",
+      "tools": {
+        "posts_list": "게시된 글 목록 (태그 필터·페이지네이션)",
+        "post_get": "글 하나의 ko/en 마크다운 본문",
+        "posts_search": "키워드 검색 (제목·태그·요약·본문)",
+        "projects_list": "프로젝트 목록",
+        "project_get": "프로젝트 상세 마크다운",
+        "about_get": "저자 소개·기술 스택·경력"
+      },
+      "noticeTitle": "참고",
+      "notice1": "읽기 전용이며 게시된 콘텐츠만 노출됩니다.",
+      "notice2": "과도한 요청은 잠시 제한될 수 있습니다 (rate limit).",
+      "llmsTxt": "크롤러·에이전트용 인덱스도 제공합니다:",
+      "copy": "복사"
     }
   },
   "blog": {

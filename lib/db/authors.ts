@@ -52,3 +52,68 @@ export async function getAuthorCores(slug = 'default'): Promise<AuthorCore[]> {
     ({ techStack: _techStack, timeline: _timeline, body: _body, ...core }) => core
   )
 }
+
+/** 공개 MCP about_get·llms.txt용 — 프로필 + 언어별 소개 마크다운 원문 */
+export interface AuthorMarkdown {
+  slug: string
+  avatar?: string
+  email?: string
+  github?: string
+  linkedin?: string
+  twitter?: string
+  bluesky?: string
+  translations: Partial<
+    Record<
+      'ko' | 'en',
+      {
+        name: string
+        occupation?: string
+        company?: string
+        techStack: TechCategory[]
+        timeline: TimelineItem[]
+        markdown: string
+      }
+    >
+  >
+}
+
+const loadAuthorMarkdown = unstable_cache(
+  async (slug: string): Promise<AuthorMarkdown | null> => {
+    const db = getDb()
+    const [row] = await db.select().from(authors).where(eq(authors.slug, slug))
+    if (!row) return null
+    const translations = await db
+      .select()
+      .from(authorTranslations)
+      .where(eq(authorTranslations.authorId, row.id))
+
+    const item: AuthorMarkdown = {
+      slug: row.slug,
+      avatar: row.avatarUrl ?? undefined,
+      email: row.email ?? undefined,
+      github: row.github ?? undefined,
+      linkedin: row.linkedin ?? undefined,
+      twitter: row.twitter ?? undefined,
+      bluesky: row.bluesky ?? undefined,
+      translations: {},
+    }
+    for (const tr of translations) {
+      if (!tr.name.trim()) continue
+      item.translations[tr.language as 'ko' | 'en'] = {
+        name: tr.name,
+        occupation: tr.occupation ?? undefined,
+        company: tr.company ?? undefined,
+        techStack: (tr.techStack as TechCategory[]) ?? [],
+        timeline: (tr.timeline as TimelineItem[]) ?? [],
+        markdown: tr.contentMd,
+      }
+    }
+    return item
+  },
+  ['author-markdown'],
+  { tags: ['authors'] }
+)
+
+export async function getAuthorMarkdown(slug = 'default'): Promise<AuthorMarkdown | null> {
+  return loadAuthorMarkdown(slug)
+}

@@ -53,3 +53,83 @@ const loadPublishedProjects = unstable_cache(
 export async function getPublishedProjects(): Promise<Project[]> {
   return loadPublishedProjects()
 }
+
+/** 공개 MCP용 상세 마크다운 — published만 SQL 레벨에서 필터 */
+export interface PublishedProjectMarkdown {
+  slug: string
+  tags: string[]
+  href?: string
+  imgSrc?: string
+  translations: Partial<
+    Record<
+      'ko' | 'en',
+      {
+        title: string
+        description: string
+        period?: string
+        role?: string
+        company?: string
+        markdown: string
+      }
+    >
+  >
+}
+
+const loadPublishedProjectMarkdown = unstable_cache(
+  async (): Promise<PublishedProjectMarkdown[]> => {
+    const db = getDb()
+    const rows = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.published, true))
+      .orderBy(asc(projects.displayOrder), asc(projects.slug))
+    if (rows.length === 0) return []
+    const translations = await db
+      .select()
+      .from(projectTranslations)
+      .where(
+        inArray(
+          projectTranslations.projectId,
+          rows.map((r) => r.id)
+        )
+      )
+
+    const result: PublishedProjectMarkdown[] = []
+    for (const project of rows) {
+      const item: PublishedProjectMarkdown = {
+        slug: project.slug,
+        tags: project.tags,
+        href: project.href ?? undefined,
+        imgSrc: project.imgSrc ?? undefined,
+        translations: {},
+      }
+      for (const tr of translations.filter((t) => t.projectId === project.id)) {
+        if (!tr.compiledCode || !tr.title.trim()) continue
+        item.translations[tr.language as 'ko' | 'en'] = {
+          title: tr.title,
+          description: tr.description,
+          period: tr.period ?? undefined,
+          role: tr.role ?? undefined,
+          company: tr.company ?? undefined,
+          markdown: tr.contentMd,
+        }
+      }
+      if (Object.keys(item.translations).length > 0) result.push(item)
+    }
+    return result
+  },
+  ['published-projects-markdown'],
+  { tags: ['projects'] }
+)
+
+/** 공개 project_get용 — published가 아니면 null */
+export async function getPublishedProjectMarkdown(
+  slug: string
+): Promise<PublishedProjectMarkdown | null> {
+  return (await loadPublishedProjectMarkdown()).find((p) => p.slug === slug) ?? null
+}
+
+/** 공개 projects_list·llms.txt용 — 전체 published 프로젝트 (표시 순서) */
+export async function getAllPublishedProjectMarkdown(): Promise<PublishedProjectMarkdown[]> {
+  return loadPublishedProjectMarkdown()
+}

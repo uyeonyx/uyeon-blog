@@ -78,6 +78,14 @@ export default function Footer() {
               {siteMetadata.title}
             </motion.span>
           </NextLink>
+          <div className="text-xs text-gray-400 dark:text-gray-600">
+            <NextLink
+              href="/ai"
+              className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+            >
+              Connect to AI ✦
+            </NextLink>
+          </div>
         </motion.div>
       </motion.div>
     </footer>

@@ -31,6 +31,31 @@
       "philosophy": "Philosophy",
       "techStack": "Tech Stack",
       "timeline": "Experience"
+    },
+    "ai": {
+      "title": "Connect to AI",
+      "description": "Connect this blog to your Claude",
+      "intro": "This blog serves a public read-only MCP server. Connect it and your AI can read and search the posts, projects, and about page directly. No authentication required.",
+      "claudeAiTitle": "Connect from claude.ai",
+      "claudeAiSteps": "Go to Settings → Connectors → Add custom connector and paste the URL below.",
+      "claudeCodeTitle": "Connect from Claude Code",
+      "claudeCodeSteps": "Run the command below in your terminal.",
+      "otherTitle": "Other MCP clients",
+      "otherSteps": "Any client supporting the Streamable HTTP transport can use the config below.",
+      "toolsTitle": "Available tools",
+      "tools": {
+        "posts_list": "List published posts (tag filter, pagination)",
+        "post_get": "Full ko/en markdown of a post",
+        "posts_search": "Keyword search (title, tags, summary, body)",
+        "projects_list": "List projects",
+        "project_get": "Project detail markdown",
+        "about_get": "Author profile, tech stack, experience"
+      },
+      "noticeTitle": "Notes",
+      "notice1": "Read-only — only published content is exposed.",
+      "notice2": "Excessive requests may be temporarily rate limited.",
+      "llmsTxt": "Indexes for crawlers and agents are also available:",
+      "copy": "Copy"
     }
   },
   "blog": {
