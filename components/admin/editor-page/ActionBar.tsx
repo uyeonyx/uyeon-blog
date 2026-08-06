@@ -81,16 +81,22 @@ export default function ActionBar(props: ActionBarProps) {
               <Icon icon="solar:diskette-bold" className="size-4" />
               <span className="hidden sm:inline">저장</span>
             </AdminButton>
-            {status !== 'published' && (
+            {(status === 'draft' || status === 'archived' || status === 'private') && (
               <AdminButton variant="primary" onClick={() => onChangeStatus('published')}>
                 <Icon icon="solar:plain-bold" className="size-4" />
-                게시
+                {status === 'private' ? '공개로 전환' : '게시'}
               </AdminButton>
             )}
             {status === 'published' && (
+              <AdminButton onClick={() => onChangeStatus('private')} className="px-3">
+                <Icon icon="solar:eye-closed-bold" className="size-4" />
+                <span className="hidden sm:inline">비공개로 전환</span>
+              </AdminButton>
+            )}
+            {(status === 'published' || status === 'private') && (
               <AdminButton onClick={() => onChangeStatus('draft')} className="px-3">
                 <Icon icon="solar:undo-left-bold" className="size-4" />
-                <span className="hidden sm:inline">초안으로</span>
+                <span className="hidden md:inline">초안으로</span>
               </AdminButton>
             )}
             {status !== 'archived' ? (

@@ -10,7 +10,9 @@ export default async function AdminPostListPage(props: {
 }) {
   const { status } = await props.searchParams
   const filter =
-    status === 'draft' || status === 'published' || status === 'archived' ? status : undefined
+    status === 'draft' || status === 'published' || status === 'private' || status === 'archived'
+      ? status
+      : undefined
 
   const db = getDb()
   const [rows, translations, countRows] = await Promise.all([

@@ -38,17 +38,19 @@ export function AdminTextarea({ className, ...props }: ComponentProps<'textarea'
   return <textarea className={cn(inputClass, className)} {...props} />
 }
 
-export type PostStatus = 'draft' | 'published' | 'archived'
+export type PostStatus = 'draft' | 'published' | 'private' | 'archived'
 
 export const STATUS_LABEL: Record<PostStatus, string> = {
   draft: '초안',
-  published: '게시됨',
+  published: '공개',
+  private: '비공개',
   archived: '아카이브',
 }
 
 const statusBadgeVariants: Record<PostStatus, string> = {
   draft: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
   published: 'bg-primary-500/10 text-primary-600 dark:text-primary-400',
+  private: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
   archived: 'bg-gray-500/10 text-gray-500 dark:text-gray-400',
 }
 

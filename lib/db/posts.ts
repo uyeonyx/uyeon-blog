@@ -100,3 +100,18 @@ export async function getCoresByTag(tag: string): Promise<PostCore[]> {
   const cores = await getPublishedCores()
   return cores.filter((p) => p.tags.map((t) => slugify(t)).includes(tag))
 }
+
+/**
+ * 상세 페이지에서 404와 비공개 안내를 구분하기 위한 조회.
+ * published/private만 반환하고 draft/archived/미존재는 null (=404 유지).
+ */
+export const getPostStatusBySlug = unstable_cache(
+  async (slug: string): Promise<'published' | 'private' | null> => {
+    const db = getDb()
+    const [row] = await db.select({ status: posts.status }).from(posts).where(eq(posts.slug, slug))
+    if (!row) return null
+    return row.status === 'published' || row.status === 'private' ? row.status : null
+  },
+  ['post-status-by-slug'],
+  { tags: ['posts'] }
+)

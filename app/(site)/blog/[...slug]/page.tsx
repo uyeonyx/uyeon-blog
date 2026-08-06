@@ -4,8 +4,9 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { coreContent } from 'pliny/utils/contentlayer'
 import siteMetadata from '@/data/siteMetadata'
-import { getPostPair, getPublishedCores } from '@/lib/db/posts'
+import { getPostPair, getPostStatusBySlug, getPublishedCores } from '@/lib/db/posts'
 import BlogPostClient from './BlogPostClient'
+import PrivatePostNotice from './PrivatePostNotice'
 
 // DB 조회 페이지 — 빌드 타임 프리렌더 대신 요청 시 렌더 (데이터는 'posts' 태그로 캐시됨)
 export const dynamic = 'force-dynamic'
@@ -18,6 +19,9 @@ export async function generateMetadata(props: {
   const pair = await getPostPair(slug)
   const post = pair[0]
   if (!post) {
+    if ((await getPostStatusBySlug(slug)) === 'private') {
+      return { title: '비공개 글', robots: { index: false, follow: false } }
+    }
     return
   }
   const authorList = post.authors || ['default']
@@ -70,6 +74,10 @@ export default async function Page(props: { params: Promise<{ slug: string[] }> 
   // 해당 slug의 언어별 문서(본문 포함)와 전체 목록(본문 제외 — prev/next 계산용)
   const [pair, cores] = await Promise.all([getPostPair(slug), getPublishedCores()])
   if (pair.length === 0) {
+    // 존재하지만 비공개인 글은 404 대신 안내 페이지
+    if ((await getPostStatusBySlug(slug)) === 'private') {
+      return <PrivatePostNotice />
+    }
     return notFound()
   }
 

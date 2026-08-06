@@ -40,6 +40,7 @@ const TABS: Array<{ key: 'all' | PostStatus; label: string }> = [
   { key: 'all', label: '전체' },
   { key: 'draft', label: STATUS_LABEL.draft },
   { key: 'published', label: STATUS_LABEL.published },
+  { key: 'private', label: STATUS_LABEL.private },
   { key: 'archived', label: STATUS_LABEL.archived },
 ]
 

@@ -11,7 +11,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core'
 
-export const postStatusEnum = pgEnum('post_status', ['draft', 'published', 'archived'])
+export const postStatusEnum = pgEnum('post_status', ['draft', 'published', 'private', 'archived'])
 
 export const posts = pgTable(
   'posts',

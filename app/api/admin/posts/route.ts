@@ -17,7 +17,10 @@ export async function GET(request: NextRequest) {
       .select()
       .from(posts)
       .where(
-        status === 'draft' || status === 'published' || status === 'archived'
+        status === 'draft' ||
+          status === 'published' ||
+          status === 'private' ||
+          status === 'archived'
           ? eq(posts.status, status)
           : undefined
       )
