@@ -14,15 +14,25 @@ const ALERT_LABELS: Record<AlertVariant, string> = {
   caution: 'Caution',
 }
 
-export interface SlashCommandOptions {
-  onImagePick: () => void
+const ALERT_ICONS: Record<AlertVariant, string> = {
+  note: 'solar:info-circle-bold',
+  tip: 'solar:lightbulb-bold',
+  important: 'solar:danger-circle-bold',
+  warning: 'solar:shield-warning-bold',
+  caution: 'solar:forbidden-circle-bold',
 }
 
-function buildItems({ onImagePick }: SlashCommandOptions): SlashItem[] {
+export interface SlashCommandOptions {
+  onImagePick: () => void
+  onMathPick: (type: 'inline' | 'block') => void
+}
+
+function buildItems({ onImagePick, onMathPick }: SlashCommandOptions): SlashItem[] {
   const items: SlashItem[] = [
     ...([1, 2, 3] as const).map((level) => ({
       title: `제목 ${level}`,
       description: `H${level} 헤딩`,
+      icon: 'solar:text-bold-square',
       keywords: [`h${level}`, 'heading', 'title', '제목'],
       command: ({ editor, range }) =>
         editor.chain().focus().deleteRange(range).setNode('heading', { level }).run(),
@@ -30,6 +40,7 @@ function buildItems({ onImagePick }: SlashCommandOptions): SlashItem[] {
     {
       title: '글머리 목록',
       description: '순서 없는 목록',
+      icon: 'solar:list-bold',
       keywords: ['bullet', 'list', 'ul', '목록'],
       command: ({ editor, range }) =>
         editor.chain().focus().deleteRange(range).toggleBulletList().run(),
@@ -37,6 +48,7 @@ function buildItems({ onImagePick }: SlashCommandOptions): SlashItem[] {
     {
       title: '번호 목록',
       description: '순서 있는 목록',
+      icon: 'solar:sort-by-alphabet-bold',
       keywords: ['ordered', 'number', 'ol', '번호'],
       command: ({ editor, range }) =>
         editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
@@ -44,6 +56,7 @@ function buildItems({ onImagePick }: SlashCommandOptions): SlashItem[] {
     {
       title: '인용문',
       description: '블록 인용',
+      icon: 'solar:chat-square-quote-bold',
       keywords: ['quote', 'blockquote', '인용'],
       command: ({ editor, range }) =>
         editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
@@ -51,6 +64,7 @@ function buildItems({ onImagePick }: SlashCommandOptions): SlashItem[] {
     {
       title: '코드 블록',
       description: '문법 강조 코드',
+      icon: 'solar:code-square-bold',
       keywords: ['code', 'codeblock', '코드'],
       command: ({ editor, range }) =>
         editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
@@ -58,6 +72,7 @@ function buildItems({ onImagePick }: SlashCommandOptions): SlashItem[] {
     {
       title: '이미지',
       description: '이미지 업로드',
+      icon: 'solar:gallery-bold',
       keywords: ['image', 'photo', 'picture', '이미지', '사진'],
       command: ({ editor, range }) => {
         editor.chain().focus().deleteRange(range).run()
@@ -67,6 +82,7 @@ function buildItems({ onImagePick }: SlashCommandOptions): SlashItem[] {
     {
       title: '표',
       description: '3×3 표 삽입',
+      icon: 'solar:widget-bold',
       keywords: ['table', '표', '테이블'],
       command: ({ editor, range }) =>
         editor
@@ -79,6 +95,7 @@ function buildItems({ onImagePick }: SlashCommandOptions): SlashItem[] {
     {
       title: '구분선',
       description: '수평 구분선',
+      icon: 'solar:scissors-bold',
       keywords: ['divider', 'hr', 'rule', '구분선'],
       command: ({ editor, range }) =>
         editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
@@ -86,32 +103,27 @@ function buildItems({ onImagePick }: SlashCommandOptions): SlashItem[] {
     {
       title: '수식 (블록)',
       description: 'KaTeX 블록 수식',
+      icon: 'solar:calculator-bold',
       keywords: ['math', 'katex', 'latex', '수식'],
       command: ({ editor, range }) => {
-        const latex = window.prompt('LaTeX 수식을 입력하세요', 'E = mc^2')
-        if (latex) {
-          editor.chain().focus().deleteRange(range).insertBlockMath({ latex }).run()
-        } else {
-          editor.chain().focus().deleteRange(range).run()
-        }
+        editor.chain().focus().deleteRange(range).run()
+        onMathPick('block')
       },
     },
     {
       title: '수식 (인라인)',
       description: 'KaTeX 인라인 수식',
+      icon: 'solar:calculator-minimalistic-bold',
       keywords: ['math', 'inline', 'katex', 'latex', '수식'],
       command: ({ editor, range }) => {
-        const latex = window.prompt('LaTeX 수식을 입력하세요', 'x^2')
-        if (latex) {
-          editor.chain().focus().deleteRange(range).insertInlineMath({ latex }).run()
-        } else {
-          editor.chain().focus().deleteRange(range).run()
-        }
+        editor.chain().focus().deleteRange(range).run()
+        onMathPick('inline')
       },
     },
     ...(Object.keys(ALERT_LABELS) as AlertVariant[]).map((variant) => ({
       title: `Alert: ${ALERT_LABELS[variant]}`,
       description: `${ALERT_LABELS[variant]} 강조 블록`,
+      icon: ALERT_ICONS[variant],
       keywords: ['alert', 'callout', variant, '알림'],
       command: ({ editor, range }) => {
         editor.chain().focus().deleteRange(range).wrapIn('alert', { variant }).run()

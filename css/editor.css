@@ -1,4 +1,4 @@
-/* 관리자 Tiptap 에디터 전용 스타일 */
+/* 관리자 Tiptap 에디터 전용 스타일 — 색상은 디자인 토큰(var(--color-*)) 기반 */
 
 .tiptap-editor {
   position: relative;
@@ -9,76 +9,100 @@
   float: left;
   height: 0;
   pointer-events: none;
-  color: var(--color-gray-400, #9ca3af);
+  color: var(--color-gray-400);
 }
 
-/* 슬래시 커맨드 메뉴 */
+/* 슬래시 커맨드 메뉴 — 글래스 */
 .slash-menu {
   z-index: 50;
   display: flex;
   max-height: 20rem;
-  width: 16rem;
+  width: 17rem;
   flex-direction: column;
   gap: 1px;
   overflow-y: auto;
-  border-radius: 0.75rem;
-  border: 1px solid rgb(0 0 0 / 0.1);
-  background: #fff;
+  border-radius: 1rem;
+  border: 1px solid rgb(255 255 255 / 0.6);
+  background: rgb(255 255 255 / 0.8);
+  backdrop-filter: blur(24px);
   padding: 0.375rem;
-  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+  box-shadow: 0 20px 40px rgb(0 0 0 / 0.15);
 }
 .dark .slash-menu {
-  border-color: rgb(255 255 255 / 0.1);
-  background: #111827;
+  border-color: color-mix(in oklab, var(--color-gray-700) 80%, transparent);
+  background: color-mix(in oklab, var(--color-gray-900) 80%, transparent);
+  box-shadow: 0 20px 40px rgb(0 0 0 / 0.4);
 }
 
-/* 버블 메뉴 */
+/* 버블 메뉴 — 글래스 */
 .bubble-menu {
   display: flex;
+  align-items: center;
   gap: 2px;
-  border-radius: 0.5rem;
-  border: 1px solid rgb(0 0 0 / 0.1);
-  background: #fff;
+  border-radius: 9999px;
+  border: 1px solid rgb(255 255 255 / 0.6);
+  background: rgb(255 255 255 / 0.8);
+  backdrop-filter: blur(24px);
   padding: 0.25rem;
-  box-shadow: 0 6px 20px rgb(0 0 0 / 0.12);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.15);
 }
 .dark .bubble-menu {
-  border-color: rgb(255 255 255 / 0.1);
-  background: #111827;
+  border-color: color-mix(in oklab, var(--color-gray-600) 80%, transparent);
+  background: color-mix(in oklab, var(--color-gray-800) 80%, transparent);
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.4);
 }
-.bubble-menu button {
+.bubble-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: 2rem;
-  border-radius: 0.375rem;
-  padding: 0.25rem 0.5rem;
+  height: 2rem;
+  border-radius: 9999px;
+  padding: 0.375rem;
+  color: var(--color-gray-600);
+  transition: all 0.15s;
+}
+.dark .bubble-menu-btn {
+  color: var(--color-gray-300);
+}
+.bubble-menu-btn:hover {
+  background: color-mix(in oklab, var(--color-gray-900) 6%, transparent);
+  color: var(--color-gray-900);
+}
+.dark .bubble-menu-btn:hover {
+  background: rgb(255 255 255 / 0.1);
+  color: var(--color-white);
+}
+.bubble-menu-btn.is-active {
+  background: color-mix(in oklab, var(--color-primary-500) 12%, transparent);
+  color: var(--color-primary-600);
+}
+.dark .bubble-menu-btn.is-active {
+  color: var(--color-primary-400);
+}
+.bubble-menu-input {
+  width: 14rem;
+  border: none;
+  background: transparent;
+  padding: 0.25rem 0.625rem;
   font-size: 0.875rem;
-  font-weight: 600;
-  color: #374151;
+  color: var(--color-gray-900);
+  outline: none;
 }
-.dark .bubble-menu button {
-  color: #d1d5db;
+.dark .bubble-menu-input {
+  color: var(--color-gray-100);
 }
-.bubble-menu button:hover {
-  background: #f3f4f6;
-}
-.dark .bubble-menu button:hover {
-  background: #1f2937;
-}
-.bubble-menu button.is-active {
-  background: #e0e7ff;
-  color: #4338ca;
-}
-.dark .bubble-menu button.is-active {
-  background: #312e81;
-  color: #c7d2fe;
+.bubble-menu-input::placeholder {
+  color: var(--color-gray-400);
 }
 
-/* Alert 블록 — remark-github-blockquote-alert 스타일과 유사하게 */
+/* Alert 블록 — remark-github-blockquote-alert 시맨틱 색과 일치 */
 .editor-alert {
   position: relative;
   margin: 1rem 0;
   border-left: 4px solid;
-  border-radius: 0.25rem;
-  padding: 0.5rem 1rem 0.5rem 1rem;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
   padding-top: 1.75rem;
 }
 .editor-alert::before {
@@ -91,88 +115,89 @@
   text-transform: uppercase;
 }
 .editor-alert-note {
-  border-color: #3b82f6;
-  background: rgb(59 130 246 / 0.08);
+  border-color: var(--color-blue-500);
+  background: color-mix(in oklab, var(--color-blue-500) 8%, transparent);
 }
 .editor-alert-note::before {
   content: 'ℹ Note';
-  color: #3b82f6;
+  color: var(--color-blue-500);
 }
 .editor-alert-tip {
-  border-color: #22c55e;
-  background: rgb(34 197 94 / 0.08);
+  border-color: var(--color-green-500);
+  background: color-mix(in oklab, var(--color-green-500) 8%, transparent);
 }
 .editor-alert-tip::before {
   content: '💡 Tip';
-  color: #16a34a;
+  color: var(--color-green-600);
 }
 .editor-alert-important {
-  border-color: #a855f7;
-  background: rgb(168 85 247 / 0.08);
+  border-color: var(--color-purple-500);
+  background: color-mix(in oklab, var(--color-purple-500) 8%, transparent);
 }
 .editor-alert-important::before {
   content: '❗ Important';
-  color: #9333ea;
+  color: var(--color-purple-600);
 }
 .editor-alert-warning {
-  border-color: #f59e0b;
-  background: rgb(245 158 11 / 0.08);
+  border-color: var(--color-amber-500);
+  background: color-mix(in oklab, var(--color-amber-500) 8%, transparent);
 }
 .editor-alert-warning::before {
   content: '⚠ Warning';
-  color: #d97706;
+  color: var(--color-amber-600);
 }
 .editor-alert-caution {
-  border-color: #ef4444;
-  background: rgb(239 68 68 / 0.08);
+  border-color: var(--color-red-500);
+  background: color-mix(in oklab, var(--color-red-500) 8%, transparent);
 }
 .editor-alert-caution::before {
   content: '🛑 Caution';
-  color: #dc2626;
+  color: var(--color-red-600);
 }
 
 /* 코드 블록 노드 뷰 */
 .code-block-view {
   margin: 1rem 0;
   overflow: hidden;
-  border-radius: 0.5rem;
-  border: 1px solid rgb(0 0 0 / 0.1);
+  border-radius: 0.75rem;
+  border: 1px solid var(--color-gray-200);
 }
 .dark .code-block-view {
-  border-color: rgb(255 255 255 / 0.1);
+  border-color: var(--color-gray-700);
 }
 .code-block-view .code-block-toolbar {
   display: flex;
   gap: 0.5rem;
-  border-bottom: 1px solid rgb(0 0 0 / 0.08);
-  background: #f9fafb;
+  border-bottom: 1px solid var(--color-gray-200);
+  background: color-mix(in oklab, var(--color-gray-100) 70%, transparent);
   padding: 0.375rem 0.75rem;
 }
 .dark .code-block-view .code-block-toolbar {
-  border-color: rgb(255 255 255 / 0.08);
-  background: #1f2937;
+  border-color: var(--color-gray-700);
+  background: color-mix(in oklab, var(--color-gray-800) 70%, transparent);
 }
 .code-block-view .code-block-toolbar select,
 .code-block-view .code-block-toolbar input {
-  border-radius: 0.25rem;
+  border-radius: 0.375rem;
   border: 1px solid transparent;
   background: transparent;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--color-gray-500);
   padding: 0.125rem 0.375rem;
+  transition: all 0.15s;
 }
 .code-block-view .code-block-toolbar select:hover,
-.code-block-view .code-block-toolbar input:hover,
-.code-block-view .code-block-toolbar select:focus,
-.code-block-view .code-block-toolbar input:focus {
-  border-color: rgb(0 0 0 / 0.15);
-  outline: none;
+.code-block-view .code-block-toolbar input:hover {
+  color: var(--color-gray-700);
 }
 .dark .code-block-view .code-block-toolbar select:hover,
-.dark .code-block-view .code-block-toolbar input:hover,
-.dark .code-block-view .code-block-toolbar select:focus,
-.dark .code-block-view .code-block-toolbar input:focus {
-  border-color: rgb(255 255 255 / 0.2);
+.dark .code-block-view .code-block-toolbar input:hover {
+  color: var(--color-gray-300);
+}
+.code-block-view .code-block-toolbar select:focus,
+.code-block-view .code-block-toolbar input:focus {
+  border-color: color-mix(in oklab, var(--color-primary-500) 60%, transparent);
+  outline: none;
 }
 .code-block-view pre {
   margin: 0 !important;
@@ -187,17 +212,28 @@
   transition: background 0.15s;
 }
 .tiptap .tiptap-mathematics-render:hover {
-  background: rgb(99 102 241 / 0.1);
+  background: color-mix(in oklab, var(--color-primary-500) 10%, transparent);
 }
 
 /* 선택된 노드 표시 */
 .tiptap .ProseMirror-selectednode {
-  outline: 2px solid #6366f1;
+  outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
   border-radius: 0.25rem;
 }
 
-/* lowlight(hljs) 문법 강조 — 에디터 내부용 최소 테마 */
+/* 표 편집 보조 */
+.tiptap table {
+  border-collapse: collapse;
+}
+.tiptap .selectedCell {
+  background: color-mix(in oklab, var(--color-primary-500) 8%, transparent);
+}
+.tiptap .column-resize-handle {
+  background: var(--color-primary-500);
+}
+
+/* lowlight(hljs) 문법 강조 — 문법 색상은 디자인 시스템과 별개(GitHub 테마 유지) */
 .tiptap pre code .hljs-comment,
 .tiptap pre code .hljs-quote {
   color: #6a737d;
@@ -274,64 +310,4 @@
 .dark .tiptap pre code .hljs-built_in,
 .dark .tiptap pre code .hljs-builtin-name {
   color: #ffa657;
-}
-
-/* 관리자 공용 버튼/인풋 */
-.admin-btn {
-  border-radius: 0.5rem;
-  border: 1px solid #d1d5db;
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-  color: #374151;
-  transition: background 0.15s;
-}
-.admin-btn:hover {
-  background: #f3f4f6;
-}
-.admin-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.dark .admin-btn {
-  border-color: #374151;
-  color: #d1d5db;
-}
-.dark .admin-btn:hover {
-  background: #1f2937;
-}
-.admin-btn-primary {
-  border-radius: 0.5rem;
-  border: 1px solid transparent;
-  background: #4f46e5;
-  padding: 0.375rem 0.75rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #fff;
-  transition: background 0.15s;
-}
-.admin-btn-primary:hover {
-  background: #4338ca;
-}
-.admin-input {
-  border-radius: 0.5rem;
-  border: 1px solid #d1d5db;
-  background: transparent;
-  padding: 0.375rem 0.625rem;
-  font-size: 0.875rem;
-  color: #111827;
-}
-.admin-input:focus {
-  border-color: #6366f1;
-  outline: none;
-}
-.admin-input:disabled {
-  opacity: 0.6;
-  background: #f9fafb;
-}
-.dark .admin-input {
-  border-color: #374151;
-  color: #f9fafb;
-}
-.dark .admin-input:disabled {
-  background: #111827;
 }
