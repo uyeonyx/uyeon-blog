@@ -38,6 +38,7 @@
     "**/*.ts",
     "**/*.tsx",
     "**/*.json",
+    "app/.well-known/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],

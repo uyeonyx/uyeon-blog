@@ -9,7 +9,7 @@ const VALID_TAGS = new Set(['posts', 'projects', 'authors'])
 
 export async function POST(request: NextRequest) {
   const bearer = request.headers.get('authorization')?.replace(/^Bearer /, '')
-  if (!verifyMcpToken(request, bearer)) {
+  if (!(await verifyMcpToken(request, bearer))) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

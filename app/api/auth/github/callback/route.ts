@@ -55,5 +55,12 @@ export async function GET(request: NextRequest) {
     maxAge: SESSION_MAX_AGE,
   })
 
-  return NextResponse.redirect(new URL('/admin', request.nextUrl.origin))
+  // 로그인 전 요청 경로로 복귀 (MCP OAuth authorize 등) — 내부 절대경로만
+  const next = cookieStore.get('login_next')?.value
+  cookieStore.delete('login_next')
+  const target =
+    next?.startsWith('/') && !next.startsWith('//')
+      ? new URL(next, request.nextUrl.origin)
+      : new URL('/admin', request.nextUrl.origin)
+  return NextResponse.redirect(target)
 }

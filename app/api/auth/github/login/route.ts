@@ -26,5 +26,17 @@ export async function GET(request: NextRequest) {
     maxAge: 60 * 10,
   })
 
+  // 로그인 후 복귀할 내부 경로 (MCP OAuth authorize 등) — 절대경로만 허용해 오픈 리다이렉트 차단
+  const next = request.nextUrl.searchParams.get('next')
+  if (next?.startsWith('/') && !next.startsWith('//')) {
+    cookieStore.set('login_next', next, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 10,
+    })
+  }
+
   return NextResponse.redirect(authorizeUrl)
 }
