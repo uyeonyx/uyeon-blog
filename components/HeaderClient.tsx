@@ -24,6 +24,8 @@ const HeaderClient = () => {
   const [isHovered, setIsHovered] = useState(false)
   const [mounted, setMounted] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  // md~xl 구간: SectionContainer(max-w-3xl)가 가용 폭을 720px로 묶어서 여유가 없다
+  const [isNarrowDesktop, setIsNarrowDesktop] = useState(false)
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
   const { t } = useI18n()
@@ -33,7 +35,9 @@ const HeaderClient = () => {
 
     // 모바일 여부 감지
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768)
+      const width = window.innerWidth
+      setIsMobile(width < 768)
+      setIsNarrowDesktop(width >= 768 && width < 1280)
     }
 
     checkMobile()
@@ -66,7 +70,7 @@ const HeaderClient = () => {
   return (
     <header className="flex justify-center pt-8 pb-4 relative z-50">
       <motion.div
-        className="relative"
+        className="relative max-w-full"
         onMouseMove={handleMouseMove}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={handleMouseLeave}
@@ -84,8 +88,8 @@ const HeaderClient = () => {
             paddingBottom: '0.75rem',
           }}
           animate={{
-            paddingLeft: isHovered ? '2rem' : '1.5rem',
-            paddingRight: isHovered ? '2rem' : '1.5rem',
+            paddingLeft: isNarrowDesktop ? '1.25rem' : isHovered ? '2rem' : '1.5rem',
+            paddingRight: isNarrowDesktop ? '1.25rem' : isHovered ? '2rem' : '1.5rem',
             paddingTop: isHovered ? '1rem' : '0.75rem',
             paddingBottom: isHovered ? '1rem' : '0.75rem',
           }}
@@ -113,7 +117,7 @@ const HeaderClient = () => {
           />
 
           {/* Content */}
-          <div className="relative flex items-center gap-6">
+          <div className="relative flex items-center gap-6 md:gap-3 xl:gap-6">
             {/* Logo Text - Always visible on mobile, hover on desktop */}
             <Link
               href="/"
@@ -122,12 +126,12 @@ const HeaderClient = () => {
             >
               <Logo className="h-6 w-auto" />
               {/* Mobile: Always visible */}
-              <span className="md:hidden ml-2.5 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+              <span className="md:hidden ml-2.5 text-xl font-bold tracking-tight text-gray-900 dark:text-white whitespace-nowrap">
                 {typeof siteMetadata.headerTitle === 'string' ? siteMetadata.headerTitle : ''}
               </span>
               {/* Desktop: Show on hover */}
               <motion.span
-                className="hidden md:inline-block text-xl font-bold tracking-tight text-gray-900 dark:text-white overflow-hidden whitespace-nowrap"
+                className="hidden md:inline-block text-lg xl:text-xl font-bold tracking-tight text-gray-900 dark:text-white overflow-hidden whitespace-nowrap"
                 initial={{ opacity: 0, width: 0, marginLeft: 0 }}
                 animate={{
                   opacity: isHovered ? 1 : 0,
@@ -143,9 +147,9 @@ const HeaderClient = () => {
             </Link>
 
             {/* Animated Divider - Mobile: always visible, Desktop: on hover */}
-            <div className="md:hidden h-6 w-px bg-gray-300 dark:bg-gray-700" />
+            <div className="md:hidden h-6 w-px shrink-0 bg-gray-300 dark:bg-gray-700" />
             <motion.div
-              className="hidden md:block h-6 w-px bg-gray-300 dark:bg-gray-700"
+              className="hidden md:block h-6 w-px shrink-0 bg-gray-300 dark:bg-gray-700"
               initial={{ scaleY: 0, opacity: 0 }}
               animate={{
                 scaleY: isHovered ? 1 : 0,
@@ -155,7 +159,7 @@ const HeaderClient = () => {
             />
 
             {/* Navigation Links - Desktop */}
-            <nav className="hidden md:flex items-center gap-1">
+            <nav className="hidden md:flex shrink-0 items-center gap-0.5 xl:gap-1">
               {navLinks
                 .filter((link) => link.href !== '/')
                 .map((link, index) => (
@@ -177,7 +181,7 @@ const HeaderClient = () => {
                   >
                     <Link
                       href={link.href}
-                      className="px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-900/5 dark:hover:bg-white/10 transition-all"
+                      className="block px-2 py-2 text-sm xl:px-3 xl:text-base font-medium whitespace-nowrap text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-900/5 dark:hover:bg-white/10 transition-all"
                     >
                       {t(link.key)}
                     </Link>
@@ -187,7 +191,7 @@ const HeaderClient = () => {
 
             {/* Animated Divider */}
             <motion.div
-              className="hidden md:block h-6 w-px bg-gray-300 dark:bg-gray-700"
+              className="hidden md:block h-6 w-px shrink-0 bg-gray-300 dark:bg-gray-700"
               initial={{ scaleY: 0, opacity: 0 }}
               animate={{
                 scaleY: isHovered ? 1 : 0,
@@ -197,7 +201,7 @@ const HeaderClient = () => {
             />
 
             {/* Actions - Desktop only */}
-            <div className="hidden md:flex items-center gap-2">
+            <div className="hidden md:flex shrink-0 items-center gap-1 xl:gap-2">
               <motion.div
                 className="[&>button]:text-gray-700 [&>button]:dark:text-gray-200 [&>button]:hover:text-gray-900 [&>button]:dark:hover:text-white [&>button]:hover:bg-gray-900/5 [&>button]:dark:hover:bg-white/10 [&>button]:rounded-full [&>button]:p-2 [&>button]:transition-colors"
                 whileHover={{ scale: 1.1 }}
