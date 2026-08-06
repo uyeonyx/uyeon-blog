@@ -1,0 +1,22 @@
+diff --git a/bin.cjs b/bin.cjs
+index 07274ea6f53fd54a129b3d338892feda6e995cff..d62ac34bc304659bfd18dc24533af71dd6e697bb 100755
+--- a/bin.cjs
++++ b/bin.cjs
+@@ -17737,7 +17737,16 @@ WHERE
+       JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name)
+       JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema
+         AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
+-      WHERE tc.table_name = '${tableName}' and constraint_schema = '${tableSchema}';`
++      WHERE tc.table_name = '${tableName}' and constraint_schema = '${tableSchema}'
++      ORDER BY tc.constraint_name, (
++        SELECT u.ord FROM pg_constraint con
++        JOIN unnest(con.conkey) WITH ORDINALITY AS u(attnum, ord) ON true
++        JOIN pg_attribute a ON a.attrelid = con.conrelid AND a.attnum = u.attnum
++        WHERE con.conname = tc.constraint_name
++          AND con.conrelid = format('%I.%I', tc.table_schema, tc.table_name)::regclass
++          AND a.attname = c.column_name
++        LIMIT 1
++      ) NULLS LAST;`
+             );
+             const tableChecks = await db.query(`SELECT 
+ 						tc.constraint_name,

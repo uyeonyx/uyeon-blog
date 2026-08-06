@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  drizzle-kit:
+    hash: 7bc92b49fe89c5f700127d1521b7796f7df81da3b9c19e01a80585cf5b237baf
+    path: patches/drizzle-kit.patch
+
 importers:
 
   .:
@@ -215,7 +220,7 @@ importers:
         version: 17.4.2
       drizzle-kit:
         specifier: ^0.31.10
-        version: 0.31.10
+        version: 0.31.10(patch_hash=7bc92b49fe89c5f700127d1521b7796f7df81da3b9c19e01a80585cf5b237baf)
       tsx:
         specifier: ^4.23.8
         version: 4.23.8
@@ -8289,7 +8294,7 @@ snapshots:
 
   dotenv@8.6.0: {}
 
-  drizzle-kit@0.31.10:
+  drizzle-kit@0.31.10(patch_hash=7bc92b49fe89c5f700127d1521b7796f7df81da3b9c19e01a80585cf5b237baf):
     dependencies:
       '@drizzle-team/brocli': 0.10.2
       '@esbuild-kit/esm-loader': 2.6.5
