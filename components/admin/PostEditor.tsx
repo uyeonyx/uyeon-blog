@@ -51,6 +51,44 @@ const item = {
 
 const AUTOSAVE_DEBOUNCE_MS = 5000
 
+/** 내용에 따라 높이가 자동으로 늘어나는 요약 입력 — 내부 스크롤 없음 */
+function SummaryTextarea({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string
+  onChange: (v: string) => void
+  placeholder: string
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null)
+
+  const resize = useCallback(() => {
+    const el = ref.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [])
+
+  // 초기 값/탭 전환 후 표시 시 높이 보정
+  // biome-ignore lint/correctness/useExhaustiveDependencies: value 변경 시 높이 재계산 필요
+  useEffect(() => {
+    resize()
+  }, [value, resize])
+
+  return (
+    <textarea
+      ref={ref}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      onInput={resize}
+      placeholder={placeholder}
+      rows={2}
+      className="w-full resize-none overflow-hidden border-0 bg-transparent text-base leading-relaxed text-gray-600 placeholder:text-gray-300 focus:ring-0 focus:outline-none dark:text-gray-400 dark:placeholder:text-gray-700"
+    />
+  )
+}
+
 export default function PostEditor({ initial }: { initial: PostEditorData }) {
   const router = useRouter()
   const { toast } = useAdminToast()
@@ -283,13 +321,18 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
               placeholder={lang === 'ko' ? '제목을 입력하세요' : 'Title'}
               className="w-full border-0 bg-transparent text-3xl font-bold tracking-tight text-gray-900 placeholder:text-gray-300 focus:ring-0 focus:outline-none sm:text-4xl dark:text-gray-100 dark:placeholder:text-gray-700"
             />
-            <textarea
-              value={translations[lang].summary}
-              onChange={(e) => updateTranslation(lang, { summary: e.target.value })}
-              placeholder={lang === 'ko' ? '요약 (선택)' : 'Summary (optional)'}
-              rows={2}
-              className="w-full resize-none border-0 bg-transparent text-base leading-relaxed text-gray-600 placeholder:text-gray-300 focus:ring-0 focus:outline-none dark:text-gray-400 dark:placeholder:text-gray-700"
-            />
+            <div className="border-l-2 border-gray-200 pl-4 dark:border-gray-700">
+              <p className="mb-1 text-xs font-semibold tracking-wider text-gray-400 uppercase dark:text-gray-500">
+                {lang === 'ko' ? '요약' : 'Summary'}
+              </p>
+              <SummaryTextarea
+                value={translations[lang].summary}
+                onChange={(v) => updateTranslation(lang, { summary: v })}
+                placeholder={
+                  lang === 'ko' ? '글 목록과 미리보기에 표시될 요약 (선택)' : 'Summary (optional)'
+                }
+              />
+            </div>
             <div className="relative rounded-2xl border border-white/60 bg-white/70 shadow-xl shadow-gray-900/10 backdrop-blur-xl before:absolute before:inset-0 before:rounded-2xl before:bg-linear-to-b before:from-white/40 before:to-transparent before:pointer-events-none dark:border-gray-700/80 dark:bg-gray-900/70 dark:shadow-primary-500/10 dark:before:from-white/5">
               <div className="relative p-5">
                 <TiptapEditor
