@@ -1,7 +1,10 @@
 'use client'
 
+import { Icon } from '@iconify/react'
+import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { AdminButton, AdminInput, GlassCard } from '@/components/admin/ui/primitives'
 
 export default function NewPostPage() {
   const router = useRouter()
@@ -31,28 +34,55 @@ export default function NewPostPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md">
-      <h1 className="mb-6 text-xl font-bold text-gray-900 dark:text-gray-100">새 글 작성</h1>
-      <form onSubmit={create} className="space-y-4">
-        <label className="flex flex-col gap-1 text-sm">
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            Slug (URL 경로, 소문자/숫자/하이픈)
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="mx-auto mt-8 max-w-md"
+    >
+      <GlassCard innerClassName="p-8">
+        <h1 className="mb-2 text-2xl font-bold tracking-tight">
+          <span className="block bg-linear-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent dark:from-gray-50 dark:via-gray-300 dark:to-gray-50">
+            새 글 작성
           </span>
-          <input
-            type="text"
-            value={slug}
-            onChange={(e) => setSlug(e.target.value.toLowerCase())}
-            placeholder="my-new-post"
-            pattern="[a-z0-9]+(-[a-z0-9]+)*"
-            required
-            className="admin-input"
-          />
-        </label>
-        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-        <button type="submit" disabled={creating} className="admin-btn-primary w-full">
-          {creating ? '생성 중…' : '작성 시작'}
-        </button>
-      </form>
-    </div>
+        </h1>
+        <p className="mb-6 text-sm text-gray-500 dark:text-gray-400">
+          글의 URL 경로가 될 slug를 정하면 바로 에디터가 열립니다.
+        </p>
+        <form onSubmit={create} className="space-y-4">
+          <div className="flex flex-col gap-1.5 text-sm">
+            <label htmlFor="new-slug" className="font-medium text-gray-700 dark:text-gray-300">
+              Slug
+            </label>
+            <AdminInput
+              id="new-slug"
+              type="text"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value.toLowerCase())}
+              placeholder="my-new-post"
+              pattern="[a-z0-9]+(-[a-z0-9]+)*"
+              required
+            />
+            <span className="text-xs text-gray-400 dark:text-gray-500">
+              소문자·숫자·하이픈만 사용할 수 있습니다 · uyeon.dev/blog/{slug || 'my-new-post'}
+            </span>
+          </div>
+          {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
+          <AdminButton
+            variant="primary"
+            type="submit"
+            disabled={creating}
+            className="w-full justify-center"
+          >
+            {creating ? (
+              <Icon icon="solar:refresh-bold" className="size-4 animate-spin" />
+            ) : (
+              <Icon icon="solar:pen-new-square-bold" className="size-4" />
+            )}
+            작성 시작
+          </AdminButton>
+        </form>
+      </GlassCard>
+    </motion.div>
   )
 }
