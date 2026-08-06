@@ -7,6 +7,7 @@ import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import LanguageSwitch from './LanguageSwitch'
 import Link from './Link'
+import Logo from './Logo'
 import MobileNav from './MobileNav'
 import SearchButton from './SearchButton'
 import ThemeSwitch from './ThemeSwitch'
@@ -114,18 +115,24 @@ const HeaderClient = () => {
           {/* Content */}
           <div className="relative flex items-center gap-6">
             {/* Logo Text - Always visible on mobile, hover on desktop */}
-            <Link href="/" aria-label={siteMetadata.headerTitle} className="shrink-0">
+            <Link
+              href="/"
+              aria-label={siteMetadata.headerTitle}
+              className="flex shrink-0 items-center"
+            >
+              <Logo className="h-6 w-auto" />
               {/* Mobile: Always visible */}
-              <span className="md:hidden text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+              <span className="md:hidden ml-2.5 text-xl font-bold tracking-tight text-gray-900 dark:text-white">
                 {typeof siteMetadata.headerTitle === 'string' ? siteMetadata.headerTitle : ''}
               </span>
               {/* Desktop: Show on hover */}
               <motion.span
                 className="hidden md:inline-block text-xl font-bold tracking-tight text-gray-900 dark:text-white overflow-hidden whitespace-nowrap"
-                initial={{ opacity: 0, width: 0 }}
+                initial={{ opacity: 0, width: 0, marginLeft: 0 }}
                 animate={{
                   opacity: isHovered ? 1 : 0,
                   width: isHovered ? 'auto' : 0,
+                  marginLeft: isHovered ? '0.625rem' : 0,
                 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
