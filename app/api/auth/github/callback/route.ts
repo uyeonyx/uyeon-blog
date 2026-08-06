@@ -1,7 +1,12 @@
 import { cookies } from 'next/headers'
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { createSessionToken, SESSION_COOKIE, SESSION_MAX_AGE } from '@/lib/admin/token'
+import {
+  createSessionToken,
+  SESSION_COOKIE,
+  SESSION_MAX_AGE,
+  sanitizeNextPath,
+} from '@/lib/admin/token'
 
 export async function GET(request: NextRequest) {
   const clientId = process.env.GITHUB_OAUTH_CLIENT_ID
@@ -55,12 +60,9 @@ export async function GET(request: NextRequest) {
     maxAge: SESSION_MAX_AGE,
   })
 
-  // 로그인 전 요청 경로로 복귀 (MCP OAuth authorize 등) — 내부 절대경로만
-  const next = cookieStore.get('login_next')?.value
+  // 로그인 전 요청 경로로 복귀 (MCP OAuth authorize 등) — origin 일치로 재검증
+  const next = sanitizeNextPath(cookieStore.get('login_next')?.value, request.nextUrl.origin)
   cookieStore.delete('login_next')
-  const target =
-    next?.startsWith('/') && !next.startsWith('//')
-      ? new URL(next, request.nextUrl.origin)
-      : new URL('/admin', request.nextUrl.origin)
+  const target = new URL(next ?? '/admin', request.nextUrl.origin)
   return NextResponse.redirect(target)
 }
