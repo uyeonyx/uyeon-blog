@@ -54,6 +54,8 @@ const securityHeaders = [
   },
 ]
 
+// 주의: 블로그 글이 DB(Neon) 런타임 조회로 전환되고 /admin(작성자 모드)이 서버 API를
+// 사용하므로 static export(EXPORT=1)는 더 이상 지원되지 않는다.
 const output = process.env.EXPORT ? 'export' : undefined
 const basePath = process.env.BASE_PATH || undefined
 const unoptimized = process.env.UNOPTIMIZED ? true : undefined
@@ -69,11 +71,20 @@ module.exports = () => {
     reactStrictMode: true,
     trailingSlash: false,
     pageExtensions: ['ts', 'tsx', 'js', 'jsx', 'md', 'mdx'],
+    // 관리자 저장/미리보기의 런타임 MDX 컴파일(mdx-bundler + esbuild)은 번들링 대상에서 제외
+    serverExternalPackages: ['esbuild', 'mdx-bundler', 'rehype-preset-minify'],
+    outputFileTracingIncludes: {
+      '/api/admin/**': ['./data/references-data.bib'],
+    },
     images: {
       remotePatterns: [
         {
           protocol: 'https',
           hostname: 'picsum.photos',
+        },
+        {
+          protocol: 'https',
+          hostname: '*.public.blob.vercel-storage.com',
         },
       ],
       formats: ['image/avif', 'image/webp'],

@@ -4,11 +4,6 @@ import 'remark-github-blockquote-alert/alert.css'
 
 import type { Metadata } from 'next'
 import { Space_Grotesk } from 'next/font/google'
-import { Analytics, type AnalyticsConfig } from 'pliny/analytics'
-import Footer from '@/components/Footer'
-import Header from '@/components/Header'
-import SectionContainer from '@/components/SectionContainer'
-import { CustomSearchProvider } from '@/components/SearchProvider'
 import siteMetadata from '@/data/siteMetadata'
 import { I18nProvider } from '@/lib/i18n/i18n-context'
 import { ThemeProviders } from './theme-providers'
@@ -98,16 +93,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <link rel="alternate" type="application/rss+xml" href={`${basePath}/feed.xml`} />
       <body className="bg-linear-to-br from-gray-50 via-white to-gray-50 pl-[calc(100vw-100%)] text-black antialiased dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 dark:text-white">
         <ThemeProviders>
-          <I18nProvider>
-            <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
-            <SectionContainer>
-              <CustomSearchProvider>
-                <Header />
-                <main className="mb-auto min-h-screen">{children}</main>
-                <Footer />
-              </CustomSearchProvider>
-            </SectionContainer>
-          </I18nProvider>
+          <I18nProvider>{children}</I18nProvider>
         </ThemeProviders>
       </body>
     </html>

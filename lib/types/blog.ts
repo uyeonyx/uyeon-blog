@@ -1,10 +1,8 @@
-import type { Blog } from 'contentlayer/generated'
 import type { CoreContent } from 'pliny/utils/contentlayer'
+import type { Blog } from './post'
 
-// Blog 타입 확장 - language 속성 추가
-export type BlogWithLanguage = Blog & {
-  language: string
-}
+// DB 기반 Post DTO는 language를 기본 포함한다 — 기존 이름 유지용 별칭
+export type BlogWithLanguage = Blog
 
 export type CoreBlogWithLanguage = CoreContent<Blog> & {
   language?: string

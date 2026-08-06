@@ -1,15 +1,13 @@
 'use client'
 
-import tagData from 'app/tag-data.json'
 import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import { useI18n } from '@/lib/i18n/i18n-context'
 
-export default function TagsPageClient() {
+export default function TagsPageClient({ tagCounts }: { tagCounts: Record<string, number> }) {
   const { t } = useI18n()
-  const tagCounts = tagData as Record<string, number>
   const tagKeys = Object.keys(tagCounts)
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
 

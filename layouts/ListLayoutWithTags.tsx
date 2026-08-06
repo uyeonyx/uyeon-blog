@@ -1,7 +1,5 @@
 'use client'
 
-import tagData from 'app/tag-data.json'
-import type { Blog } from 'contentlayer/generated'
 import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
 import { usePathname } from 'next/navigation'
@@ -13,6 +11,7 @@ import { filterPostsByLanguage } from '@/lib/i18n/filter-posts'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { translateTag } from '@/lib/i18n/tag-translations'
 import { formatDate } from '@/lib/i18n/utils'
+import type { Blog } from '@/lib/types/post'
 
 interface PaginationProps {
   totalPages: number
@@ -23,6 +22,7 @@ interface ListLayoutProps {
   title: string
   initialDisplayPosts?: CoreContent<Blog>[]
   pagination?: PaginationProps
+  tagCounts: Record<string, number>
 }
 
 function Pagination({ totalPages, currentPage }: PaginationProps) {
@@ -139,6 +139,7 @@ export default function ListLayoutWithTags({
   title,
   initialDisplayPosts = [],
   pagination,
+  tagCounts,
 }: ListLayoutProps) {
   const pathname = usePathname()
   const { locale, t } = useI18n()
@@ -156,7 +157,6 @@ export default function ListLayoutWithTags({
     [initialDisplayPosts, locale]
   )
 
-  const tagCounts = tagData as Record<string, number>
   const tagKeys = Object.keys(tagCounts)
   const sortedTags = tagKeys.sort((a, b) => tagCounts[b] - tagCounts[a])
 

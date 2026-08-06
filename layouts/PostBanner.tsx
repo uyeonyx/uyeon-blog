@@ -1,6 +1,5 @@
 'use client'
 
-import type { Blog } from 'contentlayer/generated'
 import { motion } from 'framer-motion'
 import NextImage from 'next/image'
 import Bleed from 'pliny/ui/Bleed'
@@ -11,6 +10,7 @@ import PageTitle from '@/components/PageTitle'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import SectionContainer from '@/components/SectionContainer'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import type { Blog } from '@/lib/types/post'
 
 interface LayoutProps {
   content: CoreContent<Blog>

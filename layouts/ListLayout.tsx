@@ -1,6 +1,5 @@
 'use client'
 
-import type { Blog } from 'contentlayer/generated'
 import { usePathname } from 'next/navigation'
 import type { CoreContent } from 'pliny/utils/contentlayer'
 import { useState } from 'react'
@@ -8,6 +7,7 @@ import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { formatDate } from '@/lib/i18n/utils'
+import type { Blog } from '@/lib/types/post'
 
 interface PaginationProps {
   totalPages: number

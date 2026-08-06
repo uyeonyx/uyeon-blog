@@ -3,10 +3,9 @@
 import 'css/prism.css'
 import 'katex/dist/katex.css'
 
-import type { Authors, Blog } from 'contentlayer/generated'
+import type { Authors } from 'contentlayer/generated'
 import { MDXLayoutRenderer } from 'pliny/mdx-components'
 import type { CoreContent } from 'pliny/utils/contentlayer'
-import { allCoreContent, sortPosts } from 'pliny/utils/contentlayer'
 import { useEffect, useMemo, useState } from 'react'
 import { components } from '@/components/MDXComponents'
 import PostBanner from '@/layouts/PostBanner'
@@ -14,6 +13,7 @@ import PostLayout from '@/layouts/PostLayout'
 import PostSimple from '@/layouts/PostSimple'
 import { findLocalizedPost } from '@/lib/i18n/filter-posts'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import type { Blog } from '@/lib/types/post'
 
 const defaultLayout = 'PostLayout'
 const layouts = {
@@ -42,10 +42,10 @@ export default function BlogPostClient({ slug, allPosts, authorDetails }: BlogPo
 
   // 현재 언어에 맞는 포스트만 필터링하여 prev/next 계산
   const { localizedPrev, localizedNext } = useMemo(() => {
-    // 현재 언어의 포스트만 필터링
-    // biome-ignore lint/suspicious/noExplicitAny: Contentlayer types will include language at runtime
-    const postsInCurrentLanguage = allPosts.filter((p: any) => p.language === locale)
-    const sortedPosts = allCoreContent(sortPosts(postsInCurrentLanguage))
+    // 현재 언어의 포스트만 필터링 후 최신순 정렬 (DB DTO는 이미 date 문자열 보유)
+    const sortedPosts = allPosts
+      .filter((p) => p.language === locale)
+      .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
     const postIndex = sortedPosts.findIndex((p) => p.slug === slug)
 
     return {

@@ -1,6 +1,6 @@
 'use client'
 
-import type { Authors, Blog } from 'contentlayer/generated'
+import type { Authors } from 'contentlayer/generated'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import type { CoreContent } from 'pliny/utils/contentlayer'
 import type { ReactNode } from 'react'
@@ -14,6 +14,7 @@ import Tag from '@/components/Tag'
 import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { formatDate } from '@/lib/i18n/utils'
+import type { Blog } from '@/lib/types/post'
 
 const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
 
@@ -139,14 +140,24 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                     <dd>
                       <ul className="flex flex-col gap-3 xl:gap-8">
                         {authorDetails.map((author) => (
-                          <li className="flex items-center gap-3 xl:flex-col xl:items-center" key={author.name}>
+                          <li
+                            className="flex items-center gap-3 xl:flex-col xl:items-center"
+                            key={author.name}
+                          >
                             {author.avatar && <AuthorAvatar author={author} locale={locale} />}
                             <div className="min-w-0 flex-1 text-sm font-medium xl:text-center">
-                              <Link href="/about" className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
-                                <div className="font-semibold text-gray-900 dark:text-gray-100">{author.name}</div>
+                              <Link
+                                href="/about"
+                                className="hover:text-primary-500 dark:hover:text-primary-400 transition-colors"
+                              >
+                                <div className="font-semibold text-gray-900 dark:text-gray-100">
+                                  {author.name}
+                                </div>
                               </Link>
                               {author.occupation && (
-                                <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-400">{author.occupation}</div>
+                                <div className="mt-0.5 text-xs text-gray-600 dark:text-gray-400">
+                                  {author.occupation}
+                                </div>
                               )}
                             </div>
                           </li>
