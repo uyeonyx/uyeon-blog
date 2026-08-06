@@ -9,6 +9,7 @@ import {
   updateProjectMeta,
 } from '@/lib/admin/project-service'
 import { requireAdminApi } from '@/lib/admin/session'
+import { revalidateTagMaster } from '@/lib/admin/tag-service'
 
 type Params = { params: Promise<{ id: string }> }
 
@@ -96,6 +97,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 
   await touchProject(id)
   revalidateProjects()
+  if (metaResult.createdTags.length > 0) revalidateTagMaster()
   return Response.json({ ok: true, compileResults })
 }
 

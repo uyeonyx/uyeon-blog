@@ -3,6 +3,7 @@
 import { Icon } from '@iconify/react'
 import { useRef, useState } from 'react'
 import { uploadImageFile } from '@/components/admin/editor/upload'
+import TagInput from '@/components/admin/editor-page/TagInput'
 import { AdminInput, AdminSelect, GlassCard } from '@/components/admin/ui/primitives'
 import { useAdminToast } from '@/components/admin/ui/toast'
 
@@ -10,8 +11,8 @@ interface MetaFormProps {
   slug: string
   setSlug: (v: string) => void
   slugLocked: boolean
-  tags: string
-  setTags: (v: string) => void
+  tags: string[]
+  setTags: (v: string[]) => void
   date: string
   setDate: (v: string) => void
   layout: string
@@ -77,15 +78,9 @@ export default function MetaForm({
       </div>
       <div className="flex flex-col gap-1.5 text-sm">
         <label htmlFor="meta-tags" className="font-medium text-gray-700 dark:text-gray-300">
-          태그 (콤마 구분)
+          태그
         </label>
-        <AdminInput
-          id="meta-tags"
-          type="text"
-          value={tags}
-          onChange={(e) => setTags(e.target.value)}
-          placeholder="nextjs, ai"
-        />
+        <TagInput inputId="meta-tags" value={tags} onChange={setTags} />
       </div>
       <div className="flex flex-col gap-1.5 text-sm">
         <label htmlFor="meta-date" className="font-medium text-gray-700 dark:text-gray-300">

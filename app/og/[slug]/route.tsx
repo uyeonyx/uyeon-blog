@@ -1,8 +1,10 @@
 // 대표이미지가 없는 글의 OG 이미지를 동적 생성한다 (1200×630).
 // 대표이미지가 있는 글은 generateMetadata가 그 이미지를 직접 가리키므로 이 라우트를 쓰지 않는다.
+import { slug as slugify } from 'github-slugger'
 import { ImageResponse } from 'next/og'
 import siteMetadata from '@/data/siteMetadata'
 import { getPostPair } from '@/lib/db/posts'
+import { getTagLabels } from '@/lib/db/tags'
 
 export const runtime = 'nodejs'
 
@@ -38,7 +40,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
     month: 'short',
     day: 'numeric',
   })
-  const tags = post.tags.slice(0, 3)
+  const labels = await getTagLabels()
+  const tags = post.tags.slice(0, 3).map((t) => labels[slugify(t)]?.ko ?? t)
   const fontText = `${post.title}${siteMetadata.headerTitle}${date}${tags.join('')}`
   const fontData = await loadFont(fontText)
 

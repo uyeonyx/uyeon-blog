@@ -5,6 +5,7 @@ import { projects, projectTranslations } from '@/lib/db/schema'
 import { smartQuotes } from '@/lib/utils'
 import { prepareContent } from './content-compile'
 import { type CompileResult, LANGUAGES, type Language, SLUG_PATTERN } from './post-service'
+import { registerTags } from './tag-service'
 
 export interface ProjectTranslationInput {
   title: string
@@ -87,7 +88,7 @@ export async function getProjectForEdit(id: string) {
 }
 
 export type UpdateProjectMetaResult =
-  | { ok: true }
+  | { ok: true; createdTags: string[] }
   | { ok: false; error: 'not_found' | 'invalid_slug' | 'duplicate' }
 
 export async function updateProjectMeta(
@@ -105,6 +106,9 @@ export async function updateProjectMeta(
     if (dup.length > 0) return { ok: false, error: 'duplicate' }
   }
 
+  // 태그는 canonical slug로 정규화해 저장, 미등록 태그는 마스터에 자동 등록
+  const tagsResult = input.tags !== undefined ? await registerTags(input.tags) : null
+
   await db
     .update(projects)
     .set({
@@ -113,11 +117,11 @@ export async function updateProjectMeta(
       ...(input.displayOrder !== undefined ? { displayOrder: input.displayOrder } : {}),
       ...(input.imgSrc !== undefined ? { imgSrc: input.imgSrc || null } : {}),
       ...(input.href !== undefined ? { href: input.href || null } : {}),
-      ...(input.tags !== undefined ? { tags: input.tags } : {}),
+      ...(tagsResult ? { tags: tagsResult.slugs } : {}),
       updatedAt: new Date(),
     })
     .where(eq(projects.id, id))
-  return { ok: true }
+  return { ok: true, createdTags: tagsResult?.created ?? [] }
 }
 
 /** 번역 1건 저장 + 컴파일 — 실패해도 원본은 저장 (posts saveTranslation과 동일 계약) */

@@ -12,6 +12,7 @@ import TiptapEditor from './editor/TiptapEditor'
 import type { Language } from './editor-page/LanguageTabs'
 import LanguageTabs from './editor-page/LanguageTabs'
 import PreviewDialog, { type PreviewData } from './editor-page/PreviewDialog'
+import TagInput from './editor-page/TagInput'
 import ConfirmDialog from './ui/ConfirmDialog'
 import { AdminButton, AdminInput, GlassCard } from './ui/primitives'
 import { useAdminToast } from './ui/toast'
@@ -80,7 +81,7 @@ export default function ProjectEditor({ initial }: { initial: ProjectEditorData 
   const [displayOrder, setDisplayOrder] = useState(String(initial.displayOrder))
   const [imgSrc, setImgSrc] = useState(initial.imgSrc ?? '')
   const [href, setHref] = useState(initial.href ?? '')
-  const [tags, setTags] = useState(initial.tags.join(', '))
+  const [tags, setTags] = useState<string[]>(initial.tags)
   const [activeLang, setActiveLang] = useState<Language>('ko')
   const [translations, setTranslations] = useState<Record<Language, TranslationState>>({
     ko: {
@@ -147,10 +148,7 @@ export default function ProjectEditor({ initial }: { initial: ProjectEditorData 
           displayOrder: Number.parseInt(displayOrder, 10) || 0,
           imgSrc,
           href,
-          tags: tags
-            .split(',')
-            .map((t) => t.trim())
-            .filter(Boolean),
+          tags,
           translations,
         }),
       })
@@ -311,12 +309,8 @@ export default function ProjectEditor({ initial }: { initial: ProjectEditorData 
               placeholder="(선택)"
             />
           </MetaField>
-          <MetaField label="태그 (쉼표 구분)">
-            <AdminInput
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="Next.js, TypeScript"
-            />
+          <MetaField label="태그">
+            <TagInput value={tags} onChange={setTags} />
           </MetaField>
         </GlassCard>
       </motion.div>

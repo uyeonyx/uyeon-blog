@@ -3,16 +3,15 @@
 import { motion } from 'framer-motion'
 import { slug } from 'github-slugger'
 import Link from 'next/link'
-import { useI18n } from '@/lib/i18n/i18n-context'
-import { translateTag } from '@/lib/i18n/tag-translations'
+import { useTagLabel } from '@/components/TagLabelsProvider'
 
 interface Props {
   text: string
 }
 
 const Tag = ({ text }: Props) => {
-  const { locale } = useI18n()
-  const displayText = translateTag(text, locale)
+  const tagLabel = useTagLabel()
+  const displayText = tagLabel(text)
 
   return (
     <Link href={`/tags/${slug(text)}`}>

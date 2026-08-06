@@ -97,7 +97,7 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
 
   const [slug, setSlug] = useState(initial.slug)
   const [status, setStatus] = useState(initial.status)
-  const [tags, setTags] = useState(initial.tags.join(', '))
+  const [tags, setTags] = useState<string[]>(initial.tags)
   const [layout, setLayout] = useState(initial.layout ?? '')
   const [date, setDate] = useState(initial.date ? initial.date.slice(0, 10) : '')
   const [coverImage, setCoverImage] = useState(initial.coverImage ?? '')
@@ -153,10 +153,7 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             slug,
-            tags: tags
-              .split(',')
-              .map((t) => t.trim())
-              .filter(Boolean),
+            tags,
             layout: layout || null,
             date: date || null,
             coverImage: coverImage.trim() || null,

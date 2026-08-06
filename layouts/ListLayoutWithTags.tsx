@@ -7,9 +7,9 @@ import { usePathname } from 'next/navigation'
 import { useMemo } from 'react'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
+import { useTagLabel } from '@/components/TagLabelsProvider'
 import { filterPostsByLanguage } from '@/lib/i18n/filter-posts'
 import { useI18n } from '@/lib/i18n/i18n-context'
-import { translateTag } from '@/lib/i18n/tag-translations'
 import { formatDate } from '@/lib/i18n/utils'
 import type { CoreContent } from '@/lib/types/content'
 import type { Blog } from '@/lib/types/post'
@@ -144,6 +144,7 @@ export default function ListLayoutWithTags({
 }: ListLayoutProps) {
   const pathname = usePathname()
   const { locale, t } = useI18n()
+  const tagLabel = useTagLabel()
 
   // 언어별로 포스트 필터링
   const filteredPosts = useMemo(
@@ -195,7 +196,7 @@ export default function ListLayoutWithTags({
               <ul className="space-y-2">
                 {sortedTags.map((tagSlug) => {
                   const isActive = decodeURI(pathname.split('/tags/')[1]) === slug(tagSlug)
-                  const displayName = translateTag(tagSlug, locale)
+                  const displayName = tagLabel(tagSlug)
                   return (
                     <li key={tagSlug}>
                       {isActive ? (

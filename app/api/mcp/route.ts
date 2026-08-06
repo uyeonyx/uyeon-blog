@@ -6,6 +6,7 @@ import { verifyMcpToken } from '@/lib/mcp/auth'
 import { captureRequestContext } from '@/lib/mcp/request-context'
 import { registerContentTools } from '@/lib/mcp/tools/content'
 import { registerPostTools } from '@/lib/mcp/tools/posts'
+import { registerTagTools } from '@/lib/mcp/tools/tags'
 
 export const runtime = 'nodejs'
 // mdx-bundler 컴파일(언어당 수 초) × 2 + Blob 업로드 여유
@@ -15,12 +16,14 @@ const mcpHandler = createMcpHandler(
   (server) => {
     registerPostTools(server)
     registerContentTools(server)
+    registerTagTools(server)
   },
   {
     serverInfo: { name: 'uyeon-blog', version: '1.0.0' },
     instructions: [
       'uyeon.dev 블로그 관리 서버. 글(posts)·프로젝트(projects)·소개(about)를 조회/수정할 수 있다.',
       '글과 프로젝트 본문은 마크다운으로 읽고 쓴다. ko/en 두 언어가 항상 쌍으로 존재한다.',
+      '태그를 달 때는 tags_list로 기존 태그를 확인해 재사용할 것 (태그는 canonical slug로 저장된다).',
       '수정 후 공개 페이지 캐시는 자동 무효화된다 (별도 배포 불필요).',
     ].join('\n'),
   }

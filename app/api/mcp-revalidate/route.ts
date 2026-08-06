@@ -5,7 +5,7 @@ import { revalidateTag } from 'next/cache'
 import type { NextRequest } from 'next/server'
 import { verifyMcpToken } from '@/lib/mcp/auth'
 
-const VALID_TAGS = new Set(['posts', 'projects', 'authors'])
+const VALID_TAGS = new Set(['posts', 'projects', 'authors', 'tags'])
 
 export async function POST(request: NextRequest) {
   const bearer = request.headers.get('authorization')?.replace(/^Bearer /, '')

@@ -11,6 +11,7 @@ import {
   touchPost,
   validatePublishable,
 } from '@/lib/admin/post-service'
+import { registerTags } from '@/lib/admin/tag-service'
 import { getDb } from '@/lib/db/client'
 import { posts, postTranslations } from '@/lib/db/schema'
 import { mcpRevalidateTag } from '@/lib/mcp/request-context'
@@ -134,12 +135,14 @@ export function registerPostTools(server: McpServer) {
     {
       title: '글 생성',
       description:
-        '새 글을 draft 상태로 생성한다. ko/en 빈 번역 행이 함께 만들어진다. 내용은 post_update로 채운다.',
+        '새 글을 draft 상태로 생성한다. ko/en 빈 번역 행이 함께 만들어진다. 내용은 post_update로 채운다. ' +
+        'tags를 지정하기 전에 tags_list로 기존 태그를 확인해 재사용할 것.',
       inputSchema: {
         slug: z.string().describe('URL 경로 (소문자/숫자/하이픈)'),
+        tags: z.array(z.string()).optional().describe('태그 — 기존 태그 slug 재사용 권장'),
       },
     },
-    async ({ slug }) => {
+    async ({ slug, tags }) => {
       const trimmed = slug.trim()
       if (!SLUG_PATTERN.test(trimmed)) {
         return err('slug는 소문자/숫자/하이픈만 사용할 수 있습니다')
@@ -148,12 +151,17 @@ export function registerPostTools(server: McpServer) {
       const existing = await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, trimmed))
       if (existing.length > 0) return err(`이미 존재하는 slug입니다: ${trimmed}`)
 
-      const [post] = await db.insert(posts).values({ slug: trimmed }).returning()
+      const tagsResult = tags !== undefined ? await registerTags(tags) : null
+      const [post] = await db
+        .insert(posts)
+        .values({ slug: trimmed, ...(tagsResult ? { tags: tagsResult.slugs } : {}) })
+        .returning()
       await db
         .insert(postTranslations)
         .values(LANGUAGES.map((language) => ({ postId: post.id, language })))
       await mcpRevalidateTag('posts')
-      return ok({ id: post.id, slug: post.slug, status: 'draft' })
+      if (tagsResult && tagsResult.created.length > 0) await mcpRevalidateTag('tags')
+      return ok({ id: post.id, slug: post.slug, status: 'draft', tags: post.tags })
     }
   )
 
@@ -169,7 +177,10 @@ export function registerPostTools(server: McpServer) {
       inputSchema: {
         idOrSlug: z.string(),
         slug: z.string().optional().describe('새 slug (draft에서만)'),
-        tags: z.array(z.string()).optional(),
+        tags: z
+          .array(z.string())
+          .optional()
+          .describe('태그 전체 치환 — tags_list로 기존 태그를 확인해 slug 재사용 권장'),
         layout: z.enum(['PostLayout', 'PostSimple', 'PostBanner']).nullable().optional(),
         date: z.string().optional().describe('게시일 (ISO 8601)'),
         coverImage: z
@@ -187,6 +198,8 @@ export function registerPostTools(server: McpServer) {
       const post = await resolvePost(idOrSlug)
       if (!post) return err(`글을 찾을 수 없습니다: ${idOrSlug}`)
       const db = getDb()
+      // 태그는 canonical slug로 정규화해 저장, 미등록 태그는 마스터에 자동 등록
+      const tagsResult = tags !== undefined ? await registerTags(tags) : null
 
       // slug 변경은 draft에서만 (게시된 URL 보호)
       if (slug !== undefined && slug !== post.slug) {
@@ -205,7 +218,7 @@ export function registerPostTools(server: McpServer) {
         .update(posts)
         .set({
           ...(slug !== undefined && post.status === 'draft' ? { slug } : {}),
-          ...(tags !== undefined ? { tags: tags.map((t) => t.trim()).filter(Boolean) } : {}),
+          ...(tagsResult ? { tags: tagsResult.slugs } : {}),
           ...(layout !== undefined ? { layout } : {}),
           ...(parsedDate ? { date: parsedDate } : {}),
           ...(coverImage !== undefined ? { images: coverImage ? [coverImage] : null } : {}),
@@ -247,6 +260,7 @@ export function registerPostTools(server: McpServer) {
 
       await touchPost(post.id)
       await mcpRevalidateTag('posts')
+      if (tagsResult && tagsResult.created.length > 0) await mcpRevalidateTag('tags')
       return ok({
         ok: true,
         compileResults,

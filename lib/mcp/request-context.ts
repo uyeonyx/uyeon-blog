@@ -12,7 +12,7 @@ export function captureRequestContext(request: Request) {
 }
 
 /** 별도 내부 요청으로 태그 무효화 — 실패해도 도구 결과는 유지 (best-effort) */
-export async function mcpRevalidateTag(tag: 'posts' | 'projects' | 'authors') {
+export async function mcpRevalidateTag(tag: 'posts' | 'projects' | 'authors' | 'tags') {
   if (!origin) {
     console.error('[mcp] revalidate origin이 캡처되지 않았습니다')
     return

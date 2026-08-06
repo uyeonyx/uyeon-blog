@@ -95,6 +95,16 @@ export const projectTranslations = pgTable(
   ]
 )
 
+// 태그 마스터 — posts.tags/projects.tags 배열의 canonical slug와 언어별 표시 라벨.
+// 배열 컬럼에는 FK를 걸 수 없으므로 정합성은 저장 경로(lib/admin/tag-service.ts)에서 보장한다.
+export const tags = pgTable('tags', {
+  slug: text('slug').primaryKey(), // github-slugger 출력 (조회 계층 slugify와 동일 규칙)
+  labelKo: text('label_ko').notNull(),
+  labelEn: text('label_en').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const authors = pgTable('authors', {
   id: uuid('id').primaryKey().defaultRandom(),
   slug: text('slug').notNull().unique(), // 현재 'default' 단일 행, 확장 대비
@@ -133,6 +143,7 @@ export const authorTranslations = pgTable(
 )
 
 export type PostRow = typeof posts.$inferSelect
+export type TagRow = typeof tags.$inferSelect
 export type PostTranslationRow = typeof postTranslations.$inferSelect
 export type ProjectRow = typeof projects.$inferSelect
 export type ProjectTranslationRow = typeof projectTranslations.$inferSelect

@@ -1,13 +1,8 @@
 import { eq } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
-import {
-  LANGUAGES,
-  revalidatePosts,
-  SLUG_PATTERN,
-  saveTranslation,
-  touchPost,
-} from '@/lib/admin/post-service'
+import { LANGUAGES, revalidatePosts, SLUG_PATTERN, saveTranslation } from '@/lib/admin/post-service'
 import { requireAdminApi } from '@/lib/admin/session'
+import { registerTags, revalidateTagMaster } from '@/lib/admin/tag-service'
 import { getDb } from '@/lib/db/client'
 import { posts, postTranslations } from '@/lib/db/schema'
 
@@ -86,9 +81,9 @@ export async function PUT(request: NextRequest, { params }: Params) {
     }
   }
 
-  const tags = Array.isArray(body.tags)
-    ? body.tags.map((t: unknown) => String(t).trim()).filter(Boolean)
-    : post.tags
+  // 태그는 canonical slug로 정규화해 저장, 미등록 태그는 마스터에 자동 등록
+  const tagsResult = Array.isArray(body.tags) ? await registerTags(body.tags.map(String)) : null
+  const tags = tagsResult ? tagsResult.slugs : post.tags
   const layout =
     body.layout === 'PostLayout' || body.layout === 'PostSimple' || body.layout === 'PostBanner'
       ? body.layout
@@ -130,6 +125,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
   }
 
   revalidatePosts()
+  if (tagsResult && tagsResult.created.length > 0) revalidateTagMaster()
   return Response.json({ ok: true, compileResults })
 }
 

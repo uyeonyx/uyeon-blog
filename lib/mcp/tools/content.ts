@@ -134,15 +134,23 @@ export function registerContentTools(server: McpServer) {
     {
       title: '프로젝트 생성',
       description:
-        '새 프로젝트를 생성한다 (기본 공개 상태, ko/en 빈 번역 행 포함). 내용은 project_update로 채운다.',
-      inputSchema: { slug: z.string().describe('식별자 (소문자/숫자/하이픈)') },
+        '새 프로젝트를 생성한다 (기본 공개 상태, ko/en 빈 번역 행 포함). 내용은 project_update로 채운다. ' +
+        'tags를 지정하기 전에 tags_list로 기존 태그를 확인해 재사용할 것.',
+      inputSchema: {
+        slug: z.string().describe('식별자 (소문자/숫자/하이픈)'),
+        tags: z.array(z.string()).optional().describe('태그 — 기존 태그 slug 재사용 권장'),
+      },
     },
-    async ({ slug }) => {
+    async ({ slug, tags }) => {
       const result = await createProject(slug)
       if (!result.ok) {
         return result.error === 'invalid_slug'
           ? err('slug는 소문자/숫자/하이픈만 사용할 수 있습니다')
           : err(`이미 존재하는 slug입니다: ${slug}`)
+      }
+      if (tags !== undefined) {
+        const metaResult = await updateProjectMeta(result.id, { tags })
+        if (metaResult.ok && metaResult.createdTags.length > 0) await mcpRevalidateTag('tags')
       }
       await mcpRevalidateTag('projects')
       return ok({ id: result.id, slug: result.slug })
@@ -164,7 +172,10 @@ export function registerContentTools(server: McpServer) {
         displayOrder: z.number().int().optional(),
         imgSrc: z.string().nullable().optional(),
         href: z.string().nullable().optional(),
-        tags: z.array(z.string()).optional(),
+        tags: z
+          .array(z.string())
+          .optional()
+          .describe('태그 전체 치환 — tags_list로 기존 태그를 확인해 slug 재사용 권장'),
         translations: z
           .object({
             ko: projectTranslationInputSchema.optional(),
@@ -225,6 +236,7 @@ export function registerContentTools(server: McpServer) {
 
       await touchProject(id)
       await mcpRevalidateTag('projects')
+      if (metaResult.createdTags.length > 0) await mcpRevalidateTag('tags')
       return ok({ ok: true, compileResults, ...(warnings.length > 0 ? { warnings } : {}) })
     }
   )
