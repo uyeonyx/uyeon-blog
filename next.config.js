@@ -107,9 +107,13 @@ module.exports = () => {
     // 공개 라우트는 전부 /ko, /en 아래에 있다. 무접두사 URL은 여기서 흡수한다.
     // proxy.ts는 admin 인증 전용으로 남긴다 — matcher를 넓히면 모든 공개 요청에 JWT 검증이 걸린다.
     async redirects() {
+      // `:path*`는 0개 세그먼트일 때 후행 슬래시를 남겨 `/blog` → `/ko/blog/` → `/ko/blog`
+      // 2홉이 된다. 목록 경로는 exact와 `:path+`로 쪼갠다.
       const LEGACY = [
-        '/blog/:path*',
-        '/tags/:path*',
+        '/blog',
+        '/blog/:path+',
+        '/tags',
+        '/tags/:path+',
         '/projects',
         '/about',
         '/ai',
