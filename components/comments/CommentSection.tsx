@@ -8,6 +8,7 @@ import { Fragment, useCallback, useEffect, useState } from 'react'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import CommentForm from './CommentForm'
 import CommentItem from './CommentItem'
+import DeleteConfirmDialog from './DeleteConfirmDialog'
 import type { CommentsResponse, PublicComment } from './types'
 
 function countComments(items: PublicComment[]): number {
@@ -24,7 +25,10 @@ export default function CommentSection({ slug }: { slug: string }) {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [replyTo, setReplyTo] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  // 삭제는 세 상태로 나뉜다 — 확인을 기다리는 중(pendingDeleteId), 요청 중(deleting), 실패(deleteError)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const returnPath = `/${locale}/blog/${slug}`
 
@@ -54,27 +58,37 @@ export default function CommentSection({ slug }: { slug: string }) {
     load()
   }, [load])
 
-  const handleDelete = useCallback(
-    async (commentId: string) => {
-      if (!window.confirm(t('comments.deleteConfirm'))) return
-      setDeletingId(commentId)
-      try {
-        const response = await fetch(`/api/comments/${commentId}`, { method: 'DELETE' })
-        if (!response.ok) {
-          window.alert(t('comments.error.deleteFailed'))
-          return
-        }
-        // 지운 댓글을 편집 중이었다면 폼도 닫는다
-        setEditingId((current) => (current === commentId ? null : current))
-        await load()
-      } catch {
-        window.alert(t('comments.error.deleteFailed'))
-      } finally {
-        setDeletingId(null)
+  const askDelete = useCallback((commentId: string) => {
+    setDeleteError(null)
+    setPendingDeleteId(commentId)
+  }, [])
+
+  const closeDeleteDialog = useCallback(() => {
+    setPendingDeleteId(null)
+    setDeleteError(null)
+  }, [])
+
+  const confirmDelete = useCallback(async () => {
+    if (!pendingDeleteId) return
+    setDeleting(true)
+    setDeleteError(null)
+    try {
+      const response = await fetch(`/api/comments/${pendingDeleteId}`, { method: 'DELETE' })
+      if (!response.ok) {
+        // 다이얼로그를 닫지 않고 사유를 붙인다 — 같은 자리에서 다시 누를 수 있어야 한다
+        setDeleteError(t('comments.error.deleteFailed'))
+        return
       }
-    },
-    [load, t]
-  )
+      // 지운 댓글을 편집 중이었다면 폼도 닫는다
+      setEditingId((current) => (current === pendingDeleteId ? null : current))
+      setPendingDeleteId(null)
+      await load()
+    } catch {
+      setDeleteError(t('comments.error.deleteFailed'))
+    } finally {
+      setDeleting(false)
+    }
+  }, [load, pendingDeleteId, t])
 
   if (status === 'loading') {
     return <p className="text-sm text-gray-500 dark:text-gray-400">{t('comments.loading')}</p>
@@ -124,12 +138,12 @@ export default function CommentSection({ slug }: { slug: string }) {
               <CommentItem
                 comment={comment}
                 onReply={setReplyTo}
-                onDelete={handleDelete}
+                onDelete={askDelete}
                 onEdit={setEditingId}
                 onCancelEdit={() => setEditingId(null)}
                 onSavedEdit={handleSavedEdit}
                 editingId={editingId}
-                deletingId={deletingId}
+                deletingId={deleting ? pendingDeleteId : null}
               />
               {replyTo === comment.id && (
                 <li className="pb-4 pl-11">
@@ -150,6 +164,16 @@ export default function CommentSection({ slug }: { slug: string }) {
           ))}
         </ul>
       )}
+
+      <DeleteConfirmDialog
+        open={pendingDeleteId !== null}
+        busy={deleting}
+        error={deleteError}
+        onOpenChange={(next) => {
+          if (!next) closeDeleteDialog()
+        }}
+        onConfirm={confirmDelete}
+      />
     </div>
   )
 }
