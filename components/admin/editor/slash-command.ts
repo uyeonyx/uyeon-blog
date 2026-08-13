@@ -33,7 +33,7 @@ function buildItems({ onImagePick, onMathPick, onYoutubePick }: SlashCommandOpti
     ...([1, 2, 3] as const).map((level) => ({
       title: `제목 ${level}`,
       description: `H${level} 헤딩`,
-      icon: 'solar:text-bold-square',
+      icon: 'solar:text-square-2-bold',
       keywords: [`h${level}`, 'heading', 'title', '제목'],
       command: ({ editor, range }) =>
         editor.chain().focus().deleteRange(range).setNode('heading', { level }).run(),
@@ -57,7 +57,7 @@ function buildItems({ onImagePick, onMathPick, onYoutubePick }: SlashCommandOpti
     {
       title: '인용문',
       description: '블록 인용',
-      icon: 'solar:chat-square-quote-bold',
+      icon: 'mdi:format-quote-close',
       keywords: ['quote', 'blockquote', '인용'],
       command: ({ editor, range }) =>
         editor.chain().focus().deleteRange(range).toggleBlockquote().run(),

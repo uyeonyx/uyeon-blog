@@ -160,6 +160,8 @@ export default function Home({ posts }) {
                         fill
                         sizes="(max-width: 768px) 100vw, 768px"
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        // 첫 카드의 커버가 LCP 후보 — 지연 로드하면 LCP가 밀린다
+                        preload={index === 0}
                       />
                     </Link>
                   </motion.div>

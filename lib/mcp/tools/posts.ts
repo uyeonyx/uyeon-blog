@@ -401,11 +401,13 @@ export function registerPostTools(server: McpServer) {
         contentType: mime,
       })
 
+      // ?w=&h= 힌트 — 순수 마크다운으로 삽입돼도 렌더러가 치수를 복원한다 (admin upload와 동일 규약)
+      const uploadedUrl = width && height ? `${blob.url}?w=${width}&h=${height}` : blob.url
       const markdown =
         width && height
-          ? `<Image alt="${alt.replace(/"/g, '&quot;')}" src="${blob.url}" width={${width}} height={${height}} />`
-          : `![${alt}](${blob.url})`
-      return ok({ url: blob.url, width, height, markdown })
+          ? `<Image alt="${alt.replace(/"/g, '&quot;')}" src="${uploadedUrl}" width={${width}} height={${height}} />`
+          : `![${alt}](${uploadedUrl})`
+      return ok({ url: uploadedUrl, width, height, markdown })
     }
   )
 }

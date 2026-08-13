@@ -39,7 +39,7 @@ const techIcons: Record<string, { icon: string; color: string }> = {
   'Tailwind CSS': { icon: 'simple-icons:tailwindcss', color: '#06B6D4' },
   'shadcn/ui': { icon: 'simple-icons:shadcnui', color: '#000000' },
   Redux: { icon: 'simple-icons:redux', color: '#764ABC' },
-  Zustand: { icon: 'mdi:bear', color: '#443E38' },
+  Zustand: { icon: 'mdi:teddy-bear', color: '#443E38' },
   Electron: { icon: 'simple-icons:electron', color: '#47848F' },
 
   // Infrastructure - AWS

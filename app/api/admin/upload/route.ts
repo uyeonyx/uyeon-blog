@@ -61,5 +61,8 @@ export async function POST(request: NextRequest) {
     contentType: file.type,
   })
 
-  return Response.json({ url: blob.url, width, height })
+  // ?w=&h= 힌트를 URL에 실어준다 — 순수 마크다운(![]())으로 삽입돼도
+  // components/Image.tsx가 치수를 복원해 CLS를 막을 수 있다 (스키마 변경 불필요)
+  const url = width && height ? `${blob.url}?w=${width}&h=${height}` : blob.url
+  return Response.json({ url, width, height })
 }

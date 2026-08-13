@@ -46,6 +46,8 @@ const loadPublishedCores = unstable_cache(
         toc: postTranslations.toc,
         readingTime: postTranslations.readingTime,
         compiledOk: isNotNull(postTranslations.compiledCode).mapWith(Boolean),
+        // 컴파일 출력의 katex 클래스 존재 여부 — 상세 페이지의 katex CSS 조건부 로드용
+        hasMath: sql<boolean>`coalesce(${postTranslations.compiledCode} LIKE '%katex%', false)`,
       })
       .from(postTranslations)
       .where(
@@ -84,6 +86,7 @@ const loadPublishedCores = unstable_cache(
           language: tr.language,
           layout: post.layout ?? undefined,
           images,
+          hasMath: tr.hasMath,
           toc: tr.toc ?? [],
           readingTime: tr.readingTime ?? { text: '', minutes: 0, time: 0, words: 0 },
         })

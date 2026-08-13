@@ -93,6 +93,8 @@ module.exports = () => {
         },
       ],
       formats: ['image/avif', 'image/webp'],
+      // Next 16 기본은 [75]뿐 — 코드가 요청하는 q값을 열거하지 않으면 _next/image가 400을 반환한다
+      qualities: [75, 90],
       deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
       imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
       unoptimized,

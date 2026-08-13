@@ -23,6 +23,8 @@ export interface Post {
   authors?: string[]
   bibliography?: string
   canonicalUrl?: string
+  /** 본문에 KaTeX 수식이 있는지 — 상세 페이지에서 katex CSS를 조건부 로드하는 데 쓴다 */
+  hasMath?: boolean
   // biome-ignore lint/suspicious/noExplicitAny: pliny Toc
   toc: any
   // biome-ignore lint/suspicious/noExplicitAny: reading-time 결과

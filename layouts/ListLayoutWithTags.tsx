@@ -205,7 +205,7 @@ export default function ListLayoutWithTags({
         {/* Main Content - Posts List */}
         <div className="flex-1 min-w-0">
           <div className="space-y-6">
-            {displayPosts.map((post) => {
+            {displayPosts.map((post, postIndex) => {
               const { path, date, title, summary, tags, images } = post
               const cover = images?.[0]
               return (
@@ -227,6 +227,8 @@ export default function ListLayoutWithTags({
                           fill
                           sizes="(max-width: 1024px) 100vw, 672px"
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          // 목록 첫 커버가 LCP 후보
+                          preload={postIndex === 0}
                         />
                       </Link>
                     )}

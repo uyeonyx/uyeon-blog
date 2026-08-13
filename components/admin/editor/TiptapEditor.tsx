@@ -264,13 +264,13 @@ export default function TiptapEditor({
               />
               <BubbleButton
                 label="기울임"
-                icon="solar:text-italic"
+                icon="solar:text-italic-bold"
                 active={editor.isActive('italic')}
                 onClick={() => editor.chain().focus().toggleItalic().run()}
               />
               <BubbleButton
                 label="취소선"
-                icon="solar:text-cross"
+                icon="solar:text-cross-bold"
                 active={editor.isActive('strike')}
                 onClick={() => editor.chain().focus().toggleStrike().run()}
               />

@@ -48,3 +48,6 @@ yarn-error.log*
 
 .env*
 *.tsbuildinfo
+
+# 빌드 시 생성되는 자산 (pnpm prepare-assets)
+/public/static/katex/

@@ -15,9 +15,27 @@ interface ImageProps {
   className?: string
 }
 
+/** 업로드 라우트가 붙여주는 ?w=&h= 힌트에서 원본 치수를 복원한다 (CLS 방지) */
+function dimsFromSrc(src: string): { w?: number; h?: number } {
+  try {
+    const url = new URL(src, 'http://placeholder.local')
+    const w = Number(url.searchParams.get('w'))
+    const h = Number(url.searchParams.get('h'))
+    return {
+      w: Number.isFinite(w) && w > 0 ? w : undefined,
+      h: Number.isFinite(h) && h > 0 ? h : undefined,
+    }
+  } catch {
+    return {}
+  }
+}
+
 const Image = ({ src, alt, width, height }: ImageProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const fullSrc = `${basePath || ''}${src}`
+  const dims = dimsFromSrc(src)
+  const w = width ?? dims.w ?? 1200
+  const h = height ?? dims.h ?? 630
 
   return (
     <>
@@ -66,12 +84,11 @@ const Image = ({ src, alt, width, height }: ImageProps) => {
             <NextImage
               src={fullSrc}
               alt={alt || ''}
-              width={width || 1200}
-              height={height || 630}
+              width={w}
+              height={h}
               className="relative block w-full h-auto rounded-2xl"
               style={{ display: 'block', margin: 0, padding: 0 }}
               sizes="(max-width: 640px) 100vw, (max-width: 768px) 640px, (max-width: 1024px) 768px, 1024px"
-              priority={false}
               quality={90}
             />
           </div>
@@ -130,11 +147,11 @@ const Image = ({ src, alt, width, height }: ImageProps) => {
               <NextImage
                 src={fullSrc}
                 alt={alt || ''}
-                width={width || 1200}
-                height={height || 630}
+                width={w}
+                height={h}
                 className="max-h-[90vh] max-w-[90vw] rounded-xl object-contain shadow-2xl"
                 sizes="90vw"
-                quality={95}
+                quality={90}
               />
               {alt && <div className="mt-4 text-center text-sm text-white/80">{alt}</div>}
             </motion.div>

@@ -1,5 +1,4 @@
 import 'css/prism.css'
-import 'katex/dist/katex.css'
 
 import { genPageMetadata } from 'app/seo'
 import type { Metadata } from 'next'
@@ -103,6 +102,11 @@ export default async function Page(props: { params: Promise<{ locale: string; sl
 
   return (
     <>
+      {/* 수식이 있는 글에만 katex CSS를 싣는다 — React 19가 precedence 링크를 head로 호이스팅·블로킹 처리 (FOUC 없음).
+          정적 import는 청크 그래프에 붙어 조건부가 불가능해 prepare-assets가 public/에 자가 호스팅한다. */}
+      {post.hasMath && (
+        <link rel="stylesheet" href="/static/katex/katex.min.css" precedence="high" />
+      )}
       <JsonLd data={blogPostingJsonLd({ post, locale, author, canonical })} />
       <JsonLd
         data={breadcrumbJsonLd([
