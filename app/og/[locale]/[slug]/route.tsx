@@ -3,7 +3,7 @@
 import { slug as slugify } from 'github-slugger'
 import { ImageResponse } from 'next/og'
 import siteMetadata from '@/data/siteMetadata'
-import { getPost } from '@/lib/db/posts'
+import { getPublishedCore } from '@/lib/db/posts'
 import { getTagLabelMap } from '@/lib/db/tags'
 import { HTML_LANG, isLocale } from '@/lib/i18n/config'
 
@@ -37,7 +37,7 @@ export async function GET(
   const { locale, slug } = await params
   if (!isLocale(locale)) return new Response('Not found', { status: 404 })
 
-  const post = await getPost(slug, locale)
+  const post = await getPublishedCore(slug, locale)
   if (!post) return new Response('Not found', { status: 404 })
 
   const date = new Date(post.date).toLocaleDateString(HTML_LANG[locale], {

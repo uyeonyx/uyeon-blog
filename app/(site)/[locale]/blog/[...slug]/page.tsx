@@ -4,7 +4,13 @@ import { notFound } from 'next/navigation'
 import JsonLd from '@/components/JsonLd'
 import siteMetadata from '@/data/siteMetadata'
 import { getAuthorCore } from '@/lib/db/authors'
-import { getPost, getPostLocales, getPostStatusBySlug, getPublishedCores } from '@/lib/db/posts'
+import {
+  getPost,
+  getPostLocales,
+  getPostStatusBySlug,
+  getPublishedCore,
+  getPublishedCores,
+} from '@/lib/db/posts'
 import { assertLocale } from '@/lib/i18n/route'
 import { getTranslations } from '@/lib/i18n/translate'
 import { blogPostingJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld'
@@ -24,7 +30,8 @@ export async function generateMetadata(props: {
   params: Promise<{ locale: string; slug: string[] }>
 }): Promise<Metadata | undefined> {
   const { locale, slug } = await resolve(props.params)
-  const post = await getPost(slug, locale)
+  // 메타데이터에는 본문이 필요 없다 — 코어만 조회해 slug별 본문 캐시를 건드리지 않는다
+  const post = await getPublishedCore(slug, locale)
 
   if (!post) {
     const t = getTranslations(locale)
