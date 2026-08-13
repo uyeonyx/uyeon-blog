@@ -136,6 +136,10 @@
     "reply": "Reply",
     "cancel": "Cancel",
     "delete": "Delete",
+    "edit": "Edit",
+    "save": "Save",
+    "saving": "Saving…",
+    "edited": "(edited)",
     "deleteConfirm": "Delete this comment? This can't be undone.",
     "deleted": "This comment was deleted",
     "ownerBadge": "Author",
@@ -160,7 +164,10 @@
       "rejected": "Couldn't post your comment.",
       "post_not_found": "Post not found.",
       "parent_not_found": "Couldn't find the comment you're replying to.",
-      "deleteFailed": "Couldn't delete the comment."
+      "deleteFailed": "Couldn't delete the comment.",
+      "editFailed": "Couldn't save your changes.",
+      "forbidden": "You can't edit this comment — it may have been written in another browser, or the cookie was cleared.",
+      "not_found": "Comment not found."
     }
   }
 }

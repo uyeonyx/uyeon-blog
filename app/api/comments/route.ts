@@ -1,10 +1,9 @@
 // 공개 댓글 API. 글 페이지는 정적으로 프리렌더되고, 댓글은 마운트 후 여기로 가져온다.
 import type { NextRequest } from 'next/server'
 import siteMetadata from '@/data/siteMetadata'
-import { getAdminSession } from '@/lib/admin/session'
 import { getUserSession, isOwnerSession } from '@/lib/auth/user-session'
+import { getOrCreateAnonSeed } from '@/lib/comments/anon-identity'
 import { verifyChallenge } from '@/lib/comments/challenge'
-import { createDeleteToken } from '@/lib/comments/delete-token'
 import {
   ANONYMOUS_MAX_LINKS,
   COMMENT_MAX_LENGTH,
@@ -12,11 +11,13 @@ import {
   renderCommentMarkdown,
 } from '@/lib/comments/markdown'
 import { notifyNewComment } from '@/lib/comments/notify'
+import { canDeleteComment, canEditComment, loadCommentActor } from '@/lib/comments/permission'
 import {
   createComment,
   getCommentById,
   getPostIdBySlug,
   listCommentsByPostId,
+  toPublic,
 } from '@/lib/db/comments'
 import type { CommentRow } from '@/lib/db/schema'
 import { isLocale } from '@/lib/i18n/config'
@@ -58,14 +59,15 @@ export async function GET(request: NextRequest) {
     return fail('post_not_found', 404)
   }
 
-  const [session, adminSession] = await Promise.all([getUserSession(), getAdminSession()])
-  const canDeleteRow = (row: CommentRow) => {
-    if (adminSession) return true
-    if (!session) return false
-    return row.provider === session.provider && row.providerUserId === session.providerUserId
-  }
+  const actor = await loadCommentActor()
+  const session = actor.session
+  // 익명 판정도 쿠키로 서버에서 끝난다 — 클라이언트가 보정할 것이 없다
+  const permissionFor = (row: CommentRow) => ({
+    canDelete: canDeleteComment(row, actor),
+    canEdit: canEditComment(row, actor),
+  })
 
-  const items = await listCommentsByPostId(postId, canDeleteRow)
+  const items = await listCommentsByPostId(postId, permissionFor)
   return Response.json(
     {
       items,
@@ -162,6 +164,10 @@ export async function POST(request: NextRequest) {
 
   const locale = isLocale(body.locale) ? body.locale : null
 
+  // 같은 브라우저를 이어 붙이는 시드 — 아바타와 이후의 수정·삭제 권한이 모두 여기에 걸린다.
+  // 쿠키가 없으면 여기서 발급된다.
+  const anonAvatarSeed = isAnonymous ? await getOrCreateAnonSeed() : null
+
   const row = await createComment({
     postId,
     parentId,
@@ -171,6 +177,7 @@ export async function POST(request: NextRequest) {
     authorName,
     authorAvatarUrl: session?.avatarUrl ?? null,
     authorUrl: session?.profileUrl ?? null,
+    anonAvatarSeed,
     bodyMd: markdown,
     bodyHtml: html,
     locale,
@@ -182,22 +189,6 @@ export async function POST(request: NextRequest) {
     console.error('[comments] 알림 전송 중 오류:', error)
   })
 
-  return Response.json({
-    comment: {
-      id: row.id,
-      parentId: row.parentId,
-      authorType: row.authorType,
-      authorName: row.authorName,
-      authorAvatarUrl: row.authorAvatarUrl,
-      authorUrl: row.authorUrl,
-      bodyHtml: row.bodyHtml,
-      locale: row.locale,
-      isOwner: row.isOwner,
-      isDeleted: false,
-      createdAt: row.createdAt.toISOString(),
-      canDelete: true,
-    },
-    // 익명은 세션이 없으므로 이 토큰이 유일한 삭제 근거다 (15분)
-    deleteToken: session ? null : createDeleteToken(row.id),
-  })
+  // 방금 쓴 사람은 언제나 자기 댓글을 고치고 지울 수 있다
+  return Response.json({ comment: toPublic(row, { canDelete: true, canEdit: true }) })
 }

@@ -179,11 +179,17 @@ export const comments = pgTable(
     status: commentStatusEnum('status').notNull().default('visible'),
     isOwner: boolean('is_owner').notNull().default(false), // 서버 세션으로만 판정 (위조 불가)
 
+    // 익명 작성자의 아바타 시드. anon_id 쿠키에서 HMAC으로 파생한 값만 저장하므로
+    // 유출돼도 쿠키를 되돌리거나 다른 사람 아바타를 흉내낼 수 없다 (lib/comments/anon-identity.ts).
+    anonAvatarSeed: text('anon_avatar_seed'),
+
     notifyEmail: text('notify_email'), // 향후 답글 알림 opt-in — 지금은 쓰지 않는다
     notifyToken: text('notify_token'),
 
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    // 본문이 실제로 고쳐진 시각. updatedAt은 숨김/복구에도 갱신되므로 "수정됨" 표시에 쓸 수 없다
+    editedAt: timestamp('edited_at', { withTimezone: true }),
   },
   (table) => [index('idx_comments_post_created').on(table.postId, table.createdAt)]
 )

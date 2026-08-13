@@ -19,6 +19,8 @@ export interface AdminCommentItem {
   isOwner: boolean
   locale: string | null
   createdAt: string
+  /** 등록 후 본문이 바뀐 시각 — 모더레이션에서는 "언제 쓰였나"만큼 "고쳐졌나"가 중요하다 */
+  editedAt: string | null
 }
 
 const STATUS_LABEL: Record<AdminCommentItem['status'], string> = {
@@ -94,6 +96,12 @@ function CommentRow({ comment, onChanged }: { comment: AdminCommentItem; onChang
         <span className="text-xs text-gray-400 dark:text-gray-500">
           {new Date(comment.createdAt).toLocaleString('ko-KR')}
         </span>
+        {/* 등록 알림은 원문만 전하므로, 그 뒤에 바뀐 사실은 여기서만 드러난다 */}
+        {comment.editedAt && !isDeleted && (
+          <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-600 dark:text-amber-400">
+            수정됨 · {new Date(comment.editedAt).toLocaleString('ko-KR')}
+          </span>
+        )}
       </div>
 
       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">

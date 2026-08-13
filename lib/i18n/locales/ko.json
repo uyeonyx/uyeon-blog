@@ -136,6 +136,10 @@
     "reply": "답글",
     "cancel": "취소",
     "delete": "삭제",
+    "edit": "수정",
+    "save": "저장",
+    "saving": "저장 중…",
+    "edited": "(수정됨)",
     "deleteConfirm": "이 댓글을 삭제할까요? 되돌릴 수 없습니다.",
     "deleted": "삭제된 댓글입니다",
     "ownerBadge": "작성자",
@@ -160,7 +164,10 @@
       "rejected": "댓글을 등록하지 못했습니다.",
       "post_not_found": "글을 찾을 수 없습니다.",
       "parent_not_found": "답글을 달 댓글을 찾을 수 없습니다.",
-      "deleteFailed": "댓글을 삭제하지 못했습니다."
+      "deleteFailed": "댓글을 삭제하지 못했습니다.",
+      "editFailed": "댓글을 수정하지 못했습니다.",
+      "forbidden": "이 댓글을 수정할 권한이 없습니다. 다른 브라우저에서 작성했거나 쿠키가 지워졌을 수 있습니다.",
+      "not_found": "댓글을 찾을 수 없습니다."
     }
   }
 }

@@ -12,7 +12,7 @@ interface CommentFormProps {
   anonymousAllowed: boolean
   /** 로그인 후 돌아올 경로 — 레이아웃에서 usePathname으로 역산하지 않고 페이지가 아는 값을 쓴다 */
   returnPath: string
-  onPosted: (payload: { commentId: string; deleteToken: string | null }) => void
+  onPosted: () => void
   /** 로그아웃 후 목록·뷰어 상태를 다시 읽어오게 한다 */
   onSignedOut: () => void
   onCancel?: () => void
@@ -103,7 +103,7 @@ export default function CommentForm({
 
       setBody('')
       setAuthorName('')
-      onPosted({ commentId: data.comment.id, deleteToken: data.deleteToken ?? null })
+      onPosted()
     } catch {
       setError(t('comments.error.generic'))
     } finally {

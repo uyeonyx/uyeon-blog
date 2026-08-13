@@ -12,13 +12,17 @@ export interface PublicComment {
   authorName: string
   authorAvatarUrl: string | null
   authorUrl: string | null
+  /** 익명 작성자의 아바타 시드 — 같은 브라우저면 같은 값이다 */
+  anonAvatarSeed: string | null
   bodyHtml: string
   locale: string | null
   isOwner: boolean
   isDeleted: boolean
   createdAt: string
-  /** 서버가 세션을 보고 계산한다 — 클라이언트가 뒤집어도 삭제 API가 다시 검사한다 */
+  editedAt: string | null
+  /** 서버가 세션을 보고 계산한다 — 클라이언트가 뒤집어도 각 API가 다시 검사한다 */
   canDelete: boolean
+  canEdit: boolean
   replies?: PublicComment[]
 }
 
@@ -31,6 +35,7 @@ export interface CreateCommentInput {
   authorName: string
   authorAvatarUrl: string | null
   authorUrl: string | null
+  anonAvatarSeed: string | null
   bodyMd: string
   bodyHtml: string
   locale: string | null
@@ -43,8 +48,14 @@ export async function getPostIdBySlug(slug: string): Promise<string | null> {
   return rows[0]?.id ?? null
 }
 
-function toPublic(row: CommentRow, canDelete: boolean): PublicComment {
+export interface RowPermission {
+  canDelete: boolean
+  canEdit: boolean
+}
+
+export function toPublic(row: CommentRow, permission: RowPermission): PublicComment {
   const isDeleted = row.status === 'deleted'
+  const canEdit = permission.canEdit && !isDeleted
   return {
     id: row.id,
     parentId: row.parentId,
@@ -53,22 +64,25 @@ function toPublic(row: CommentRow, canDelete: boolean): PublicComment {
     authorName: isDeleted ? '' : row.authorName,
     authorAvatarUrl: isDeleted ? null : row.authorAvatarUrl,
     authorUrl: isDeleted ? null : row.authorUrl,
+    anonAvatarSeed: isDeleted ? null : row.anonAvatarSeed,
     bodyHtml: isDeleted ? '' : row.bodyHtml,
     locale: row.locale,
     isOwner: !isDeleted && row.isOwner,
     isDeleted,
     createdAt: row.createdAt.toISOString(),
-    canDelete: canDelete && !isDeleted,
+    editedAt: isDeleted ? null : (row.editedAt?.toISOString() ?? null),
+    canDelete: permission.canDelete && !isDeleted,
+    canEdit,
   }
 }
 
 /**
  * 글 하나의 공개 댓글 트리. ko/en이 같은 스레드를 공유하므로 language 인자를 받지 않는다.
- * `canDeleteRow`는 세션을 아는 호출자가 넘긴다 (DB 계층이 쿠키를 읽지 않게 한다).
+ * `permissionFor`는 세션을 아는 호출자가 넘긴다 (DB 계층이 쿠키를 읽지 않게 한다).
  */
 export async function listCommentsByPostId(
   postId: string,
-  canDeleteRow: (row: CommentRow) => boolean
+  permissionFor: (row: CommentRow) => RowPermission
 ): Promise<PublicComment[]> {
   const db = getDb()
   const rows = await db
@@ -81,7 +95,7 @@ export async function listCommentsByPostId(
   const byId = new Map<string, PublicComment>()
 
   for (const row of rows) {
-    byId.set(row.id, toPublic(row, canDeleteRow(row)))
+    byId.set(row.id, toPublic(row, permissionFor(row)))
   }
 
   for (const row of rows) {
@@ -127,13 +141,31 @@ export async function softDeleteComment(id: string): Promise<void> {
       authorName: '',
       authorAvatarUrl: null,
       authorUrl: null,
+      anonAvatarSeed: null,
       provider: null,
       providerUserId: null,
       notifyEmail: null,
       notifyToken: null,
       updatedAt: new Date(),
+      editedAt: null,
     })
     .where(eq(comments.id, id))
+}
+
+/** 본문 수정. 작성자 정보는 건드리지 않는다 — 이름이 바뀌면 그건 수정이 아니라 다른 사람이다 */
+export async function updateCommentBody(
+  id: string,
+  bodyMd: string,
+  bodyHtml: string
+): Promise<CommentRow | null> {
+  const db = getDb()
+  const now = new Date()
+  const [row] = await db
+    .update(comments)
+    .set({ bodyMd, bodyHtml, updatedAt: now, editedAt: now })
+    .where(eq(comments.id, id))
+    .returning()
+  return row ?? null
 }
 
 /** 관리자 모더레이션 — 숨김/복구 (본문은 보존해서 되돌릴 수 있게 한다) */

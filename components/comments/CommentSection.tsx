@@ -10,33 +10,6 @@ import CommentForm from './CommentForm'
 import CommentItem from './CommentItem'
 import type { CommentsResponse, PublicComment } from './types'
 
-const DELETE_TOKEN_PREFIX = 'comment-delete-token:'
-
-/** 익명 작성자의 15분짜리 삭제 권한 — 서버에 컬럼을 두지 않고 브라우저에만 남긴다 */
-function readDeleteToken(commentId: string): string | null {
-  try {
-    return localStorage.getItem(DELETE_TOKEN_PREFIX + commentId)
-  } catch {
-    return null
-  }
-}
-
-function storeDeleteToken(commentId: string, token: string) {
-  try {
-    localStorage.setItem(DELETE_TOKEN_PREFIX + commentId, token)
-  } catch {
-    // 시크릿 모드 등에서 실패할 수 있다 — 삭제 버튼이 안 보일 뿐 작성은 정상이다
-  }
-}
-
-function clearDeleteToken(commentId: string) {
-  try {
-    localStorage.removeItem(DELETE_TOKEN_PREFIX + commentId)
-  } catch {
-    // 무시
-  }
-}
-
 function countComments(items: PublicComment[]): number {
   return items.reduce(
     (total, item) => total + (item.isDeleted ? 0 : 1) + countComments(item.replies ?? []),
@@ -50,29 +23,18 @@ export default function CommentSection({ slug }: { slug: string }) {
   const [data, setData] = useState<CommentsResponse | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [replyTo, setReplyTo] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  // localStorage는 렌더 중에 읽을 수 없으므로(SSR 불일치) 로드 후 상태로 옮긴다
-  const [localTokenIds, setLocalTokenIds] = useState<Set<string>>(new Set())
 
   const returnPath = `/${locale}/blog/${slug}`
 
+  // 익명 여부와 무관하게 권한은 서버가 쿠키로 판정해 canEdit·canDelete로 내려준다
   const load = useCallback(async () => {
     try {
       const response = await fetch(`/api/comments?slug=${encodeURIComponent(slug)}`)
       if (!response.ok) throw new Error('failed')
-      const payload = (await response.json()) as CommentsResponse
-      setData(payload)
+      setData((await response.json()) as CommentsResponse)
       setStatus('ready')
-
-      const owned = new Set<string>()
-      const walk = (items: PublicComment[]) => {
-        for (const item of items) {
-          if (readDeleteToken(item.id)) owned.add(item.id)
-          walk(item.replies ?? [])
-        }
-      }
-      walk(payload.items)
-      setLocalTokenIds(owned)
     } catch {
       setStatus('error')
     }
@@ -82,30 +44,28 @@ export default function CommentSection({ slug }: { slug: string }) {
     load()
   }, [load])
 
-  const handlePosted = useCallback(
-    ({ commentId, deleteToken }: { commentId: string; deleteToken: string | null }) => {
-      if (deleteToken) storeDeleteToken(commentId, deleteToken)
-      setReplyTo(null)
-      load()
-    },
-    [load]
-  )
+  const handlePosted = useCallback(() => {
+    setReplyTo(null)
+    load()
+  }, [load])
+
+  const handleSavedEdit = useCallback(() => {
+    setEditingId(null)
+    load()
+  }, [load])
 
   const handleDelete = useCallback(
     async (commentId: string) => {
       if (!window.confirm(t('comments.deleteConfirm'))) return
       setDeletingId(commentId)
       try {
-        const token = readDeleteToken(commentId)
-        const response = await fetch(`/api/comments/${commentId}`, {
-          method: 'DELETE',
-          headers: token ? { 'x-delete-token': token } : undefined,
-        })
+        const response = await fetch(`/api/comments/${commentId}`, { method: 'DELETE' })
         if (!response.ok) {
           window.alert(t('comments.error.deleteFailed'))
           return
         }
-        clearDeleteToken(commentId)
+        // 지운 댓글을 편집 중이었다면 폼도 닫는다
+        setEditingId((current) => (current === commentId ? null : current))
         await load()
       } catch {
         window.alert(t('comments.error.deleteFailed'))
@@ -114,11 +74,6 @@ export default function CommentSection({ slug }: { slug: string }) {
       }
     },
     [load, t]
-  )
-
-  const hasLocalDeleteToken = useCallback(
-    (commentId: string) => localTokenIds.has(commentId),
-    [localTokenIds]
   )
 
   if (status === 'loading') {
@@ -168,9 +123,12 @@ export default function CommentSection({ slug }: { slug: string }) {
             <Fragment key={comment.id}>
               <CommentItem
                 comment={comment}
-                hasLocalDeleteToken={hasLocalDeleteToken}
                 onReply={setReplyTo}
                 onDelete={handleDelete}
+                onEdit={setEditingId}
+                onCancelEdit={() => setEditingId(null)}
+                onSavedEdit={handleSavedEdit}
+                editingId={editingId}
                 deletingId={deletingId}
               />
               {replyTo === comment.id && (

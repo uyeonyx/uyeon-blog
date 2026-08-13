@@ -20,6 +20,7 @@ export default async function AdminCommentsPage() {
     isOwner: row.isOwner,
     locale: row.locale,
     createdAt: row.createdAt.toISOString(),
+    editedAt: row.editedAt?.toISOString() ?? null,
   }))
 
   return <CommentsManager initialItems={items} />

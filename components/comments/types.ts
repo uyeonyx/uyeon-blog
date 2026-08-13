@@ -6,13 +6,16 @@ export interface PublicComment {
   authorType: 'user' | 'anonymous'
   authorName: string
   authorAvatarUrl: string | null
+  anonAvatarSeed: string | null
   authorUrl: string | null
   bodyHtml: string
   locale: string | null
   isOwner: boolean
   isDeleted: boolean
   createdAt: string
+  editedAt: string | null
   canDelete: boolean
+  canEdit: boolean
   replies?: PublicComment[]
 }
 
