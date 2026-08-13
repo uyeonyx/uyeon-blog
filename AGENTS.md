@@ -19,7 +19,11 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
   `<html>`·`<body>` 껍데기는 `components/RootHtml.tsx`가 공유한다. `app/layout.tsx`는 존재하지 않는다.
 - 합성할 단일 레이아웃이 없으므로 미매칭 URL의 404는 `app/global-not-found.tsx`가 받는다
   (`experimental.globalNotFound`). 이 파일은 레이아웃을 건너뛰므로 `<html>`부터 직접 렌더해야 한다.
-  로케일 안에서 난 `notFound()`는 `app/(site)/[locale]/not-found.tsx`가 받는다.
+  로케일 안에서 난 `notFound()`는 클라이언트 내비게이션에서는 `app/(site)/[locale]/not-found.tsx`가,
+  직접 방문(ISR 생성 중 throw)에서는 루트 `app/not-found.tsx`가 받는다 — 후자도 레이아웃 없이
+  단독 문서로 렌더되므로 global-not-found를 재수출한다. 세 파일이 같은 `NotFoundContent`를 공유한다.
+- **notFound()를 던지는 세그먼트 위에 `loading.tsx`를 두지 말 것** — Suspense 경계가 스트리밍을
+  열어 404가 200(+noindex 주입)으로 나간다. 목록 스켈레톤은 `(list)` 라우트 그룹에 격리한다.
 - **`useSearchParams()`는 레이아웃 계층 클라이언트 컴포넌트에서 정적 프리렌더를 깨뜨린다.**
   꼭 필요하면 `components/LanguageSwitch.tsx`처럼 Suspense로 감싸고 폴백도 동작하는 UI로 만든다.
 - 페이지는 `assertLocale(params.locale)`로 로케일을 검증한다. 레이아웃에서 `notFound()`를 던지지 않는다
