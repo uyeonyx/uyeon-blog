@@ -37,8 +37,12 @@ export async function GET() {
     '## Projects',
     '',
     ...projects.map((p) => {
-      const tr = p.translations.ko ?? p.translations.en
-      return `- [${tr?.title ?? p.slug}](${localeUrl('ko', 'projects')})${tr?.description ? `: ${tr.description}` : ''}`
+      const primary = p.translations.ko ?? p.translations.en
+      const links = (['ko', 'en'] as const)
+        .filter((l) => p.translations[l])
+        .map((l) => `[${p.translations[l]?.title}](${localeUrl(l, `projects/${p.slug}`)})`)
+        .join(' / ')
+      return `- ${links}${primary?.description ? `: ${primary.description}` : ''}`
     }),
     '',
     '## Optional',

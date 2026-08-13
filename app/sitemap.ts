@@ -119,6 +119,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         })
       )
     }
+
+    for (const project of projects) {
+      if (project.language !== locale) continue
+      const available = LOCALES.filter((l) =>
+        projects.some((p) => p.slug === project.slug && p.language === l)
+      )
+      entries.push(
+        entry(locale, `projects/${project.slug}`, {
+          available,
+          lastModified: project.updatedAt,
+          changeFrequency: 'monthly',
+          priority: 0.6,
+        })
+      )
+    }
   }
 
   return entries

@@ -21,5 +21,6 @@ export async function generateMetadata(props: {
 export default async function Projects(props: { params: Promise<{ locale: string }> }) {
   const locale = assertLocale((await props.params).locale)
   const projects = await getPublishedProjects(locale)
-  return <ProjectsPageClient projects={projects} />
+  // 목록에는 본문(body)을 내려보내지 않는다 — RSC 페이로드 절감
+  return <ProjectsPageClient projects={projects.map(({ body: _body, ...core }) => core)} />
 }

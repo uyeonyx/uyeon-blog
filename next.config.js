@@ -2,10 +2,11 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
 
-// You might need to insert additional domains in script-src if you are using external services
-const ContentSecurityPolicy = `
+// 공개 라우트는 MDX를 서버에서 평가하므로 'unsafe-eval'이 필요 없다.
+// /admin만 예외 — 에디터 프리뷰(PreviewDialog)가 미저장 본문을 클라이언트에서 평가한다.
+const buildCsp = ({ allowEval }) => `
   default-src 'self';
-  script-src 'self' 'unsafe-eval' 'unsafe-inline' umami.uyeon.dev;
+  script-src 'self' ${allowEval ? "'unsafe-eval' " : ''}'unsafe-inline' umami.uyeon.dev;
   style-src 'self' 'unsafe-inline';
   img-src * blob: data:;
   media-src *.s3.amazonaws.com;
@@ -14,11 +15,11 @@ const ContentSecurityPolicy = `
   frame-src www.youtube-nocookie.com
 `
 
-const securityHeaders = [
+const securityHeaders = (csp) => [
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
   {
     key: 'Content-Security-Policy',
-    value: ContentSecurityPolicy.replace(/\n/g, ''),
+    value: csp.replace(/\n/g, ''),
   },
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Referrer-Policy
   {
@@ -99,8 +100,12 @@ module.exports = () => {
     async headers() {
       return [
         {
-          source: '/(.*)',
-          headers: securityHeaders,
+          source: '/admin/:path*',
+          headers: securityHeaders(buildCsp({ allowEval: true })),
+        },
+        {
+          source: '/((?!admin).*)',
+          headers: securityHeaders(buildCsp({ allowEval: false })),
         },
       ]
     },
@@ -136,6 +141,13 @@ module.exports = () => {
         })),
         // 소셜 플랫폼 캐시에 박혀 있는 기존 OG URL
         { source: '/og/:slug', destination: '/og/ko/:slug', permanent: true },
+        // 프로젝트 상세가 ?project= 쿼리 모달에서 실제 라우트로 바뀜 — 레거시 URL 흡수
+        {
+          source: '/:locale(ko|en)/projects',
+          has: [{ type: 'query', key: 'project', value: '(?<slug>[a-z0-9-]+)' }],
+          destination: '/:locale/projects/:slug',
+          permanent: true,
+        },
       ]
     },
     webpack: (config, _options) => {

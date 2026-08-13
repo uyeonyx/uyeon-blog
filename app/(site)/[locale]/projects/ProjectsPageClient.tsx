@@ -1,34 +1,15 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
 import ProjectCard from '@/components/ProjectCard'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import type { Project } from '@/lib/types/project'
 
-export default function ProjectsPageClient({ projects }: { projects: Project[] }) {
+/** 목록 카드에는 본문이 필요 없다 — 상세는 /projects/[slug] 라우트가 담당 */
+export type ProjectListItem = Omit<Project, 'body'>
+
+export default function ProjectsPageClient({ projects }: { projects: ProjectListItem[] }) {
   const { t } = useI18n()
-  const [openProjectSlug, setOpenProjectSlug] = useState<string | null>(null)
-
-  // URL query parameter에서 초기 상태 설정 및 popstate 처리
-  useEffect(() => {
-    const updateFromUrl = () => {
-      const url = new URL(window.location.href)
-      const projectParam = url.searchParams.get('project')
-      if (projectParam && projects.some((p) => p.slug === projectParam)) {
-        setOpenProjectSlug(projectParam)
-      } else {
-        setOpenProjectSlug(null)
-      }
-    }
-
-    // 초기 로드
-    updateFromUrl()
-
-    // 뒤로가기/앞으로가기 감지
-    window.addEventListener('popstate', updateFromUrl)
-    return () => window.removeEventListener('popstate', updateFromUrl)
-  }, [projects])
 
   return (
     <motion.div
@@ -48,27 +29,7 @@ export default function ProjectsPageClient({ projects }: { projects: Project[] }
       <div className="container py-12">
         <div className="-m-4 flex flex-wrap">
           {projects.map((project) => (
-            <ProjectCard
-              key={project.slug}
-              project={project}
-              isOpen={openProjectSlug === project.slug}
-              onOpenChange={(open) => {
-                if (open) {
-                  // 모달 열기: query parameter 사용
-                  const url = new URL(window.location.href)
-                  url.searchParams.set('project', project.slug)
-                  window.history.pushState({}, '', url.toString())
-                  setOpenProjectSlug(project.slug)
-                } else {
-                  // 모달 닫기: query parameter 제거
-                  const url = new URL(window.location.href)
-                  url.searchParams.delete('project')
-                  url.hash = '' // hash도 제거
-                  window.history.pushState({}, '', url.toString())
-                  setOpenProjectSlug(null)
-                }
-              }}
-            />
+            <ProjectCard key={project.slug} project={project} />
           ))}
         </div>
       </div>

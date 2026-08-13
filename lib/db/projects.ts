@@ -1,7 +1,7 @@
 // 공개 페이지용 프로젝트 조회 — 'projects' 태그로 캐시, mutation 시 revalidateTag('projects')
 import { asc, eq, inArray } from 'drizzle-orm'
 import { unstable_cache } from 'next/cache'
-import type { Locale } from '@/lib/i18n/config'
+import { LOCALES, type Locale } from '@/lib/i18n/config'
 import type { Project } from '@/lib/types/project'
 import { getDb } from './client'
 import { projects, projectTranslations } from './schema'
@@ -59,6 +59,21 @@ export async function getPublishedProjects(language: Locale): Promise<Project[]>
 /** 언어 무관 — sitemap의 lastModified 산출용 */
 export async function getAllProjects(): Promise<Project[]> {
   return loadPublishedProjects()
+}
+
+/** 상세 페이지용 — 해당 언어의 프로젝트(본문 포함). 없으면 null */
+export async function getPublishedProject(slug: string, language: Locale): Promise<Project | null> {
+  return (
+    (await loadPublishedProjects()).find((p) => p.slug === slug && p.language === language) ?? null
+  )
+}
+
+/** 이 프로젝트가 존재하는 언어 목록 — hreflang용 */
+export async function getProjectLocales(slug: string): Promise<Locale[]> {
+  const langs = new Set(
+    (await loadPublishedProjects()).filter((p) => p.slug === slug).map((p) => p.language)
+  )
+  return LOCALES.filter((l) => langs.has(l))
 }
 
 /** 공개 MCP용 상세 마크다운 — published만 SQL 레벨에서 필터 */
