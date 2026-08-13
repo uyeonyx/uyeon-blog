@@ -36,6 +36,8 @@ const MobileNav = () => {
         </SheetTrigger>
         <SheetContent
           side="top"
+          // 트리거 버튼이 열림/닫힘 아이콘을 겸하므로 내장 X는 끈다 (첫 링크와 겹침)
+          showClose={false}
           className="inset-x-auto top-[6rem] left-1/2 h-auto w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/40 dark:border-gray-600 dark:bg-gray-800 dark:shadow-black/60"
         >
           <SheetTitle className="sr-only">{t('common.toggleMenu')}</SheetTitle>

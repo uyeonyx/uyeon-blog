@@ -11,6 +11,7 @@ import { getTranslations } from '@/lib/i18n/translate'
 import { pageSlice, totalPagesOf } from '@/lib/pagination'
 import { breadcrumbJsonLd, collectionPageJsonLd } from '@/lib/seo/jsonld'
 import { localeUrl } from '@/lib/seo/urls'
+import { safeDecodeURI } from '@/lib/utils'
 
 /** 이 태그로 글이 있는 로케일 — hreflang은 실제 존재하는 대응만 선언한다 */
 async function localesWithTag(tag: string): Promise<Locale[]> {
@@ -32,7 +33,7 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const params = await props.params
   const locale = assertLocale(params.locale)
-  const tag = decodeURI(params.tag)
+  const tag = safeDecodeURI(params.tag)
   const t = getTranslations(locale)
 
   // 이 로케일에 글이 없는 태그는 soft-404를 내지 않는다 (미지의 태그 문자열 포함)
@@ -53,7 +54,7 @@ export async function generateMetadata(props: {
 export default async function TagPage(props: { params: Promise<{ locale: string; tag: string }> }) {
   const params = await props.params
   const locale = assertLocale(params.locale)
-  const tag = decodeURI(params.tag)
+  const tag = safeDecodeURI(params.tag)
   const [title, filteredPosts, tagCounts] = await Promise.all([
     getTagTitle(tag, locale),
     getCoresByTag(tag, locale),

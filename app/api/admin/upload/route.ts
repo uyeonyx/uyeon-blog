@@ -17,7 +17,7 @@ const SNIFFED_TYPE_BY_MIME: Record<string, string[]> = {
   'image/jpeg': ['jpg'],
   'image/gif': ['gif'],
   'image/webp': ['webp'],
-  'image/avif': ['avif', 'heif'],
+  'image/avif': ['avif', 'mif1', 'msf1'],
 }
 const MAX_SIZE = 10 * 1024 * 1024 // 10MB
 

@@ -8,6 +8,7 @@ import { localePath } from '@/lib/i18n/paths'
 import { assertLocale } from '@/lib/i18n/route'
 import { getTranslations } from '@/lib/i18n/translate'
 import { pageSlice, totalPagesOf } from '@/lib/pagination'
+import { safeDecodeURI } from '@/lib/utils'
 
 // 빌드 타임 열거는 생략(페이지네이션은 드물게 조회) — 빈 배열이라도 있어야 온디맨드 ISR이 된다
 export function generateStaticParams() {
@@ -19,7 +20,7 @@ export async function generateMetadata(props: {
 }): Promise<Metadata> {
   const params = await props.params
   const locale = assertLocale(params.locale)
-  const tag = decodeURI(params.tag)
+  const tag = safeDecodeURI(params.tag)
   const t = getTranslations(locale)
   const title = await getTagTitle(tag, locale)
   const pageNumber = Number.parseInt(params.page, 10)
@@ -38,7 +39,7 @@ export default async function TagPage(props: {
 }) {
   const params = await props.params
   const locale = assertLocale(params.locale)
-  const tag = decodeURI(params.tag)
+  const tag = safeDecodeURI(params.tag)
   const pageNumber = Number.parseInt(params.page, 10)
   if (Number.isNaN(pageNumber) || pageNumber <= 0) notFound()
   if (pageNumber === 1) permanentRedirect(`${localePath(locale)}/tags/${encodeURIComponent(tag)}`)

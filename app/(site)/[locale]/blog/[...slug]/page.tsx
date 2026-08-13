@@ -19,6 +19,7 @@ import { assertLocale } from '@/lib/i18n/route'
 import { getTranslations } from '@/lib/i18n/translate'
 import { blogPostingJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld'
 import { localeUrl, postImageUrl } from '@/lib/seo/urls'
+import { safeDecodeURI } from '@/lib/utils'
 import BlogPostClient from './BlogPostClient'
 import PostNotice from './PostNotice'
 
@@ -33,7 +34,7 @@ export async function generateStaticParams({ params }: { params: { locale: strin
 
 async function resolve(params: Promise<{ locale: string; slug: string[] }>) {
   const { locale, slug } = await params
-  return { locale: assertLocale(locale), slug: decodeURI(slug.join('/')) }
+  return { locale: assertLocale(locale), slug: safeDecodeURI(slug.join('/')) }
 }
 
 export async function generateMetadata(props: {

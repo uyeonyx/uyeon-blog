@@ -1,3 +1,5 @@
+import 'css/prism.css'
+
 import { genPageMetadata } from 'app/seo'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -50,6 +52,10 @@ export default async function ProjectPage(props: {
   const t = getTranslations(locale)
   return (
     <>
+      {/* 본문에 수식이 있을 때만 katex CSS (blog 상세와 동일 패턴) */}
+      {project.body.code.includes('katex') && (
+        <link rel="stylesheet" href="/static/katex/katex.min.css" precedence="high" />
+      )}
       <JsonLd
         data={breadcrumbJsonLd([
           { name: t('common.home'), url: localeUrl(locale) },

@@ -39,3 +39,16 @@ export function smartQuotes(text: string | undefined): string {
 
   return result
 }
+
+/**
+ * URL 세그먼트 디코딩 — 크롤러가 보내는 잘못된 퍼센트 인코딩(`%zz` 등)에 decodeURI가
+ * URIError를 던지면 404가 아니라 500이 된다. 실패 시 원문을 그대로 돌려줘
+ * 이후 조회가 자연스럽게 미존재(404) 경로를 타게 한다.
+ */
+export function safeDecodeURI(value: string): string {
+  try {
+    return decodeURI(value)
+  } catch {
+    return value
+  }
+}

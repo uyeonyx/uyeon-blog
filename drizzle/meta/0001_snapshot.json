@@ -1,5 +1,5 @@
 {
-  "id": "c225b464-57e5-46f6-8220-0e9c01eef9c9",
+  "id": "5bb60d30-60da-4dbc-a179-25eb2265ea5f",
   "prevId": "60e13702-23f8-4a45-89f0-b5cfd3b2c49a",
   "version": "7",
   "dialect": "postgresql",
@@ -303,6 +303,25 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "notify_email": {
+          "name": "notify_email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notify_token": {
+          "name": "notify_token",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sanitizer_version": {
+          "name": "sanitizer_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
         },
         "created_at": {
           "name": "created_at",
@@ -901,6 +920,37 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.used_nonces": {
+      "name": "used_nonces",
+      "schema": "",
+      "columns": {
+        "nonce": {
+          "name": "nonce",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "purpose": {
+          "name": "purpose",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},

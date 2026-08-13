@@ -1,3 +1,5 @@
+import 'css/prism.css'
+
 import { genPageMetadata } from 'app/seo'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
@@ -31,6 +33,10 @@ export default async function Page(props: { params: Promise<{ locale: string }> 
   const { techStack: _t, timeline: _tl, ...core } = authorSansBody
   return (
     <>
+      {/* 소개글에 수식이 있을 때만 katex CSS (blog 상세와 동일 패턴) */}
+      {body.code?.includes('katex') && (
+        <link rel="stylesheet" href="/static/katex/katex.min.css" precedence="high" />
+      )}
       <JsonLd data={profilePageJsonLd(locale, core)} />
       <AboutPageClient author={authorSansBody}>
         {body.code ? <MDXServerRenderer code={body.code} /> : null}

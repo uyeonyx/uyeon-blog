@@ -6,6 +6,7 @@ import siteMetadata from '@/data/siteMetadata'
 import { getPublishedCore } from '@/lib/db/posts'
 import { getTagLabelMap } from '@/lib/db/tags'
 import { HTML_LANG, isLocale } from '@/lib/i18n/config'
+import { safeDecodeURI } from '@/lib/utils'
 
 export const runtime = 'nodejs'
 
@@ -36,7 +37,7 @@ export async function GET(
   { params }: { params: Promise<{ locale: string; slug: string[] }> }
 ) {
   const { locale, slug: slugParts } = await params
-  const slug = decodeURI(slugParts.join('/'))
+  const slug = safeDecodeURI(slugParts.join('/'))
   if (!isLocale(locale)) return new Response('Not found', { status: 404 })
 
   const post = await getPublishedCore(slug, locale)

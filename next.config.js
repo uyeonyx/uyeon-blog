@@ -106,14 +106,16 @@ module.exports = () => {
       unoptimized,
     },
     async headers() {
+      // 전체에 공개 CSP를 깔고 /admin만 뒤에서 덮어쓴다 — 같은 키는 나중 매치가 이긴다.
+      // (negative lookahead로 쪼개면 /adminfoo처럼 어느 쪽에도 안 걸리는 무헤더 경로가 생긴다)
       return [
+        {
+          source: '/(.*)',
+          headers: securityHeaders(buildCsp({ allowEval: false })),
+        },
         {
           source: '/admin/:path*',
           headers: securityHeaders(buildCsp({ allowEval: true })),
-        },
-        {
-          source: '/((?!admin).*)',
-          headers: securityHeaders(buildCsp({ allowEval: false })),
         },
       ]
     },

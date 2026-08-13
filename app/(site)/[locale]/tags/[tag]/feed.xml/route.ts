@@ -3,6 +3,7 @@ import { getTagTitle } from '@/lib/db/tags'
 import { isLocale } from '@/lib/i18n/config'
 import { getTranslations } from '@/lib/i18n/translate'
 import { generateRss } from '@/lib/rss'
+import { safeDecodeURI } from '@/lib/utils'
 
 // DB 조회 페이지 — 빌드 타임 프리렌더 대신 요청 시 렌더 (데이터는 'posts' 태그로 캐시됨)
 export const dynamic = 'force-dynamic'
@@ -14,7 +15,7 @@ export async function GET(
   const { locale, tag } = await params
   if (!isLocale(locale)) return new Response('Not found', { status: 404 })
 
-  const decoded = decodeURI(tag)
+  const decoded = safeDecodeURI(tag)
   const posts = await getCoresByTag(decoded, locale)
   if (posts.length === 0) {
     return new Response('No posts', { status: 404 })

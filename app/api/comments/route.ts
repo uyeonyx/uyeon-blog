@@ -13,13 +13,14 @@ import {
 import { notifyNewComment } from '@/lib/comments/notify'
 import { canDeleteComment, canEditComment, loadCommentActor } from '@/lib/comments/permission'
 import {
+  type CommentListRow,
   createComment,
   getCommentById,
   getPostIdBySlug,
   listCommentsByPostId,
   toPublic,
 } from '@/lib/db/comments'
-import type { CommentRow } from '@/lib/db/schema'
+
 import { isLocale } from '@/lib/i18n/config'
 import { checkRateLimit } from '@/lib/rate-limit'
 
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
   const actor = await loadCommentActor()
   const session = actor.session
   // 익명 판정도 쿠키로 서버에서 끝난다 — 클라이언트가 보정할 것이 없다
-  const permissionFor = (row: CommentRow) => ({
+  const permissionFor = (row: CommentListRow) => ({
     canDelete: canDeleteComment(row, actor),
     canEdit: canEditComment(row, actor),
   })

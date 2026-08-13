@@ -2,7 +2,7 @@
 // 봇 토큰도, 서버 공유 조건도 없다. URL 하나면 되고 라이브러리도 필요 없다.
 //
 // 제3자(댓글 작성자)에게 답글 알림을 보내려면 수신 동의·수신거부·반송 처리가 따라붙으므로
-// 지금은 범위 밖이다. comments.notify_email 컬럼만 미리 열어뒀다.
+// 지금은 범위 밖이다.
 import siteMetadata from '@/data/siteMetadata'
 import type { CommentRow } from '@/lib/db/schema'
 

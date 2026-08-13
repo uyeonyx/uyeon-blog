@@ -86,7 +86,9 @@ export default async function SiteLayout(props: {
   params: Promise<{ locale: string }>
 }) {
   const locale = await resolve(props.params)
-  const tagLabels = await getTagLabelMap(locale)
+  // 레이아웃의 에러는 하위 error.tsx가 못 잡는다(경계가 레이아웃 안쪽) — DB 장애 시
+  // 스타일 없는 기본 에러 화면 대신, 라벨만 비우고 껍데기는 살린다 (소비처는 slug 폴백)
+  const tagLabels = await getTagLabelMap(locale).catch(() => ({}) as Record<string, string>)
 
   return (
     <RootHtml lang={HTML_LANG[locale]}>
