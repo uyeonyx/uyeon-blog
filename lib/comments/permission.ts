@@ -9,7 +9,7 @@
 // 서명 키 없이는 HMAC을 계산할 수조차 없다.
 import { getAdminSession } from '@/lib/admin/session'
 import { getUserSession, type UserSession } from '@/lib/auth/user-session'
-import type { CommentRow } from '@/lib/db/schema'
+import type { CommentListRow } from '@/lib/db/comments'
 import { readAnonSeed } from './anon-identity'
 
 export interface CommentActor {
@@ -29,7 +29,7 @@ export async function loadCommentActor(): Promise<CommentActor> {
 }
 
 /** 로그인 작성자 본인인지 — login은 바뀔 수 있으므로 provider의 불변 id로만 비교한다 */
-function isSameUser(row: CommentRow, session: UserSession | null): boolean {
+function isSameUser(row: CommentListRow, session: UserSession | null): boolean {
   if (!session || row.authorType !== 'user') return false
   return row.provider === session.provider && row.providerUserId === session.providerUserId
 }
@@ -39,7 +39,7 @@ function isSameUser(row: CommentRow, session: UserSession | null): boolean {
  * 시드가 없는 행(이 신원 체계 이전에 달린 익명 댓글)은 아무와도 일치하지 않아야 하므로
  * 양쪽이 모두 있을 때만 비교한다 — null === null로 전원 통과하는 사고를 막는다.
  */
-function isSameAnon(row: CommentRow, anonSeed: string | null): boolean {
+function isSameAnon(row: CommentListRow, anonSeed: string | null): boolean {
   if (row.authorType !== 'anonymous') return false
   if (!row.anonAvatarSeed || !anonSeed) return false
   return row.anonAvatarSeed === anonSeed
@@ -49,14 +49,14 @@ function isSameAnon(row: CommentRow, anonSeed: string | null): boolean {
  * 수정 권한. 관리자라도 남의 댓글 본문은 고칠 수 없다 — 남의 이름 아래 글자를 바꾸는 것은
  * 사칭이 된다. 관리자에게는 숨김(setCommentStatus)과 삭제가 있고, 그것으로 충분하다.
  */
-export function canEditComment(row: CommentRow, actor: CommentActor): boolean {
+export function canEditComment(row: CommentListRow, actor: CommentActor): boolean {
   if (row.status !== 'visible') return false
   if (row.authorType === 'anonymous') return isSameAnon(row, actor.anonSeed)
   return isSameUser(row, actor.session)
 }
 
 /** 삭제 권한. 모더레이션이 필요하므로 관리자는 무엇이든 지울 수 있다. */
-export function canDeleteComment(row: CommentRow, actor: CommentActor): boolean {
+export function canDeleteComment(row: CommentListRow, actor: CommentActor): boolean {
   if (row.status === 'deleted') return false
   if (actor.isAdmin) return true
   if (row.authorType === 'anonymous') return isSameAnon(row, actor.anonSeed)

@@ -20,7 +20,11 @@ import {
 } from '@/lib/admin/project-service'
 import { getDb } from '@/lib/db/client'
 import { projects } from '@/lib/db/schema'
-import { mcpRevalidateTag } from '@/lib/mcp/request-context'
+import {
+  mcpRevalidateTag,
+  type RevalidateResult,
+  revalidateWarning,
+} from '@/lib/mcp/request-context'
 import { markdownToTiptap } from '@/lib/mdx/markdown-to-tiptap'
 import type { TechCategory, TimelineItem } from '@/lib/types/author'
 import { err, MARKDOWN_GUIDE, type McpServer, ok, UUID_PATTERN } from './shared'
@@ -148,12 +152,16 @@ export function registerContentTools(server: McpServer) {
           ? err('slug는 소문자/숫자/하이픈만 사용할 수 있습니다')
           : err(`이미 존재하는 slug입니다: ${slug}`)
       }
+      const revalidations: RevalidateResult[] = []
       if (tags !== undefined) {
         const metaResult = await updateProjectMeta(result.id, { tags })
-        if (metaResult.ok && metaResult.createdTags.length > 0) await mcpRevalidateTag('tags')
+        if (metaResult.ok && metaResult.createdTags.length > 0) {
+          revalidations.push(await mcpRevalidateTag('tags'))
+        }
       }
-      await mcpRevalidateTag('projects')
-      return ok({ id: result.id, slug: result.slug })
+      revalidations.push(await mcpRevalidateTag('projects'))
+      const warning = revalidateWarning(revalidations)
+      return ok({ id: result.id, slug: result.slug, ...(warning ? { warning } : {}) })
     }
   )
 
@@ -235,8 +243,10 @@ export function registerContentTools(server: McpServer) {
       }
 
       await touchProject(id)
-      await mcpRevalidateTag('projects')
-      if (metaResult.createdTags.length > 0) await mcpRevalidateTag('tags')
+      const revalidations = [await mcpRevalidateTag('projects')]
+      if (metaResult.createdTags.length > 0) revalidations.push(await mcpRevalidateTag('tags'))
+      const revalidateWarn = revalidateWarning(revalidations)
+      if (revalidateWarn) warnings.push(revalidateWarn)
       return ok({ ok: true, compileResults, ...(warnings.length > 0 ? { warnings } : {}) })
     }
   )
@@ -258,8 +268,8 @@ export function registerContentTools(server: McpServer) {
       if (!id) return err(`프로젝트를 찾을 수 없습니다: ${idOrSlug}`)
       const deleted = await deleteProject(id)
       if (!deleted) return err('프로젝트를 찾을 수 없습니다')
-      await mcpRevalidateTag('projects')
-      return ok({ ok: true })
+      const warning = revalidateWarning([await mcpRevalidateTag('projects')])
+      return ok({ ok: true, ...(warning ? { warning } : {}) })
     }
   )
 
@@ -375,7 +385,8 @@ export function registerContentTools(server: McpServer) {
         }
       }
 
-      await mcpRevalidateTag('authors')
+      const revalidateWarn = revalidateWarning([await mcpRevalidateTag('authors')])
+      if (revalidateWarn) warnings.push(revalidateWarn)
       return ok({ ok: true, compileResults, ...(warnings.length > 0 ? { warnings } : {}) })
     }
   )

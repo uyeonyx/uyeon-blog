@@ -5,6 +5,7 @@ import { imageSize } from 'image-size'
 import { z } from 'zod'
 import {
   type CompileResult,
+  createPost,
   LANGUAGES,
   SLUG_PATTERN,
   saveTranslation,
@@ -14,7 +15,7 @@ import {
 import { registerTags } from '@/lib/admin/tag-service'
 import { getDb } from '@/lib/db/client'
 import { posts, postTranslations } from '@/lib/db/schema'
-import { mcpRevalidateTag } from '@/lib/mcp/request-context'
+import { mcpRevalidateTag, revalidateWarning } from '@/lib/mcp/request-context'
 import { markdownToTiptap } from '@/lib/mdx/markdown-to-tiptap'
 import { err, MARKDOWN_GUIDE, type McpServer, ok, UUID_PATTERN } from './shared'
 
@@ -143,25 +144,22 @@ export function registerPostTools(server: McpServer) {
       },
     },
     async ({ slug, tags }) => {
-      const trimmed = slug.trim()
-      if (!SLUG_PATTERN.test(trimmed)) {
-        return err('slug는 소문자/숫자/하이픈만 사용할 수 있습니다')
+      const result = await createPost(slug, tags)
+      if (!result.ok) {
+        return result.error === 'invalid_slug'
+          ? err('slug는 소문자/숫자/하이픈만 사용할 수 있습니다')
+          : err(`이미 존재하는 slug입니다: ${slug.trim()}`)
       }
-      const db = getDb()
-      const existing = await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, trimmed))
-      if (existing.length > 0) return err(`이미 존재하는 slug입니다: ${trimmed}`)
-
-      const tagsResult = tags !== undefined ? await registerTags(tags) : null
-      const [post] = await db
-        .insert(posts)
-        .values({ slug: trimmed, ...(tagsResult ? { tags: tagsResult.slugs } : {}) })
-        .returning()
-      await db
-        .insert(postTranslations)
-        .values(LANGUAGES.map((language) => ({ postId: post.id, language })))
-      await mcpRevalidateTag('posts')
-      if (tagsResult && tagsResult.created.length > 0) await mcpRevalidateTag('tags')
-      return ok({ id: post.id, slug: post.slug, status: 'draft', tags: post.tags })
+      const revalidations = [await mcpRevalidateTag('posts')]
+      if (result.createdTags.length > 0) revalidations.push(await mcpRevalidateTag('tags'))
+      const warning = revalidateWarning(revalidations)
+      return ok({
+        id: result.id,
+        slug: result.slug,
+        status: 'draft',
+        tags: result.tags,
+        ...(warning ? { warning } : {}),
+      })
     }
   )
 
@@ -259,8 +257,12 @@ export function registerPostTools(server: McpServer) {
       }
 
       await touchPost(post.id)
-      await mcpRevalidateTag('posts')
-      if (tagsResult && tagsResult.created.length > 0) await mcpRevalidateTag('tags')
+      const revalidations = [await mcpRevalidateTag('posts')]
+      if (tagsResult && tagsResult.created.length > 0) {
+        revalidations.push(await mcpRevalidateTag('tags'))
+      }
+      const revalidateWarn = revalidateWarning(revalidations)
+      if (revalidateWarn) warnings.push(revalidateWarn)
       return ok({
         ok: true,
         compileResults,
@@ -302,8 +304,13 @@ export function registerPostTools(server: McpServer) {
         })
         .where(eq(posts.id, post.id))
 
-      await mcpRevalidateTag('posts')
-      return ok({ ok: true, status, url: `https://uyeon.dev/blog/${post.slug}` })
+      const warning = revalidateWarning([await mcpRevalidateTag('posts')])
+      return ok({
+        ok: true,
+        status,
+        url: `https://uyeon.dev/blog/${post.slug}`,
+        ...(warning ? { warning } : {}),
+      })
     }
   )
 
@@ -323,8 +330,8 @@ export function registerPostTools(server: McpServer) {
       if (!post) return err(`글을 찾을 수 없습니다: ${idOrSlug}`)
       const db = getDb()
       await db.delete(posts).where(eq(posts.id, post.id))
-      await mcpRevalidateTag('posts')
-      return ok({ ok: true, deleted: post.slug })
+      const warning = revalidateWarning([await mcpRevalidateTag('posts')])
+      return ok({ ok: true, deleted: post.slug, ...(warning ? { warning } : {}) })
     }
   )
 

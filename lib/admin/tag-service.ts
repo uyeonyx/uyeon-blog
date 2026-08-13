@@ -126,7 +126,8 @@ export type RenameTagResult =
 /**
  * 태그 rename/병합 — 콘텐츠 배열의 oldSlug를 newSlug로 치환한다.
  * newSlug가 이미 마스터에 있으면 병합(옛 행 삭제), 없으면 slug 이동(라벨 유지).
- * 배열 rewrite를 먼저, 마스터 정리를 나중에 수행해 중간 실패 시 재실행해도 안전하다.
+ * 전체를 한 트랜잭션으로 수행해 중간 실패 시 옛/새 slug가 섞인 상태가 남지 않는다.
+ * (single-statement array_replace는 병합 시 중복이 생겨 기각 — JS dedupe가 정확하고 규모상 충분하다)
  */
 export async function renameTag(oldSlug: string, newSlugRaw: string): Promise<RenameTagResult> {
   const newSlug = normalizeTag(newSlugRaw)
@@ -147,41 +148,42 @@ export async function renameTag(oldSlug: string, newSlugRaw: string): Promise<Re
     return next
   }
 
-  const postRows = await db
-    .select({ id: posts.id, tags: posts.tags })
-    .from(posts)
-    .where(arrayContains(posts.tags, [oldSlug]))
-  for (const row of postRows) {
-    await db
-      .update(posts)
-      .set({ tags: replaceSlug(row.tags), updatedAt: new Date() })
-      .where(eq(posts.id, row.id))
-  }
+  const { postCount, projectCount } = await db.transaction(async (tx) => {
+    const postRows = await tx
+      .select({ id: posts.id, tags: posts.tags })
+      .from(posts)
+      .where(arrayContains(posts.tags, [oldSlug]))
+    for (const row of postRows) {
+      await tx
+        .update(posts)
+        .set({ tags: replaceSlug(row.tags), updatedAt: new Date() })
+        .where(eq(posts.id, row.id))
+    }
 
-  const projectRows = await db
-    .select({ id: projects.id, tags: projects.tags })
-    .from(projects)
-    .where(arrayContains(projects.tags, [oldSlug]))
-  for (const row of projectRows) {
-    await db
-      .update(projects)
-      .set({ tags: replaceSlug(row.tags), updatedAt: new Date() })
-      .where(eq(projects.id, row.id))
-  }
+    const projectRows = await tx
+      .select({ id: projects.id, tags: projects.tags })
+      .from(projects)
+      .where(arrayContains(projects.tags, [oldSlug]))
+    for (const row of projectRows) {
+      await tx
+        .update(projects)
+        .set({ tags: replaceSlug(row.tags), updatedAt: new Date() })
+        .where(eq(projects.id, row.id))
+    }
 
-  const postCount = postRows.length
-  const projectCount = projectRows.length
+    if (newRow) {
+      // 병합 — 새 slug의 기존 라벨 유지, 옛 행 삭제
+      await tx.delete(tags).where(eq(tags.slug, oldSlug))
+    } else {
+      // slug 이동 — 라벨 유지
+      await tx
+        .update(tags)
+        .set({ slug: newSlug, updatedAt: new Date() })
+        .where(eq(tags.slug, oldSlug))
+    }
+    return { postCount: postRows.length, projectCount: projectRows.length }
+  })
 
-  if (newRow) {
-    // 병합 — 새 slug의 기존 라벨 유지, 옛 행 삭제
-    await db.delete(tags).where(eq(tags.slug, oldSlug))
-  } else {
-    // slug 이동 — 라벨 유지
-    await db
-      .update(tags)
-      .set({ slug: newSlug, updatedAt: new Date() })
-      .where(eq(tags.slug, oldSlug))
-  }
   return { ok: true, merged: !!newRow, postCount, projectCount }
 }
 

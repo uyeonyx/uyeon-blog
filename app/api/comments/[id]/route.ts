@@ -81,13 +81,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
   const resolved = await resolve(id)
   if (!resolved) return fail('not_found', 404)
   if (!resolved.canDelete) return fail('forbidden', 403)
+
+  // PATCH와 같은 기준 — 권한자라도 무제한 DB 쓰기를 허용할 이유는 없다
+  const limit = checkRateLimit(request, {
+    scope: 'comment-delete',
+    windowMs: 5 * 60_000,
+    maxRequests: 20,
+  })
+  if (!limit.ok) {
+    return fail('rate_limited', 429, { 'Retry-After': String(limit.retryAfterSeconds) })
+  }
 
   await softDeleteComment(id)
   return Response.json({ ok: true })

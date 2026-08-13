@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import { revalidateTag } from 'next/cache'
 import { getDb } from '@/lib/db/client'
 import { authors, authorTranslations } from '@/lib/db/schema'
@@ -96,7 +96,10 @@ export async function updateAuthorMeta(id: string, input: AuthorMetaInput) {
     .where(eq(authors.id, id))
 }
 
-/** 번역 1건 저장 + 소개글 컴파일 — 실패해도 원본은 저장 */
+/**
+ * 번역 1건 저장 + 소개글 컴파일 — 실패해도 원본은 저장
+ * upsert — 번역 행이 유실됐어도 저장이 조용히 no-op되지 않는다.
+ */
 export async function saveAuthorTranslation(
   authorId: string,
   language: Language,
@@ -105,22 +108,27 @@ export async function saveAuthorTranslation(
   const db = getDb()
   const prepared = await prepareContent(input.contentJson)
 
+  const values = {
+    authorId,
+    language,
+    name: smartQuotes(input.name ?? ''),
+    occupation: input.occupation || null,
+    company: input.company || null,
+    ...(input.techStack !== undefined ? { techStack: input.techStack } : {}),
+    ...(input.timeline !== undefined ? { timeline: input.timeline } : {}),
+    contentJson: input.contentJson ?? null,
+    contentMd: prepared.contentMd,
+    compiledCode: prepared.compiledCode,
+    compiledAt: prepared.compiledAt,
+  }
+  const { authorId: _a, language: _l, ...updateSet } = values
   await db
-    .update(authorTranslations)
-    .set({
-      name: smartQuotes(input.name ?? ''),
-      occupation: input.occupation || null,
-      company: input.company || null,
-      ...(input.techStack !== undefined ? { techStack: input.techStack } : {}),
-      ...(input.timeline !== undefined ? { timeline: input.timeline } : {}),
-      contentJson: input.contentJson ?? null,
-      contentMd: prepared.contentMd,
-      compiledCode: prepared.compiledCode,
-      compiledAt: prepared.compiledAt,
+    .insert(authorTranslations)
+    .values(values)
+    .onConflictDoUpdate({
+      target: [authorTranslations.authorId, authorTranslations.language],
+      set: updateSet,
     })
-    .where(
-      and(eq(authorTranslations.authorId, authorId), eq(authorTranslations.language, language))
-    )
 
   return { language, ok: !prepared.error, error: prepared.error ?? undefined }
 }

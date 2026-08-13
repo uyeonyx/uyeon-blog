@@ -1,4 +1,4 @@
-import { and, asc, eq } from 'drizzle-orm'
+import { asc, eq, isNotNull } from 'drizzle-orm'
 import { revalidateTag } from 'next/cache'
 import { getDb } from '@/lib/db/client'
 import { projects, projectTranslations } from '@/lib/db/schema'
@@ -26,17 +26,33 @@ export interface ProjectMetaInput {
   tags?: string[]
 }
 
-/** admin 목록용 — published 여부 무관 전체, displayOrder 순 */
+/** admin 목록용 — published 여부 무관 전체, displayOrder 순. 본문 컬럼은 select하지 않는다 */
 export async function listProjects() {
   const db = getDb()
   const [rows, translations] = await Promise.all([
     db.select().from(projects).orderBy(asc(projects.displayOrder), asc(projects.slug)),
-    db.select().from(projectTranslations),
+    db
+      .select({
+        projectId: projectTranslations.projectId,
+        language: projectTranslations.language,
+        title: projectTranslations.title,
+        compiledOk: isNotNull(projectTranslations.compiledCode).mapWith(Boolean),
+      })
+      .from(projectTranslations),
   ])
+
+  const byProject = new Map<
+    string,
+    { ko?: { title: string; compiledOk: boolean }; en?: { title: string; compiledOk: boolean } }
+  >()
+  for (const t of translations) {
+    const entry = byProject.get(t.projectId) ?? {}
+    entry[t.language as Language] = { title: t.title, compiledOk: t.compiledOk }
+    byProject.set(t.projectId, entry)
+  }
+
   return rows.map((project) => {
-    const trs = translations.filter((t) => t.projectId === project.id)
-    const ko = trs.find((t) => t.language === 'ko')
-    const en = trs.find((t) => t.language === 'en')
+    const trs = byProject.get(project.id)
     return {
       id: project.id,
       slug: project.slug,
@@ -44,10 +60,10 @@ export async function listProjects() {
       displayOrder: project.displayOrder,
       tags: project.tags,
       updatedAt: project.updatedAt,
-      title: ko?.title || en?.title || '(제목 없음)',
+      title: trs?.ko?.title || trs?.en?.title || '(제목 없음)',
       compileOk: {
-        ko: Boolean(ko?.compiledCode),
-        en: Boolean(en?.compiledCode),
+        ko: Boolean(trs?.ko?.compiledOk),
+        en: Boolean(trs?.en?.compiledOk),
       },
     }
   })
@@ -69,10 +85,14 @@ export async function createProject(slug: string): Promise<CreateProjectResult> 
     .where(eq(projects.slug, trimmed))
   if (existing.length > 0) return { ok: false, error: 'duplicate' }
 
-  const [row] = await db.insert(projects).values({ slug: trimmed }).returning()
-  await db
-    .insert(projectTranslations)
-    .values(LANGUAGES.map((language) => ({ projectId: row.id, language })))
+  // 두 INSERT를 한 트랜잭션으로 — 중간 실패 시 번역 행 없는 고아 프로젝트가 남지 않게
+  const row = await db.transaction(async (tx) => {
+    const [p] = await tx.insert(projects).values({ slug: trimmed }).returning()
+    await tx
+      .insert(projectTranslations)
+      .values(LANGUAGES.map((language) => ({ projectId: p.id, language })))
+    return p
+  })
   return { ok: true, id: row.id, slug: row.slug }
 }
 
@@ -124,7 +144,10 @@ export async function updateProjectMeta(
   return { ok: true, createdTags: tagsResult?.created ?? [] }
 }
 
-/** 번역 1건 저장 + 컴파일 — 실패해도 원본은 저장 (posts saveTranslation과 동일 계약) */
+/**
+ * 번역 1건 저장 + 컴파일 — 실패해도 원본은 저장 (posts saveTranslation과 동일 계약)
+ * upsert — 번역 행이 유실됐어도 저장이 조용히 no-op되지 않는다.
+ */
 export async function saveProjectTranslation(
   projectId: string,
   language: Language,
@@ -133,22 +156,36 @@ export async function saveProjectTranslation(
   const db = getDb()
   const prepared = await prepareContent(input.contentJson)
 
+  const values = {
+    projectId,
+    language,
+    title: smartQuotes(input.title ?? ''),
+    description: input.description ? smartQuotes(input.description) : '',
+    period: input.period || null,
+    role: input.role || null,
+    company: input.company || null,
+    contentJson: input.contentJson ?? null,
+    contentMd: prepared.contentMd,
+    compiledCode: prepared.compiledCode,
+    compiledAt: prepared.compiledAt,
+  }
   await db
-    .update(projectTranslations)
-    .set({
-      title: smartQuotes(input.title ?? ''),
-      description: input.description ? smartQuotes(input.description) : '',
-      period: input.period || null,
-      role: input.role || null,
-      company: input.company || null,
-      contentJson: input.contentJson ?? null,
-      contentMd: prepared.contentMd,
-      compiledCode: prepared.compiledCode,
-      compiledAt: prepared.compiledAt,
+    .insert(projectTranslations)
+    .values(values)
+    .onConflictDoUpdate({
+      target: [projectTranslations.projectId, projectTranslations.language],
+      set: {
+        title: values.title,
+        description: values.description,
+        period: values.period,
+        role: values.role,
+        company: values.company,
+        contentJson: values.contentJson,
+        contentMd: values.contentMd,
+        compiledCode: values.compiledCode,
+        compiledAt: values.compiledAt,
+      },
     })
-    .where(
-      and(eq(projectTranslations.projectId, projectId), eq(projectTranslations.language, language))
-    )
 
   return { language, ok: !prepared.error, error: prepared.error ?? undefined }
 }

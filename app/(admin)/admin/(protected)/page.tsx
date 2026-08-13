@@ -1,7 +1,8 @@
-import { count, desc, eq } from 'drizzle-orm'
+import { count } from 'drizzle-orm'
 import PostList, { type PostListItem } from '@/components/admin/PostList'
+import { listAdminPosts } from '@/lib/admin/post-service'
 import { getDb } from '@/lib/db/client'
-import { posts, postTranslations } from '@/lib/db/schema'
+import { posts } from '@/lib/db/schema'
 
 export const metadata = { title: '글 관리' }
 
@@ -15,31 +16,21 @@ export default async function AdminPostListPage(props: {
       : undefined
 
   const db = getDb()
-  const [rows, translations, countRows] = await Promise.all([
-    db
-      .select()
-      .from(posts)
-      .where(filter ? eq(posts.status, filter) : undefined)
-      .orderBy(desc(posts.updatedAt)),
-    db.select().from(postTranslations),
+  const [rows, countRows] = await Promise.all([
+    listAdminPosts(filter),
     db.select({ status: posts.status, count: count() }).from(posts).groupBy(posts.status),
   ])
 
   const counts = Object.fromEntries(countRows.map((r) => [r.status, r.count]))
 
-  const items: PostListItem[] = rows.map((post) => {
-    const trs = translations.filter((t) => t.postId === post.id)
-    const ko = trs.find((t) => t.language === 'ko')
-    const en = trs.find((t) => t.language === 'en')
-    return {
-      id: post.id,
-      slug: post.slug,
-      status: post.status,
-      tags: post.tags,
-      date: post.date ? post.date.toISOString() : null,
-      title: ko?.title || en?.title || '(제목 없음)',
-    }
-  })
+  const items: PostListItem[] = rows.map((post) => ({
+    id: post.id,
+    slug: post.slug,
+    status: post.status,
+    tags: post.tags,
+    date: post.date ? post.date.toISOString() : null,
+    title: post.title,
+  }))
 
   return <PostList items={items} filter={filter} counts={counts} />
 }

@@ -84,10 +84,13 @@ export async function PUT(request: NextRequest, { params }: Params) {
   // 태그는 canonical slug로 정규화해 저장, 미등록 태그는 마스터에 자동 등록
   const tagsResult = Array.isArray(body.tags) ? await registerTags(body.tags.map(String)) : null
   const tags = tagsResult ? tagsResult.slugs : post.tags
+  // layout: undefined(필드 생략) → 기존 값 유지, 유효값 → 변경, 그 외(null 포함) → 기본 레이아웃으로 초기화
   const layout =
-    body.layout === 'PostLayout' || body.layout === 'PostSimple' || body.layout === 'PostBanner'
-      ? body.layout
-      : null
+    body.layout === undefined
+      ? post.layout
+      : body.layout === 'PostLayout' || body.layout === 'PostSimple' || body.layout === 'PostBanner'
+        ? body.layout
+        : null
   const date = body.date ? new Date(body.date) : post.date
   // coverImage: 문자열 → images[0]에 저장, null/빈문자 → 제거, undefined → 유지
   const images =

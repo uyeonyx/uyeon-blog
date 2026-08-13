@@ -1,9 +1,12 @@
 // 댓글 조회/작성 — 공개 글 조회(lib/db/posts.ts)와 달리 unstable_cache로 감싸지 않는다.
 // 댓글은 작성 즉시 보여야 하는데, 'posts' 캐시 태그에 얹으면 글을 수정할 때만 갱신되고
 // 별도 태그를 파면 댓글마다 revalidateTag를 부르게 된다. 그냥 매번 읽는 편이 단순하다.
-import { and, asc, desc, eq, inArray } from 'drizzle-orm'
+import { and, asc, desc, eq, getTableColumns, inArray } from 'drizzle-orm'
 import { getDb } from './client'
 import { type CommentRow, comments, posts, postTranslations } from './schema'
+
+/** 목록 경로용 행 — 원문(bodyMd)과 미사용 알림 컬럼은 목록에서 DB 밖으로 내보내지 않는다 */
+export type CommentListRow = Omit<CommentRow, 'bodyMd' | 'notifyEmail' | 'notifyToken'>
 
 export interface PublicComment {
   id: string
@@ -44,7 +47,12 @@ export interface CreateCommentInput {
 
 export async function getPostIdBySlug(slug: string): Promise<string | null> {
   const db = getDb()
-  const rows = await db.select({ id: posts.id }).from(posts).where(eq(posts.slug, slug)).limit(1)
+  // published만 — 미공개 글의 slug 존재 여부를 댓글 API가 노출하거나, 댓글이 달리면 안 된다
+  const rows = await db
+    .select({ id: posts.id })
+    .from(posts)
+    .where(and(eq(posts.slug, slug), eq(posts.status, 'published')))
+    .limit(1)
   return rows[0]?.id ?? null
 }
 
@@ -53,7 +61,7 @@ export interface RowPermission {
   canEdit: boolean
 }
 
-export function toPublic(row: CommentRow, permission: RowPermission): PublicComment {
+export function toPublic(row: CommentListRow, permission: RowPermission): PublicComment {
   const isDeleted = row.status === 'deleted'
   const canEdit = permission.canEdit && !isDeleted
   return {
@@ -82,11 +90,18 @@ export function toPublic(row: CommentRow, permission: RowPermission): PublicComm
  */
 export async function listCommentsByPostId(
   postId: string,
-  permissionFor: (row: CommentRow) => RowPermission
+  permissionFor: (row: CommentListRow) => RowPermission
 ): Promise<PublicComment[]> {
   const db = getDb()
+  // bodyMd(원문)는 목록에 실을 일이 없다 — 편집 폼은 GET /api/comments/[id]가 별도로 준다
+  const {
+    bodyMd: _bodyMd,
+    notifyEmail: _ne,
+    notifyToken: _nt,
+    ...listColumns
+  } = getTableColumns(comments)
   const rows = await db
-    .select()
+    .select(listColumns)
     .from(comments)
     .where(and(eq(comments.postId, postId), inArray(comments.status, ['visible', 'deleted'])))
     .orderBy(asc(comments.createdAt))
