@@ -24,12 +24,12 @@ async function readParams(request: NextRequest): Promise<URLSearchParams> {
   return new URLSearchParams(text)
 }
 
-async function issueTokens() {
+async function issueTokens(clientId: string) {
   return {
-    access_token: await signAccessToken(),
+    access_token: await signAccessToken(clientId),
     token_type: 'bearer',
     expires_in: ACCESS_TOKEN_MAX_AGE,
-    refresh_token: await signRefreshToken(),
+    refresh_token: await signRefreshToken(clientId),
     scope: 'admin',
   }
 }
@@ -63,18 +63,35 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    return corsJson(await issueTokens())
+    // client_id가 제공되면 코드에 바인딩된 값과 일치해야 한다
+    const claimedClientId = params.get('client_id')
+    if (claimedClientId && claimedClientId !== payload.clientId) {
+      return corsJson(
+        { error: 'invalid_grant', error_description: 'client_id 불일치' },
+        { status: 400 }
+      )
+    }
+    return corsJson(await issueTokens(payload.clientId))
   }
 
   if (grantType === 'refresh_token') {
     const refreshToken = params.get('refresh_token') ?? ''
-    if (!(await verifyRefreshToken(refreshToken))) {
+    const verified = await verifyRefreshToken(refreshToken)
+    if (!verified) {
       return corsJson(
         { error: 'invalid_grant', error_description: 'refresh_token이 유효하지 않습니다' },
         { status: 400 }
       )
     }
-    return corsJson(await issueTokens())
+    const claimedClientId = params.get('client_id')
+    if (claimedClientId && claimedClientId !== verified.clientId) {
+      return corsJson(
+        { error: 'invalid_grant', error_description: 'client_id 불일치' },
+        { status: 400 }
+      )
+    }
+    // 리프레시 토큰에서 복원한 client_id로 재발급 — 바인딩이 체인 전체에 이어진다
+    return corsJson(await issueTokens(verified.clientId))
   }
 
   return corsJson({ error: 'unsupported_grant_type' }, { status: 400 })

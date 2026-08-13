@@ -9,6 +9,23 @@ export default async function proxy(request: NextRequest) {
     return NextResponse.next()
   }
 
+  // 심층 방어: 뮤테이션 API는 동일 출처 요청만 (SameSite=Lax는 site 단위라
+  // 서브도메인 XSS 한 방에 뚫린다 — Origin은 origin 단위로 좁힌다)
+  if (pathname.startsWith('/api/admin/') && request.method !== 'GET') {
+    const origin = request.headers.get('origin')
+    if (origin) {
+      let originHost: string | null = null
+      try {
+        originHost = new URL(origin).host
+      } catch {
+        // 파싱 불가 Origin은 불일치로 취급
+      }
+      if (originHost !== request.nextUrl.host) {
+        return Response.json({ error: 'invalid origin' }, { status: 403 })
+      }
+    }
+  }
+
   const token = request.cookies.get(SESSION_COOKIE)?.value
   const session = token ? await verifySessionToken(token) : null
 

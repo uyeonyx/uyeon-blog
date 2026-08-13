@@ -30,8 +30,10 @@ export async function verifyMcpToken(
   if (matchesStaticToken(bearerToken)) {
     return { token: bearerToken, clientId: 'blog-admin', scopes: ['admin'] }
   }
-  if (await verifyAccessToken(bearerToken)) {
-    return { token: bearerToken, clientId: 'mcp-oauth', scopes: ['admin'] }
+  const verified = await verifyAccessToken(bearerToken)
+  if (verified) {
+    // 토큰에 바인딩된 실제 client_id — 어떤 등록 클라이언트의 요청인지 귀속 가능
+    return { token: bearerToken, clientId: verified.clientId, scopes: ['admin'] }
   }
   return undefined
 }

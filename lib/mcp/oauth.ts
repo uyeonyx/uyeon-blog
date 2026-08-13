@@ -7,9 +7,11 @@ import { createHash } from 'node:crypto'
 import { jwtVerify, SignJWT } from 'jose'
 import { getMcpOauthSecret } from '@/lib/secrets'
 
-export const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 24 * 30 // 30일
-export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 180 // 180일
+// 액세스 토큰에는 폐기 목록이 없다 — 짧게 잡고 리프레시가 수명을 맡는다
+export const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 24 // 1일
+export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 30 // 30일
 const CODE_MAX_AGE = 60 * 10 // 10분
+export const CONSENT_MAX_AGE = 60 * 5 // 5분 — 동의 화면 체류 한도
 
 // 오픈 리다이렉트 차단: code를 받을 수 있는 호스트 화이트리스트
 // (승인이 관리자 세션으로 자동 통과되므로, 임의 redirect_uri 등록을 허용하면
@@ -104,20 +106,85 @@ export function verifyPkce(codeVerifier: string, codeChallenge: string): boolean
   return digest === codeChallenge
 }
 
+// ---------- 동의 토큰 (authorize GET → 동의 화면 → POST 발급) ----------
+
+export interface ConsentPayload extends AuthCodePayload {
+  state: string | null
+  /** 단일사용 소각용 (used_nonces) */
+  jti: string
+  /** ms epoch — 논스 만료 기록용 */
+  expiresAtMs: number
+}
+
+export async function signConsentToken(
+  data: AuthCodePayload & { state: string | null }
+): Promise<string> {
+  return sign(
+    {
+      type: 'mcp_consent',
+      jti: crypto.randomUUID(),
+      client_id: data.clientId,
+      redirect_uri: data.redirectUri,
+      code_challenge: data.codeChallenge,
+      state: data.state,
+    },
+    CONSENT_MAX_AGE
+  )
+}
+
+export async function verifyConsentToken(token: string): Promise<ConsentPayload | null> {
+  const payload = await verify(token, 'mcp_consent')
+  if (
+    !payload ||
+    typeof payload.jti !== 'string' ||
+    typeof payload.client_id !== 'string' ||
+    typeof payload.redirect_uri !== 'string' ||
+    typeof payload.code_challenge !== 'string' ||
+    typeof payload.exp !== 'number'
+  ) {
+    return null
+  }
+  return {
+    clientId: payload.client_id,
+    redirectUri: payload.redirect_uri,
+    codeChallenge: payload.code_challenge,
+    state: typeof payload.state === 'string' ? payload.state : null,
+    jti: payload.jti,
+    expiresAtMs: payload.exp * 1000,
+  }
+}
+
 // ---------- access / refresh token ----------
+// client_id 바인딩: 어느 등록 클라이언트에 발급됐는지 토큰이 스스로 말하게 한다.
+// jti는 추적/향후 폐기 목록 대비용.
 
-export async function signAccessToken(): Promise<string> {
-  return sign({ type: 'mcp_access' }, ACCESS_TOKEN_MAX_AGE)
+export async function signAccessToken(clientId: string): Promise<string> {
+  return sign(
+    { type: 'mcp_access', client_id: clientId, jti: crypto.randomUUID() },
+    ACCESS_TOKEN_MAX_AGE
+  )
 }
 
-export async function signRefreshToken(): Promise<string> {
-  return sign({ type: 'mcp_refresh' }, REFRESH_TOKEN_MAX_AGE)
+export async function signRefreshToken(clientId: string): Promise<string> {
+  return sign(
+    { type: 'mcp_refresh', client_id: clientId, jti: crypto.randomUUID() },
+    REFRESH_TOKEN_MAX_AGE
+  )
 }
 
-export async function verifyAccessToken(token: string): Promise<boolean> {
-  return (await verify(token, 'mcp_access')) !== null
+export interface VerifiedToken {
+  clientId: string
 }
 
-export async function verifyRefreshToken(token: string): Promise<boolean> {
-  return (await verify(token, 'mcp_refresh')) !== null
+export async function verifyAccessToken(token: string): Promise<VerifiedToken | null> {
+  const payload = await verify(token, 'mcp_access')
+  // 과거 발급분(client_id 없음)은 만료로 자연 소멸 — 미상으로 허용하지 않는다
+  if (!payload || typeof payload.client_id !== 'string') return null
+  return { clientId: payload.client_id }
+}
+
+export async function verifyRefreshToken(token: string): Promise<VerifiedToken | null> {
+  const payload = await verify(token, 'mcp_refresh')
+  if (!payload || typeof payload.client_id !== 'string') return null
+  return { clientId: payload.client_id }
 }
