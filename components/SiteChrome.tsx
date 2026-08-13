@@ -1,6 +1,7 @@
 import { Analytics, type AnalyticsConfig } from 'pliny/analytics'
 import Footer from '@/components/Footer'
-import Header from '@/components/Header'
+import HeaderClient from '@/components/HeaderClient'
+import MotionProvider from '@/components/MotionProvider'
 import SectionContainer from '@/components/SectionContainer'
 import SearchIsland from '@/components/search/SearchIsland'
 import siteMetadata from '@/data/siteMetadata'
@@ -12,11 +13,13 @@ export default function SiteChrome({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Analytics analyticsConfig={siteMetadata.analytics as AnalyticsConfig} />
-      <SectionContainer>
-        <Header />
-        <main className="mb-auto min-h-screen">{children}</main>
-        <Footer />
-      </SectionContainer>
+      <MotionProvider>
+        <SectionContainer>
+          <HeaderClient />
+          <main className="mb-auto min-h-screen">{children}</main>
+          <Footer />
+        </SectionContainer>
+      </MotionProvider>
       <SearchIsland />
     </>
   )

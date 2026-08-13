@@ -61,7 +61,13 @@ const HeaderClient = () => {
   }
 
   return (
-    <header className="flex justify-center pt-8 pb-4 relative z-50">
+    // 기존 Header.tsx 래퍼(단순 페이드인)를 흡수 — 래퍼 컴포넌트 하나를 줄인다
+    <motion.header
+      className="flex justify-center pt-8 pb-4 relative z-50"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <motion.div
         className="relative max-w-full"
         onMouseMove={handleMouseMove}
@@ -241,7 +247,7 @@ const HeaderClient = () => {
           />
         </motion.div>
       </motion.div>
-    </header>
+    </motion.header>
   )
 }
 

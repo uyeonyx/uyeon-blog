@@ -1,6 +1,6 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import Image from 'next/image'
 import { formatDate } from 'pliny/utils/formatDate'
 import { useEffect, useState } from 'react'
@@ -27,6 +27,7 @@ const item = {
 
 export default function Home({ posts }) {
   const { locale, t } = useI18n()
+  const reduceMotion = useReducedMotion()
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
@@ -49,8 +50,9 @@ export default function Home({ posts }) {
   const phrases = locale === 'ko' ? phrasesKo : phrasesEn
   const currentPhrase = phrases[currentPhraseIndex]
 
-  // 타이핑 효과
+  // 타이핑 효과 — 동작 줄이기 설정 시 무한 루프를 돌리지 않는다 (WCAG 2.2.2)
   useEffect(() => {
+    if (reduceMotion) return
     let timeout: NodeJS.Timeout
 
     if (!isDeleting && displayedText === currentPhrase) {
@@ -73,7 +75,7 @@ export default function Home({ posts }) {
     }
 
     return () => clearTimeout(timeout)
-  }, [displayedText, isDeleting, currentPhrase, phrases.length])
+  }, [displayedText, isDeleting, currentPhrase, phrases.length, reduceMotion])
 
   // 서버가 URL의 locale로 이미 필터링해 내려준다
   const filteredPosts = posts
@@ -97,8 +99,8 @@ export default function Home({ posts }) {
             <span className="inline-flex items-center gap-2 sm:gap-3">
               <span className="text-primary-500 dark:text-primary-400 shrink-0">〉</span>
               <span className="bg-linear-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-gray-50 dark:via-gray-300 dark:to-gray-50 bg-clip-text text-transparent">
-                {displayedText}
-                <span className="inline-block ml-0.5 text-gray-900 dark:text-gray-50 animate-blink">
+                {reduceMotion ? currentPhrase : displayedText}
+                <span className="inline-block ml-0.5 text-gray-900 dark:text-gray-50 animate-blink motion-reduce:animate-none">
                   _
                 </span>
               </span>

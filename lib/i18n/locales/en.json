@@ -169,5 +169,11 @@
       "forbidden": "You can't edit this comment — it may have been written in another browser, or the cookie was cleared.",
       "not_found": "Comment not found."
     }
+  },
+  "errors": {
+    "title": "Something went wrong",
+    "description": "This may be a temporary error. Please try again.",
+    "retry": "Try again",
+    "backToHome": "Back to home"
   }
 }
