@@ -19,13 +19,21 @@ import { mcpRevalidateTag, revalidateWarning } from '@/lib/mcp/request-context'
 import { markdownToTiptap } from '@/lib/mdx/markdown-to-tiptap'
 import { err, MARKDOWN_GUIDE, type McpServer, ok, UUID_PATTERN } from './shared'
 
+// SVG는 받지 않는다 — 스크립트를 품을 수 있는 유일한 이미지 형식 (admin upload 라우트와 동일 정책)
 const ALLOWED_IMAGE_TYPES: Record<string, string> = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
   'image/gif': 'gif',
   'image/webp': 'webp',
   'image/avif': 'avif',
-  'image/svg+xml': 'svg',
+}
+// imageSize()가 스니핑한 실제 형식 ↔ 선언된 MIME 대조용
+const SNIFFED_TYPE_BY_MIME: Record<string, string[]> = {
+  'image/png': ['png'],
+  'image/jpeg': ['jpg'],
+  'image/gif': ['gif'],
+  'image/webp': ['webp'],
+  'image/avif': ['avif', 'heif'],
 }
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024 // 10MB
 
@@ -342,7 +350,7 @@ export function registerPostTools(server: McpServer) {
       description: [
         '이미지를 Vercel Blob에 업로드하고 본문에 넣을 마크다운 스니펫을 반환한다.',
         'url(서버가 직접 다운로드, 권장) 또는 base64(소형 이미지 전용 — 요청 바디 ~4.5MB 제한) 중 하나를 제공한다.',
-        '지원 형식: png/jpg/gif/webp/avif/svg, 최대 10MB.',
+        '지원 형식: png/jpg/gif/webp/avif, 최대 10MB.',
         '반환된 url을 post_update의 coverImage로 전달하면 대표 이미지로 설정할 수 있다.',
       ].join('\n'),
       inputSchema: {
@@ -386,14 +394,18 @@ export function registerPostTools(server: McpServer) {
       if (!ext) return err(`지원하지 않는 이미지 형식입니다: ${mime || '(알 수 없음)'}`)
       if (buffer.length > MAX_IMAGE_SIZE) return err('이미지는 10MB 이하여야 합니다')
 
+      // 매직바이트 스니핑 — 선언된 MIME을 신뢰하지 않는다
       let width: number | undefined
       let height: number | undefined
       try {
         const dim = imageSize(buffer)
         width = dim.width
         height = dim.height
+        if (!dim.type || !SNIFFED_TYPE_BY_MIME[mime]?.includes(dim.type)) {
+          return err(`파일 내용이 선언된 형식(${mime})과 다릅니다`)
+        }
       } catch {
-        // SVG 등 치수 추출 실패는 허용
+        return err('이미지 파일로 해석할 수 없습니다')
       }
 
       const blob = await put(`${scope}/${slug}/${crypto.randomUUID()}.${ext}`, buffer, {

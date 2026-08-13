@@ -21,7 +21,7 @@ import {
 } from '@/lib/db/comments'
 import type { CommentRow } from '@/lib/db/schema'
 import { isLocale } from '@/lib/i18n/config'
-import { checkRateLimit } from '@/lib/mcp/rate-limit'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest) {
   }
 
   // 어떤 검사에 걸렸는지는 알려주지 않는다 — 우회를 도와주는 꼴이 된다
-  const challenge = verifyChallenge(body.challenge ?? {})
+  const challenge = await verifyChallenge(body.challenge ?? {})
   if (!challenge.ok) {
     return fail('verification_failed', 400)
   }

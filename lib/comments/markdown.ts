@@ -10,6 +10,13 @@ import { unified } from 'unified'
 
 export const COMMENT_MAX_LENGTH = 5000
 
+/**
+ * 새니타이저 파이프라인 버전 — 저장되는 body_html의 comments.sanitizer_version에 기록된다.
+ * COMMENT_SCHEMA나 파이프라인을 강화하면 이 값을 올리고, 낮은 버전 행을 재렌더 백필할 것
+ * (쓰기 시점에만 새니타이즈하므로 버그가 저장 HTML에 박제되는 것을 이 값으로 추적한다).
+ */
+export const SANITIZER_VERSION = 1
+
 /** 익명 댓글에 허용하는 링크 수 — 스팸의 주 목적이 링크 삽입이다 */
 export const ANONYMOUS_MAX_LINKS = 2
 

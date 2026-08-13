@@ -190,6 +190,11 @@ export const comments = pgTable(
     // 유출돼도 쿠키를 되돌리거나 다른 사람 아바타를 흉내낼 수 없다 (lib/comments/anon-identity.ts).
     anonAvatarSeed: text('anon_avatar_seed'),
 
+    // body_html을 만든 새니타이저 버전 (lib/comments/markdown.ts SANITIZER_VERSION).
+    // 새니타이저 강화 시 이 값이 낮은 행만 골라 재렌더 백필하면 된다 — 저장된 HTML에
+    // 과거 버그가 영구히 박제되는 것을 막는 장치.
+    sanitizerVersion: integer('sanitizer_version').notNull().default(1),
+
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     // 본문이 실제로 고쳐진 시각. updatedAt은 숨김/복구에도 갱신되므로 "수정됨" 표시에 쓸 수 없다
@@ -201,6 +206,15 @@ export const comments = pgTable(
     index('idx_comments_parent').on(table.parentId),
   ]
 )
+
+// 1회용 논스 — PoW salt(댓글)와 OAuth 동의 jti의 소모 기록.
+// 인메모리 Map은 서버리스 인스턴스별로 갈려 다른 인스턴스에서 재사용이 가능했다.
+// INSERT ... ON CONFLICT DO NOTHING이 0행이면 재사용으로 판정한다.
+export const usedNonces = pgTable('used_nonces', {
+  nonce: text('nonce').primaryKey(),
+  purpose: text('purpose').notNull(), // 'pow' | 'oauth_consent'
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+})
 
 export type PostRow = typeof posts.$inferSelect
 export type TagRow = typeof tags.$inferSelect

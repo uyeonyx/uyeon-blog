@@ -1,7 +1,7 @@
 // 댓글 작성용 PoW 챌린지 발급. 공개 엔드포인트지만 상태가 없어서(서명만) 남용해도 얻을 게 없다.
 import type { NextRequest } from 'next/server'
 import { issueChallenge } from '@/lib/comments/challenge'
-import { checkRateLimit } from '@/lib/mcp/rate-limit'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 

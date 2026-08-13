@@ -12,8 +12,14 @@ const buildCsp = ({ allowEval }) => `
   media-src *.s3.amazonaws.com;
   connect-src *;
   font-src 'self';
-  frame-src www.youtube-nocookie.com
+  frame-src www.youtube-nocookie.com;
+  base-uri 'self';
+  form-action 'self';
+  frame-ancestors 'none'
 `
+// TODO: connect-src * 는 DB 데이터 기반 아이콘의 api.iconify.design 폴백 때문 —
+// 콘텐츠 아이콘을 전부 번들에 포함하게 되면 'self' umami.uyeon.dev 로 좁힐 것.
+// base-uri는 default-src를 상속하지 않아 명시 필수 (<base> 주입 차단).
 
 const securityHeaders = (csp) => [
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP
@@ -44,7 +50,7 @@ const securityHeaders = (csp) => [
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Strict-Transport-Security
   {
     key: 'Strict-Transport-Security',
-    value: 'max-age=31536000; includeSubDomains',
+    value: 'max-age=31536000; includeSubDomains; preload',
   },
   // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Feature-Policy
   {

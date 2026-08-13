@@ -2,6 +2,7 @@
 // 댓글은 작성 즉시 보여야 하는데, 'posts' 캐시 태그에 얹으면 글을 수정할 때만 갱신되고
 // 별도 태그를 파면 댓글마다 revalidateTag를 부르게 된다. 그냥 매번 읽는 편이 단순하다.
 import { and, asc, desc, eq, getTableColumns, inArray } from 'drizzle-orm'
+import { SANITIZER_VERSION } from '@/lib/comments/markdown'
 import { getDb } from './client'
 import { type CommentRow, comments, posts, postTranslations } from './schema'
 
@@ -72,6 +73,10 @@ export function toPublic(row: CommentListRow, permission: RowPermission): Public
     authorName: isDeleted ? '' : row.authorName,
     authorAvatarUrl: isDeleted ? null : row.authorAvatarUrl,
     authorUrl: isDeleted ? null : row.authorUrl,
+    // 알려진 트레이드오프: 시드가 사이트 전역에서 안정적이라 익명 작성자의 글 간 활동을
+    // 외부 관찰자가 연결할 수 있다(프라이버시). 글별 시드로 바꾸려면 기존 행의 권한 판정이
+    // 깨지므로, 비공개 판정용 컬럼(anon_auth_seed)과 공개 표시용 글별 시드를 분리하는
+    // 마이그레이션이 필요하다 — 댓글 규모가 커지면 그때 진행.
     anonAvatarSeed: isDeleted ? null : row.anonAvatarSeed,
     bodyHtml: isDeleted ? '' : row.bodyHtml,
     locale: row.locale,
@@ -126,7 +131,10 @@ export async function listCommentsByPostId(
 
 export async function createComment(input: CreateCommentInput): Promise<CommentRow> {
   const db = getDb()
-  const [row] = await db.insert(comments).values(input).returning()
+  const [row] = await db
+    .insert(comments)
+    .values({ ...input, sanitizerVersion: SANITIZER_VERSION })
+    .returning()
   return row
 }
 
@@ -170,7 +178,7 @@ export async function updateCommentBody(
   const now = new Date()
   const [row] = await db
     .update(comments)
-    .set({ bodyMd, bodyHtml, updatedAt: now, editedAt: now })
+    .set({ bodyMd, bodyHtml, sanitizerVersion: SANITIZER_VERSION, updatedAt: now, editedAt: now })
     .where(eq(comments.id, id))
     .returning()
   return row ?? null

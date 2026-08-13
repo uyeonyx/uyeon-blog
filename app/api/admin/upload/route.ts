@@ -3,13 +3,21 @@ import { imageSize } from 'image-size'
 import type { NextRequest } from 'next/server'
 import { requireAdminApi } from '@/lib/admin/session'
 
+// SVG는 받지 않는다 — 스크립트를 품을 수 있는 유일한 이미지 형식이고 에디터에 정당한 용도가 없다
 const ALLOWED_TYPES: Record<string, string> = {
   'image/png': 'png',
   'image/jpeg': 'jpg',
   'image/gif': 'gif',
   'image/webp': 'webp',
   'image/avif': 'avif',
-  'image/svg+xml': 'svg',
+}
+// imageSize()가 스니핑한 실제 형식 ↔ 선언된 MIME 대조용 (image-size는 jpeg를 'jpg'로 보고한다)
+const SNIFFED_TYPE_BY_MIME: Record<string, string[]> = {
+  'image/png': ['png'],
+  'image/jpeg': ['jpg'],
+  'image/gif': ['gif'],
+  'image/webp': ['webp'],
+  'image/avif': ['avif', 'heif'],
 }
 const MAX_SIZE = 10 * 1024 * 1024 // 10MB
 
@@ -38,14 +46,21 @@ export async function POST(request: NextRequest) {
 
   const buffer = Buffer.from(await file.arrayBuffer())
 
+  // 매직바이트 스니핑 — file.type은 브라우저가 보내는 값이라 신뢰하지 않는다
   let width: number | undefined
   let height: number | undefined
   try {
     const dim = imageSize(buffer)
     width = dim.width
     height = dim.height
+    if (!dim.type || !SNIFFED_TYPE_BY_MIME[file.type]?.includes(dim.type)) {
+      return Response.json(
+        { error: `파일 내용이 선언된 형식(${file.type})과 다릅니다` },
+        { status: 400 }
+      )
+    }
   } catch {
-    // SVG 등 치수 추출 실패는 허용 — 마크다운 이미지로 직렬화됨
+    return Response.json({ error: '이미지 파일로 해석할 수 없습니다' }, { status: 400 })
   }
 
   const slug = formData?.get('slug')

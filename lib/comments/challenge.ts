@@ -6,6 +6,7 @@
 //
 // 목표는 "단순 봇 차단"이지 "결연한 공격자 차단"이 아니다. 대량 스팸에 계산 비용을 물리는 게 전부다.
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
+import { consumeNonce } from '@/lib/db/nonces'
 import { getAdminSessionSecret } from '@/lib/secrets'
 
 /**
@@ -18,7 +19,6 @@ const MIN_DIFFICULTY = 14
 const TTL_MS = 5 * 60 * 1000
 /** 폼을 받자마자 제출하는 것은 사람이 아니다 */
 const MIN_ELAPSED_MS = 3000
-const MAX_USED_SALTS = 5000
 
 export interface IssuedChallenge {
   salt: string
@@ -54,19 +54,6 @@ export function issueChallenge(now = Date.now()): IssuedChallenge {
   }
 }
 
-// 한 챌린지로 여러 댓글을 쓰지 못하게 한다. 서버리스 인스턴스별로 갈리지만,
-// 서명과 만료가 이미 대부분을 막으므로 남용 억제로는 충분하다.
-const usedSalts = new Map<string, number>()
-
-function markUsed(salt: string, exp: number, now: number) {
-  if (usedSalts.size > MAX_USED_SALTS) {
-    for (const [key, expiresAt] of usedSalts) {
-      if (expiresAt <= now) usedSalts.delete(key)
-    }
-  }
-  usedSalts.set(salt, exp)
-}
-
 export function hasLeadingZeroBits(digest: Buffer, bits: number): boolean {
   const fullBytes = bits >> 3
   for (let i = 0; i < fullBytes; i++) {
@@ -95,10 +82,15 @@ export interface ChallengeSubmission {
 
 /**
  * 제출된 챌린지를 검증하고, 통과하면 salt를 소모 처리한다.
+ * 소모 기록은 DB(used_nonces) — 인메모리 Map은 서버리스 팬아웃에서 인스턴스마다 갈려
+ * 한 번 푼 PoW를 다른 인스턴스에 재사용할 수 있었다.
  * 실패 사유는 호출자가 로깅용으로만 쓰고 클라이언트에는 뭉뚱그려 돌려준다
  * (어떤 검사에 걸렸는지 알려주면 우회를 도와주는 꼴이 된다).
  */
-export function verifyChallenge(input: ChallengeSubmission, now = Date.now()): ChallengeVerdict {
+export async function verifyChallenge(
+  input: ChallengeSubmission,
+  now = Date.now()
+): Promise<ChallengeVerdict> {
   const { salt, difficulty, issuedAt, exp, sig, nonce } = input
 
   if (
@@ -128,15 +120,15 @@ export function verifyChallenge(input: ChallengeSubmission, now = Date.now()): C
     return { ok: false, reason: 'too fast' }
   }
 
-  if (usedSalts.has(salt)) {
-    return { ok: false, reason: 'salt reused' }
-  }
-
   const digest = createHash('sha256').update(`${salt}:${nonce}`).digest()
   if (!hasLeadingZeroBits(digest, difficulty)) {
     return { ok: false, reason: 'proof of work failed' }
   }
 
-  markUsed(salt, exp, now)
+  // 모든 검증 통과 후에만 소모 — 실패 제출이 남의 salt를 태우지 않게
+  const fresh = await consumeNonce(salt, 'pow', new Date(exp))
+  if (!fresh) {
+    return { ok: false, reason: 'salt reused' }
+  }
   return { ok: true }
 }

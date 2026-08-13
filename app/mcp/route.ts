@@ -4,8 +4,8 @@
 // 주의: 이 라우트는 401을 반환하지 않는다 — 401을 내면 MCP 클라이언트가
 // .well-known OAuth 메타데이터를 탐색해 admin 로그인 플로우로 빠진다.
 import { createMcpHandler } from 'mcp-handler'
-import { checkRateLimit } from '@/lib/mcp/rate-limit'
 import { registerPublicTools } from '@/lib/mcp/tools/public'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export const runtime = 'nodejs'
 // 읽기 전용 조회뿐 (admin 라우트와 달리 mdx 컴파일·업로드 없음)

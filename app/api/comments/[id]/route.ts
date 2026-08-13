@@ -10,7 +10,7 @@ import {
 } from '@/lib/comments/markdown'
 import { canDeleteComment, canEditComment, loadCommentActor } from '@/lib/comments/permission'
 import { getCommentById, softDeleteComment, updateCommentBody } from '@/lib/db/comments'
-import { checkRateLimit } from '@/lib/mcp/rate-limit'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export const dynamic = 'force-dynamic'
 

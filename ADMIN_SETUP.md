@@ -13,13 +13,13 @@
 
 ### 2. Vercel Blob 스토어 생성
 1. 같은 **Storage** 탭 → **Create Store** → **Blob**
-2. `BLOB_READ_WRITE_TOKEN` 자동 주입 — 로컬 `.env`에도 복사
+2. `BLOB_READ_WRITE_TOKEN` 자동 주입 — 로컬 `.env.local`에도 복사
 
 ### 3. GitHub OAuth App 등록
 1. https://github.com/settings/developers → **New OAuth App**
 2. Authorization callback URL: `https://uyeon.dev/api/auth/github/callback`
 3. 로컬 개발용으로 하나 더 만들거나 callback을 `http://localhost:3000/api/auth/github/callback`으로 등록
-4. `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET`를 Vercel 환경변수 + 로컬 `.env`에 추가
+4. `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET`를 Vercel 환경변수 + 로컬 `.env.local`에 추가
 
 ### 4. 나머지 환경변수
 ```bash
@@ -36,7 +36,7 @@ ADMIN_GITHUB_LOGIN=uyeonyx                        # 로그인 허용 계정 (본
 
 ### 5. DB 테이블 생성
 ```bash
-pnpm db:push          # drizzle-kit push — posts / post_translations 테이블 생성
+pnpm db:migrate       # drizzle/ 마이그레이션 적용 (신규 환경은 0000부터 순차 적용)
 ```
 
 ### 6. MCP 토큰 (AI 에이전트 관리)
