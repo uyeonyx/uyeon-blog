@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-has-content */
 'use client'
 
 import type { LinkProps } from 'next/link'

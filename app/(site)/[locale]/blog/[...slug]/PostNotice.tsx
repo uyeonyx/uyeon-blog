@@ -7,33 +7,6 @@ import type { Locale } from '@/lib/i18n/config'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { getLanguageName } from '@/lib/i18n/utils'
 
-const COPY = {
-  ko: {
-    private: {
-      title: '비공개된 글입니다',
-      description: '이 글은 작성자가 비공개로 전환했습니다. 나중에 다시 공개될 수 있어요.',
-    },
-    untranslated: {
-      title: '이 언어로는 아직 제공되지 않는 글입니다',
-      description: '이 글은 아직 번역되지 않았습니다. 아래 언어로는 읽을 수 있어요.',
-    },
-    backToBlog: '블로그 목록으로',
-    backToHome: '홈으로',
-  },
-  en: {
-    private: {
-      title: 'This post is private',
-      description: 'The author has made this post private. It may become available again later.',
-    },
-    untranslated: {
-      title: 'Not available in this language yet',
-      description: "This post hasn't been translated yet. You can read it in the language below.",
-    },
-    backToBlog: 'Back to blog',
-    backToHome: 'Home',
-  },
-} as const
-
 interface PostNoticeProps {
   variant: 'private' | 'untranslated'
   /** variant='untranslated'일 때 — 이 글이 실제로 존재하는 언어 */
@@ -42,9 +15,13 @@ interface PostNoticeProps {
 }
 
 export default function PostNotice({ variant, otherLocale, slug }: PostNoticeProps) {
-  const { locale } = useI18n()
-  const copy = COPY[locale]
-  const { title, description } = copy[variant]
+  const { t } = useI18n()
+  const title = t(
+    variant === 'private' ? 'postNotice.privateTitle' : 'postNotice.untranslatedTitle'
+  )
+  const description = t(
+    variant === 'private' ? 'postNotice.privateDescription' : 'postNotice.untranslatedDescription'
+  )
 
   return (
     <motion.div
@@ -85,13 +62,13 @@ export default function PostNotice({ variant, otherLocale, slug }: PostNoticePro
               href="/blog"
               className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-lg backdrop-blur-3xl transition-all hover:scale-105 hover:border-primary-500/50 dark:border-gray-600/80 dark:bg-gray-800/70 dark:text-gray-100"
             >
-              {copy.backToBlog}
+              {t('postNotice.backToBlog')}
             </Link>
             <Link
               href="/"
               className="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/70 px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-lg backdrop-blur-3xl transition-all hover:scale-105 hover:border-primary-500/50 dark:border-gray-600/80 dark:bg-gray-800/70 dark:text-gray-100"
             >
-              {copy.backToHome}
+              {t('postNotice.backToHome')}
             </Link>
           </div>
         </div>

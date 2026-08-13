@@ -6,10 +6,7 @@
     "projects": "프로젝트",
     "about": "소개",
     "search": "검색",
-    "language": "언어",
     "toggleMenu": "메뉴 토글",
-    "closeMenu": "메뉴 닫기",
-    "toggleLanguage": "언어 변경",
     "switchTo": "전환:",
     "current": "현재",
     "scrollToTop": "맨 위로",
@@ -60,48 +57,27 @@
   },
   "blog": {
     "allPosts": "모든 포스트",
-    "allTags": "모든 태그",
-    "latestPosts": "최신 포스트",
     "readMore": "더 읽기",
     "learnMore": "더 알아보기",
     "noPostsFound": "포스트를 찾을 수 없습니다.",
     "noTagsFound": "태그를 찾을 수 없습니다.",
-    "postsWithTag": "태그된 포스트",
     "viewAllPosts": "모든 포스트 보기",
-    "viewAllTags": "모든 태그 보기",
     "backToBlog": "블로그로 돌아가기",
     "publishedOn": "게시일",
     "author": "저자",
-    "authors": "작성자",
-    "draft": "초안",
     "tags": "태그",
     "tableOfContents": "목차",
-    "readingTime": "분 읽기",
-    "notAvailable": "포스트를 볼 수 없습니다:",
-    "notAvailableDesc": "선택한 언어로 작성되지 않은 포스트입니다.",
     "previous": "이전",
     "next": "다음",
     "previousPost": "이전 포스트",
     "nextPost": "다음 포스트",
     "comments": "댓글",
-    "loadComments": "댓글 불러오기",
     "profilePhoto": "프로필 사진"
   },
-  "footer": {
-    "copyright": "모든 권리 보유."
-  },
-  "newsletter": {
-    "title": "최신 소식 받기",
-    "description": "뉴스레터를 구독하고 최신 글, 강의 등을 받아보세요!",
-    "emailPlaceholder": "이메일을 입력하세요",
-    "subscribe": "구독하기",
-    "success": "성공적으로 구독되었습니다!",
-    "error": "구독 중 오류가 발생했습니다. 다시 시도해주세요."
-  },
+  "footer": {},
   "pagination": {
     "previous": "이전",
-    "next": "다음",
-    "page": "페이지"
+    "next": "다음"
   },
   "notFound": {
     "title": "404",
@@ -116,12 +92,9 @@
     "tagDescription": "'{tag}' 태그가 붙은 글",
     "pageSuffix": "{n}페이지",
     "untranslatedTitle": "이 언어로는 아직 제공되지 않는 글",
-    "untranslatedBody": "이 글은 아직 이 언어로 번역되지 않았습니다. 아래에서 제공되는 언어로 읽을 수 있습니다.",
-    "readInOtherLanguage": "{language}로 읽기",
     "privateTitle": "비공개 글"
   },
   "comments": {
-    "title": "댓글",
     "count": "댓글 {count}개",
     "loading": "댓글을 불러오는 중…",
     "loadError": "댓글을 불러오지 못했습니다.",
@@ -176,5 +149,13 @@
     "description": "일시적인 오류일 수 있습니다. 다시 시도해 주세요.",
     "retry": "다시 시도",
     "backToHome": "홈으로 돌아가기"
+  },
+  "postNotice": {
+    "privateTitle": "비공개된 글입니다",
+    "privateDescription": "이 글은 작성자가 비공개로 전환했습니다. 나중에 다시 공개될 수 있어요.",
+    "untranslatedTitle": "이 언어로는 아직 제공되지 않는 글입니다",
+    "untranslatedDescription": "이 글은 아직 번역되지 않았습니다. 아래 언어로는 읽을 수 있어요.",
+    "backToBlog": "블로그 목록으로",
+    "backToHome": "홈으로"
   }
 }
