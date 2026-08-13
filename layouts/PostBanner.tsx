@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import NextImage from 'next/image'
 import Bleed from 'pliny/ui/Bleed'
 import type { ReactNode } from 'react'
+import CommentSection from '@/components/comments/CommentSection'
 import Link from '@/components/Link'
 import PageTitle from '@/components/PageTitle'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
@@ -44,6 +45,12 @@ export default function PostMinimal({ content, next, prev, children }: LayoutPro
               </div>
             </div>
             <div className="prose dark:prose-invert max-w-none py-4">{children}</div>
+            <div id="comment" className="pt-6 pb-6">
+              <h2 className="mb-4 text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {t('blog.comments')}
+              </h2>
+              <CommentSection slug={content.slug} />
+            </div>
             <footer>
               <div className="flex flex-col text-sm font-medium sm:flex-row sm:justify-between sm:text-base">
                 {prev?.path && (

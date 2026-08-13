@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import {
+  type AnyPgColumn,
   boolean,
   check,
   index,
@@ -142,6 +143,51 @@ export const authorTranslations = pgTable(
   ]
 )
 
+// 댓글 — giscus(GitHub Discussions)를 대체한다. posts.id에 FK로 붙으므로 URL이나 로케일이
+// 바뀌어도 끊기지 않고, ko/en이 한 스레드를 공유한다.
+export const commentAuthorTypeEnum = pgEnum('comment_author_type', ['user', 'anonymous'])
+// 'pending'은 아직 쓰지 않는다 — 익명을 승인제로 돌릴 때 마이그레이션 없이 전환하려고 미리 넣어둔다.
+export const commentStatusEnum = pgEnum('comment_status', [
+  'visible',
+  'pending',
+  'hidden',
+  'deleted',
+])
+
+export const comments = pgTable(
+  'comments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    postId: uuid('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    // 자기참조는 타입이 순환하므로 반환 타입을 명시해야 한다. 답글은 1단까지만(깊이는 API에서 강제)
+    parentId: uuid('parent_id').references((): AnyPgColumn => comments.id, { onDelete: 'cascade' }),
+
+    authorType: commentAuthorTypeEnum('author_type').notNull().default('user'),
+    provider: text('provider'), // 'github' | 'google' | null(익명)
+    // GitHub login은 사용자가 바꿀 수 있지만 numeric id는 불변 — 동일인 판정은 이 값으로 한다
+    providerUserId: text('provider_user_id'),
+    authorName: text('author_name').notNull(),
+    authorAvatarUrl: text('author_avatar_url'),
+    authorUrl: text('author_url'),
+
+    bodyMd: text('body_md').notNull(),
+    bodyHtml: text('body_html').notNull(), // sanitize 결과 캐시 — 읽기 경로에서 재파싱하지 않는다
+    locale: text('locale'), // 작성 언어 — 표시는 통합, 배지용
+
+    status: commentStatusEnum('status').notNull().default('visible'),
+    isOwner: boolean('is_owner').notNull().default(false), // 서버 세션으로만 판정 (위조 불가)
+
+    notifyEmail: text('notify_email'), // 향후 답글 알림 opt-in — 지금은 쓰지 않는다
+    notifyToken: text('notify_token'),
+
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('idx_comments_post_created').on(table.postId, table.createdAt)]
+)
+
 export type PostRow = typeof posts.$inferSelect
 export type TagRow = typeof tags.$inferSelect
 export type PostTranslationRow = typeof postTranslations.$inferSelect
@@ -149,3 +195,4 @@ export type ProjectRow = typeof projects.$inferSelect
 export type ProjectTranslationRow = typeof projectTranslations.$inferSelect
 export type AuthorRow = typeof authors.$inferSelect
 export type AuthorTranslationRow = typeof authorTranslations.$inferSelect
+export type CommentRow = typeof comments.$inferSelect

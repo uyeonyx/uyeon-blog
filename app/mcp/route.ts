@@ -35,7 +35,7 @@ const mcpHandler = createMcpHandler(
 )
 
 async function handler(request: Request) {
-  const limit = checkRateLimit(request)
+  const limit = checkRateLimit(request, { scope: 'mcp' })
   if (!limit.ok) {
     return Response.json(
       { error: 'rate_limited', message: '요청이 너무 많습니다. 잠시 후 다시 시도하세요.' },

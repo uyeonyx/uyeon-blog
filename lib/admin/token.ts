@@ -44,6 +44,11 @@ export function sanitizeNextPath(next: string | undefined | null, origin: string
 export async function verifySessionToken(token: string): Promise<AdminSession | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret())
+    // 댓글 작성자 토큰(lib/auth/user-token.ts)은 같은 시크릿으로 서명되므로 typ로 걸러낸다.
+    // 이게 없으면 주인이 댓글용으로 발급받은 토큰이 관리자 토큰으로 통과할 수 있다.
+    if (payload.typ === 'user') {
+      return null
+    }
     const login = payload.login
     if (typeof login !== 'string' || login !== process.env.ADMIN_GITHUB_LOGIN) {
       return null

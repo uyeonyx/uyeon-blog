@@ -51,6 +51,13 @@ export default function AdminHeader({ login }: { login: string }) {
             </button>
             <button
               type="button"
+              onClick={() => guardedNavigate('/admin/comments')}
+              className="rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-900/5 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white"
+            >
+              댓글
+            </button>
+            <button
+              type="button"
               onClick={() => guardedNavigate('/admin/about')}
               className="rounded-full px-3 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-900/5 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-white/10 dark:hover:text-white"
             >

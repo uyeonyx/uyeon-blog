@@ -3,7 +3,7 @@
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import type { ReactNode } from 'react'
 import { useRef } from 'react'
-import Comments from '@/components/Comments'
+import CommentSection from '@/components/comments/CommentSection'
 import FloatingTOC from '@/components/FloatingTOC'
 import Link from '@/components/Link'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
@@ -201,16 +201,14 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                 </div>
               </div>
               {/* Comments Section */}
-              {siteMetadata.comments && (
-                <div id="comment" className="xl:col-span-4 pb-8">
-                  <div className="border-t border-gray-100 dark:border-gray-900 pt-8">
-                    <h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      {t('blog.comments')}
-                    </h2>
-                    <Comments slug={content.slug} />
-                  </div>
+              <div id="comment" className="xl:col-span-4 pb-8">
+                <div className="border-t border-gray-100 dark:border-gray-900 pt-8">
+                  <h2 className="mb-6 text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    {t('blog.comments')}
+                  </h2>
+                  <CommentSection slug={content.slug} />
                 </div>
-              )}
+              </div>
               {/* Navigation Footer */}
               <footer className="xl:col-span-4">
                 <div className="border-t border-gray-100 dark:border-gray-900 pt-8">
