@@ -43,7 +43,6 @@ const loadPublishedPosts = unstable_cache(
         result.push({
           slug: post.slug,
           path: `blog/${post.slug}`,
-          filePath: '',
           title: tr.title,
           summary: tr.summary ?? undefined,
           date,

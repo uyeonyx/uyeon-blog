@@ -8,7 +8,6 @@ export interface PostBody {
 export interface Post {
   slug: string
   path: string
-  filePath: string
   title: string
   summary?: string
   date: string

@@ -9,14 +9,11 @@ import Link from '@/components/Link'
 import ScrollTopAndComment from '@/components/ScrollTopAndComment'
 import SectionContainer from '@/components/SectionContainer'
 import Tag from '@/components/Tag'
-import siteMetadata from '@/data/siteMetadata'
 import { useI18n } from '@/lib/i18n/i18n-context'
 import { formatDate } from '@/lib/i18n/utils'
 import type { AuthorCore } from '@/lib/types/author'
 import type { CoreContent } from '@/lib/types/content'
 import type { Blog } from '@/lib/types/post'
-
-const editUrl = (path) => `${siteMetadata.siteRepo}/blob/main/data/${path}`
 
 interface LayoutProps {
   content: CoreContent<Blog>
@@ -98,7 +95,7 @@ function AuthorAvatar({ author, locale }: { author: AuthorCore; locale: string }
 }
 
 export default function PostLayout({ content, authorDetails, next, prev, children }: LayoutProps) {
-  const { filePath, path, date, title, tags, toc } = content
+  const { path, date, title, tags, toc } = content
   const basePath = path.split('/')[0]
   const { t, locale } = useI18n()
 
@@ -187,18 +184,6 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
               {/* Main Content */}
               <div className="xl:col-span-3">
                 <div className="prose dark:prose-invert max-w-none prose-lg pb-8">{children}</div>
-
-                {/* Footer Actions */}
-                <div className="border-t border-gray-100 dark:border-gray-900 pt-6 pb-6">
-                  <div className="flex flex-wrap gap-4 text-sm">
-                    <Link
-                      href={editUrl(filePath)}
-                      className="text-gray-600 hover:text-primary-500 dark:text-gray-400 dark:hover:text-primary-400 transition-colors"
-                    >
-                      {t('blog.viewOnGithub')}
-                    </Link>
-                  </div>
-                </div>
               </div>
               {/* Comments Section */}
               <div id="comment" className="xl:col-span-4 pb-8">
