@@ -21,7 +21,9 @@
       "*.jsx",
       "*.mjs",
       "*.cjs",
-      "*.json"
+      "*.json",
+      "!lib/generated",
+      "!next-env.d.ts"
     ]
   },
   "formatter": {
