@@ -22,6 +22,16 @@ const generateRssItem = (config: SiteConfig, post: PostCore, locale: Locale) => 
 `
 }
 
+/** 채널 lastBuildDate — 발행일이 아니라 실제 최근 수정 시각의 최댓값 */
+function latestModified(posts: PostCore[]): Date {
+  let latest: string | undefined
+  for (const post of posts) {
+    const mod = post.lastmod ?? post.updatedAt ?? post.date
+    if (!latest || mod > latest) latest = mod
+  }
+  return latest ? new Date(latest) : new Date()
+}
+
 interface RssOptions {
   locale: Locale
   /** 로케일 접두사를 뺀 피드 경로. 'feed.xml' | 'tags/react/feed.xml' */
@@ -44,7 +54,7 @@ export function generateRss(
       <language>${HTML_LANG[locale]}</language>
       <managingEditor>${config.email} (${config.author})</managingEditor>
       <webMaster>${config.email} (${config.author})</webMaster>
-      <lastBuildDate>${(posts[0] ? new Date(posts[0].date) : new Date()).toUTCString()}</lastBuildDate>
+      <lastBuildDate>${latestModified(posts).toUTCString()}</lastBuildDate>
       <atom:link href="${localeUrl(locale, seg)}" rel="self" type="application/rss+xml"/>
       ${posts.map((post) => generateRssItem(config, post, locale)).join('')}
     </channel>

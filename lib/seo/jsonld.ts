@@ -53,6 +53,8 @@ export function blogPostingJsonLd({
 }) {
   const modified = post.lastmod ?? post.updatedAt ?? post.date
   const image = postImageUrl(post, locale)
+  // 1200×630은 OG 폴백 이미지에만 참인 치수 — 실제 커버는 비율을 모르므로 치수를 주장하지 않는다
+  const hasRealCover = Boolean(post.images?.[0])
 
   return {
     '@context': 'https://schema.org',
@@ -65,7 +67,7 @@ export function blogPostingJsonLd({
     dateModified: modified,
     url: canonical,
     mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
-    image: { '@type': 'ImageObject', url: image, width: 1200, height: 630 },
+    image: hasRealCover ? image : { '@type': 'ImageObject', url: image, width: 1200, height: 630 },
     author: personNode(author, locale),
     publisher: organizationNode(),
     ...(post.tags.length > 0 ? { keywords: post.tags } : {}),
@@ -73,6 +75,41 @@ export function blogPostingJsonLd({
     ...(post.readingTime?.minutes
       ? { timeRequired: `PT${Math.max(1, Math.ceil(post.readingTime.minutes))}M` }
       : {}),
+  }
+}
+
+/** 목록 페이지(블로그/태그/프로젝트)용 CollectionPage + ItemList */
+export function collectionPageJsonLd({
+  locale,
+  url,
+  name,
+  description,
+  items,
+}: {
+  locale: Locale
+  url: string
+  name: string
+  description?: string
+  items: { name: string; url: string }[]
+}) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    '@id': `${url}#collection`,
+    url,
+    name,
+    ...(description ? { description } : {}),
+    inLanguage: BCP47[locale],
+    isPartOf: { '@id': SITE_ID },
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: items.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        url: item.url,
+      })),
+    },
   }
 }
 

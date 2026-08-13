@@ -115,7 +115,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           lastModified: lastModOf(post),
           changeFrequency: 'monthly',
           priority: 0.8,
-          images: [postImageUrl(post, locale)],
+          // 이미지 항목은 실제 커버가 있을 때만 — /og 폴백은 합성 카드라 이미지 사이트맵에 부적합
+          ...(post.images?.[0] ? { images: [postImageUrl(post, locale)] } : {}),
         })
       )
     }

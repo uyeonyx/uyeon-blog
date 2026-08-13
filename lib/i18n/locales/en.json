@@ -117,7 +117,8 @@
     "pageSuffix": "Page {n}",
     "untranslatedTitle": "Not available in this language yet",
     "untranslatedBody": "This post hasn't been translated into this language yet. You can read it in the language below.",
-    "readInOtherLanguage": "Read in {language}"
+    "readInOtherLanguage": "Read in {language}",
+    "privateTitle": "Private post"
   },
   "comments": {
     "title": "Comments",

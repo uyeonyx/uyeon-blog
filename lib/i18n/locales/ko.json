@@ -117,7 +117,8 @@
     "pageSuffix": "{n}페이지",
     "untranslatedTitle": "이 언어로는 아직 제공되지 않는 글",
     "untranslatedBody": "이 글은 아직 이 언어로 번역되지 않았습니다. 아래에서 제공되는 언어로 읽을 수 있습니다.",
-    "readInOtherLanguage": "{language}로 읽기"
+    "readInOtherLanguage": "{language}로 읽기",
+    "privateTitle": "비공개 글"
   },
   "comments": {
     "title": "댓글",

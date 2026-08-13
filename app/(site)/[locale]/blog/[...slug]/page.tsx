@@ -50,7 +50,7 @@ export async function generateMetadata(props: {
       return { title: t('seo.untranslatedTitle'), robots: { index: false, follow: true } }
     }
     if ((await getPostStatusBySlug(slug)) === 'private') {
-      return { title: '비공개 글', robots: { index: false, follow: false } }
+      return { title: t('seo.privateTitle'), robots: { index: false, follow: false } }
     }
     return
   }

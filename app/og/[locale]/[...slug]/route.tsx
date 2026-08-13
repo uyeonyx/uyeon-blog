@@ -32,9 +32,11 @@ async function loadFont(text: string): Promise<ArrayBuffer | null> {
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ locale: string; slug: string }> }
+  // 글 라우트가 catch-all([...slug])이므로 중첩 slug의 OG도 받을 수 있어야 한다
+  { params }: { params: Promise<{ locale: string; slug: string[] }> }
 ) {
-  const { locale, slug } = await params
+  const { locale, slug: slugParts } = await params
+  const slug = decodeURI(slugParts.join('/'))
   if (!isLocale(locale)) return new Response('Not found', { status: 404 })
 
   const post = await getPublishedCore(slug, locale)

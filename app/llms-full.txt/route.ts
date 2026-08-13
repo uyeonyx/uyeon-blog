@@ -1,4 +1,4 @@
-// llms-full.txt — 전체 게시글 본문 마크다운 (slug당 1건, 한국어 우선).
+// llms-full.txt — 전체 게시글 본문 마크다운 (존재하는 번역 전부 — ko/en 각각 섹션).
 // DB 조회 페이지 — 요청 시 렌더 (데이터는 'posts' 태그로 캐시됨)
 import siteMetadata from '@/data/siteMetadata'
 import { getAllPublishedMarkdown } from '@/lib/db/posts'
@@ -9,25 +9,31 @@ export const dynamic = 'force-dynamic'
 export async function GET() {
   const posts = await getAllPublishedMarkdown()
 
-  const sections = posts.map((post) => {
-    const tr = post.translations.ko ?? post.translations.en
-    if (!tr) return ''
-    return [
-      '---',
-      `title: ${tr.title}`,
-      `url: ${localeUrl(post.translations.ko ? 'ko' : 'en', `blog/${post.slug}`)}`,
-      `date: ${post.date.slice(0, 10)}`,
-      ...(post.tags.length > 0 ? [`tags: ${post.tags.join(', ')}`] : []),
-      '---',
-      '',
-      tr.markdown.trim(),
-    ].join('\n')
-  })
+  // ko ?? en으로 하나만 고르면 양 언어 글의 영어 본문이 영영 노출되지 않는다 — 전부 싣는다
+  const sections = posts.flatMap((post) =>
+    (['ko', 'en'] as const).flatMap((lang) => {
+      const tr = post.translations[lang]
+      if (!tr) return []
+      return [
+        [
+          '---',
+          `title: ${tr.title}`,
+          `lang: ${lang}`,
+          `url: ${localeUrl(lang, `blog/${post.slug}`)}`,
+          `date: ${post.date.slice(0, 10)}`,
+          ...(post.tags.length > 0 ? [`tags: ${post.tags.join(', ')}`] : []),
+          '---',
+          '',
+          tr.markdown.trim(),
+        ].join('\n'),
+      ]
+    })
+  )
 
   const body = [
     `# ${siteMetadata.title} — full content`,
     '',
-    '> Korean version of each post (English translations available at each URL).',
+    '> Every available translation of every post (ko/en sections per post).',
     '',
     sections.join('\n\n'),
   ].join('\n')

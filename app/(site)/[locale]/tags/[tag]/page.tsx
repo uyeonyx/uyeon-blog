@@ -1,6 +1,7 @@
 import { genPageMetadata } from 'app/seo'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
+import JsonLd from '@/components/JsonLd'
 import ListLayout from '@/layouts/ListLayoutWithTags'
 import { getCoresByTag, getTagCounts } from '@/lib/db/posts'
 import { getTagTitle } from '@/lib/db/tags'
@@ -8,6 +9,8 @@ import { isLocale, LOCALES, type Locale } from '@/lib/i18n/config'
 import { assertLocale } from '@/lib/i18n/route'
 import { getTranslations } from '@/lib/i18n/translate'
 import { pageSlice, totalPagesOf } from '@/lib/pagination'
+import { breadcrumbJsonLd, collectionPageJsonLd } from '@/lib/seo/jsonld'
+import { localeUrl } from '@/lib/seo/urls'
 
 /** 이 태그로 글이 있는 로케일 — hreflang은 실제 존재하는 대응만 선언한다 */
 async function localesWithTag(tag: string): Promise<Locale[]> {
@@ -60,15 +63,36 @@ export default async function TagPage(props: { params: Promise<{ locale: string;
   // 이 로케일에 글이 없으면 200 빈 페이지(soft-404) 대신 진짜 404
   if (filteredPosts.length === 0) notFound()
 
+  const t = getTranslations(locale)
+  const url = localeUrl(locale, `tags/${tag}`)
+
   return (
-    <ListLayout
-      posts={filteredPosts}
-      initialDisplayPosts={pageSlice(filteredPosts, 1)}
-      pagination={{ currentPage: 1, totalPages: totalPagesOf(filteredPosts.length) }}
-      tagCounts={tagCounts}
-      title={title}
-      basePath={`/tags/${tag}`}
-      activeTag={tag}
-    />
+    <>
+      <JsonLd
+        data={collectionPageJsonLd({
+          locale,
+          url,
+          name: title,
+          description: t('seo.tagDescription', { tag: title }),
+          items: filteredPosts.map((p) => ({ name: p.title, url: localeUrl(locale, p.path) })),
+        })}
+      />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: t('common.home'), url: localeUrl(locale) },
+          { name: t('pages.tags.title'), url: localeUrl(locale, 'tags') },
+          { name: title, url },
+        ])}
+      />
+      <ListLayout
+        posts={filteredPosts}
+        initialDisplayPosts={pageSlice(filteredPosts, 1)}
+        pagination={{ currentPage: 1, totalPages: totalPagesOf(filteredPosts.length) }}
+        tagCounts={tagCounts}
+        title={title}
+        basePath={`/tags/${tag}`}
+        activeTag={tag}
+      />
+    </>
   )
 }
