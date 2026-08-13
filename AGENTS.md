@@ -34,6 +34,13 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - 콘텐츠는 전부 Postgres(Drizzle). `lib/db/*`의 조회 함수는 `language` 인자를 받는다.
 - `unstable_cache` 로더는 양 언어를 통째로 캐시하고 필터는 accessor에서 한다
   (언어별 캐시 키로 쪼개면 `revalidateTag('posts')` 시 한쪽만 신선한 창이 생긴다).
+  단, 글 수에 비례해 커지는 본문은 slug별 항목으로 분리한다 — Vercel 데이터 캐시는
+  항목당 2MB를 넘으면 쓰기를 조용히 버린다 (`lib/db/posts.ts` 상단 주석 참고).
+- **스키마 변경은 마이그레이션으로**: `pnpm db:generate`로 `drizzle/` 아래 SQL 생성 →
+  커밋 → 배포 후 `pnpm db:migrate`. 커밋된 마이그레이션 파일은 절대 수정 금지(append-only,
+  해시로 적용 여부를 판정한다). `db:push`는 스크래치 DB 실험 전용.
+- 파괴적 변경(컬럼 드롭 등)은 **코드 배포가 먼저, migrate가 나중** — 구 람다가 옛 컬럼을
+  select하는 동안 컬럼을 지우면 500이 난다.
 
 ## SEO
 

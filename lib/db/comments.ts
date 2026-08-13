@@ -5,8 +5,8 @@ import { and, asc, desc, eq, getTableColumns, inArray } from 'drizzle-orm'
 import { getDb } from './client'
 import { type CommentRow, comments, posts, postTranslations } from './schema'
 
-/** 목록 경로용 행 — 원문(bodyMd)과 미사용 알림 컬럼은 목록에서 DB 밖으로 내보내지 않는다 */
-export type CommentListRow = Omit<CommentRow, 'bodyMd' | 'notifyEmail' | 'notifyToken'>
+/** 목록 경로용 행 — 원문(bodyMd)은 목록에서 DB 밖으로 내보내지 않는다 */
+export type CommentListRow = Omit<CommentRow, 'bodyMd'>
 
 export interface PublicComment {
   id: string
@@ -94,12 +94,7 @@ export async function listCommentsByPostId(
 ): Promise<PublicComment[]> {
   const db = getDb()
   // bodyMd(원문)는 목록에 실을 일이 없다 — 편집 폼은 GET /api/comments/[id]가 별도로 준다
-  const {
-    bodyMd: _bodyMd,
-    notifyEmail: _ne,
-    notifyToken: _nt,
-    ...listColumns
-  } = getTableColumns(comments)
+  const { bodyMd: _bodyMd, ...listColumns } = getTableColumns(comments)
   const rows = await db
     .select(listColumns)
     .from(comments)
@@ -159,8 +154,6 @@ export async function softDeleteComment(id: string): Promise<void> {
       anonAvatarSeed: null,
       provider: null,
       providerUserId: null,
-      notifyEmail: null,
-      notifyToken: null,
       updatedAt: new Date(),
       editedAt: null,
     })

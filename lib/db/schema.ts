@@ -30,7 +30,11 @@ export const posts = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('idx_posts_status_date').on(table.status, table.date)]
+  (table) => [
+    index('idx_posts_status_date').on(table.status, table.date),
+    // arrayContains(tags, [...]) 조회용 (태그 rename 등) — 배열 포함 검색은 GIN이어야 인덱스를 탄다
+    index('idx_posts_tags_gin').using('gin', table.tags),
+  ]
 )
 
 export const postTranslations = pgTable(
@@ -69,7 +73,10 @@ export const projects = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
-  (table) => [index('idx_projects_order').on(table.published, table.displayOrder)]
+  (table) => [
+    index('idx_projects_order').on(table.published, table.displayOrder),
+    index('idx_projects_tags_gin').using('gin', table.tags),
+  ]
 )
 
 export const projectTranslations = pgTable(
@@ -183,15 +190,16 @@ export const comments = pgTable(
     // 유출돼도 쿠키를 되돌리거나 다른 사람 아바타를 흉내낼 수 없다 (lib/comments/anon-identity.ts).
     anonAvatarSeed: text('anon_avatar_seed'),
 
-    notifyEmail: text('notify_email'), // 향후 답글 알림 opt-in — 지금은 쓰지 않는다
-    notifyToken: text('notify_token'),
-
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
     // 본문이 실제로 고쳐진 시각. updatedAt은 숨김/복구에도 갱신되므로 "수정됨" 표시에 쓸 수 없다
     editedAt: timestamp('edited_at', { withTimezone: true }),
   },
-  (table) => [index('idx_comments_post_created').on(table.postId, table.createdAt)]
+  (table) => [
+    index('idx_comments_post_created').on(table.postId, table.createdAt),
+    // FK 참조 컬럼은 자동 인덱스가 없다 — 부모 삭제 cascade와 답글 조회가 seq scan이 되지 않게
+    index('idx_comments_parent').on(table.parentId),
+  ]
 )
 
 export type PostRow = typeof posts.$inferSelect
