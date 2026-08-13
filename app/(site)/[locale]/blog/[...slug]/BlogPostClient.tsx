@@ -1,10 +1,6 @@
 'use client'
 
-import 'css/prism.css'
-import 'katex/dist/katex.css'
-
-import { MDXLayoutRenderer } from 'pliny/mdx-components'
-import { components } from '@/components/MDXComponents'
+import type { ReactNode } from 'react'
 import PostBanner from '@/layouts/PostBanner'
 import PostLayout from '@/layouts/PostLayout'
 import PostSimple from '@/layouts/PostSimple'
@@ -20,27 +16,35 @@ const layouts = {
 }
 
 interface BlogPostClientProps {
-  post: Blog
+  content: PostCore
   authorDetails: AuthorCore[]
   prev?: PostCore
   next?: PostCore
+  /** 서버에서 이미 렌더된 본문 트리 (MDXServerRenderer) — 본문 평가는 클라이언트로 오지 않는다 */
+  children: ReactNode
 }
 
 /**
- * 언어 선택과 prev/next 계산은 서버에서 끝난다. 여기는 클라이언트 레이아웃 렌더 전용.
+ * 언어 선택·prev/next 계산·MDX 평가는 전부 서버에서 끝난다.
+ * 여기는 framer-motion을 쓰는 클라이언트 레이아웃 껍데기만 담당한다.
  */
-export default function BlogPostClient({ post, authorDetails, prev, next }: BlogPostClientProps) {
-  const { body, ...mainContent } = post
-  const Layout = layouts[post.layout || defaultLayout]
+export default function BlogPostClient({
+  content,
+  authorDetails,
+  prev,
+  next,
+  children,
+}: BlogPostClientProps) {
+  const Layout = layouts[(content.layout as keyof typeof layouts) || defaultLayout]
 
   return (
     <Layout
-      content={mainContent as CoreContent<Blog>}
+      content={content as CoreContent<Blog>}
       authorDetails={authorDetails}
       next={next}
       prev={prev}
     >
-      <MDXLayoutRenderer code={body.code} components={components} toc={post.toc} />
+      {children}
     </Layout>
   )
 }

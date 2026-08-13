@@ -1,7 +1,11 @@
+import 'css/prism.css'
+import 'katex/dist/katex.css'
+
 import { genPageMetadata } from 'app/seo'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import JsonLd from '@/components/JsonLd'
+import MDXServerRenderer from '@/components/mdx/MDXServerRenderer'
 import siteMetadata from '@/data/siteMetadata'
 import { getAuthorCore } from '@/lib/db/authors'
 import {
@@ -86,6 +90,7 @@ export default async function Page(props: { params: Promise<{ locale: string; sl
     notFound()
   }
 
+  const { body, ...content } = post
   const [cores, author] = await Promise.all([getPublishedCores(locale), getAuthorCore(locale)])
 
   // 같은 언어 목록에서의 앞/뒤 글 (cores는 최신순)
@@ -106,7 +111,14 @@ export default async function Page(props: { params: Promise<{ locale: string; sl
           { name: post.title, url: canonical },
         ])}
       />
-      <BlogPostClient post={post} authorDetails={author ? [author] : []} prev={prev} next={next} />
+      <BlogPostClient
+        content={content}
+        authorDetails={author ? [author] : []}
+        prev={prev}
+        next={next}
+      >
+        <MDXServerRenderer code={body.code} toc={post.toc} />
+      </BlogPostClient>
     </>
   )
 }

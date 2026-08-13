@@ -2,6 +2,7 @@ import { genPageMetadata } from 'app/seo'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import JsonLd from '@/components/JsonLd'
+import MDXServerRenderer from '@/components/mdx/MDXServerRenderer'
 import { getAuthor } from '@/lib/db/authors'
 import { assertLocale } from '@/lib/i18n/route'
 import { getTranslations } from '@/lib/i18n/translate'
@@ -26,11 +27,14 @@ export default async function Page(props: { params: Promise<{ locale: string }> 
   const author = await getAuthor(locale, 'default')
   if (!author) notFound()
 
-  const { techStack: _t, timeline: _tl, body: _b, ...core } = author
+  const { body, ...authorSansBody } = author
+  const { techStack: _t, timeline: _tl, ...core } = authorSansBody
   return (
     <>
       <JsonLd data={profilePageJsonLd(locale, core)} />
-      <AboutPageClient author={author} />
+      <AboutPageClient author={authorSansBody}>
+        {body.code ? <MDXServerRenderer code={body.code} /> : null}
+      </AboutPageClient>
     </>
   )
 }
