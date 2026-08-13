@@ -157,5 +157,11 @@
     "untranslatedDescription": "이 글은 아직 번역되지 않았습니다. 아래 언어로는 읽을 수 있어요.",
     "backToBlog": "블로그 목록으로",
     "backToHome": "홈으로"
+  },
+  "home": {
+    "phrase1": "완성이 아닌 갱신",
+    "phrase2": "해답이 아닌 질문",
+    "phrase3": "깊은 생각, 빠른 실행",
+    "phrase4": "무지에 대한 인식"
   }
 }

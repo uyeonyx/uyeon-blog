@@ -6,6 +6,7 @@ import 'katex/dist/katex.css'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { adminFetch } from '@/lib/admin/fetch'
 import { useDirtyGuard } from './DirtyGuard'
 import TiptapEditor from './editor/TiptapEditor'
 import ActionBar from './editor-page/ActionBar'
@@ -148,7 +149,9 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
       setSaving(true)
       const currentSnapshot = JSON.stringify({ slug, tags, layout, date, coverImage, translations })
       try {
-        const res = await fetch(`/api/admin/posts/${initial.id}`, {
+        const result = await adminFetch<{
+          compileResults?: Array<{ ok: boolean; language: string; error?: string }>
+        }>(`/api/admin/posts/${initial.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -160,15 +163,12 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
             translations,
           }),
         })
-        const data = await res.json()
-        if (!res.ok) {
+        if (!result.ok) {
           if (silent) setAutoSaveFailed(true)
-          else toast('error', data.error || '저장에 실패했습니다')
+          else toast('error', result.error)
           return false
         }
-        const failures = (data.compileResults ?? []).filter(
-          (r: { ok: boolean }) => !r.ok
-        ) as Array<{ language: string; error?: string }>
+        const failures = (result.data.compileResults ?? []).filter((r) => !r.ok)
         setLastSaved(currentSnapshot)
         setLastSavedAt(new Date())
         setAutoSaveFailed(false)
@@ -219,14 +219,14 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
   const changeStatus = async (next: PostStatus) => {
     const saved = await save()
     if (!saved && next === 'published') return
-    const res = await fetch(`/api/admin/posts/${initial.id}/status`, {
+    const result = await adminFetch(`/api/admin/posts/${initial.id}/status`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: next }),
     })
-    const data = await res.json()
-    if (!res.ok) {
-      toast('error', data.problems ? data.problems.join(' / ') : data.error || '상태 변경 실패')
+    if (!result.ok) {
+      const problems = result.body?.problems
+      toast('error', Array.isArray(problems) ? problems.join(' / ') : result.error)
       return
     }
     setStatus(next)
@@ -236,15 +236,14 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
   const remove = async () => {
     setDeleting(true)
     try {
-      const res = await fetch(`/api/admin/posts/${initial.id}`, { method: 'DELETE' })
-      if (res.ok) {
+      const result = await adminFetch(`/api/admin/posts/${initial.id}`, { method: 'DELETE' })
+      if (result.ok) {
         setDirty(false)
         setDeleteOpen(false)
         router.push('/admin')
         router.refresh()
       } else {
-        const data = await res.json()
-        toast('error', data.error || '삭제에 실패했습니다')
+        toast('error', result.error)
       }
     } finally {
       setDeleting(false)
@@ -254,17 +253,16 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
   const openPreview = async () => {
     setPreviewLoading(true)
     try {
-      const res = await fetch('/api/admin/preview', {
+      const result = await adminFetch<{ code: string }>('/api/admin/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contentJson: translations[activeLang].contentJson }),
       })
-      const data = await res.json()
-      if (!res.ok) {
-        toast('error', data.error || '미리보기 컴파일에 실패했습니다')
+      if (!result.ok) {
+        toast('error', result.error)
         return
       }
-      setPreview({ code: data.code, lang: activeLang })
+      setPreview({ code: result.data.code, lang: activeLang })
     } finally {
       setPreviewLoading(false)
     }

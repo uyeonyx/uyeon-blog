@@ -7,6 +7,7 @@ import { Icon } from '@iconify/react'
 import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { adminFetch } from '@/lib/admin/fetch'
 import { useDirtyGuard } from './DirtyGuard'
 import TiptapEditor from './editor/TiptapEditor'
 import type { Language } from './editor-page/LanguageTabs'
@@ -139,7 +140,9 @@ export default function ProjectEditor({ initial }: { initial: ProjectEditorData 
       translations,
     })
     try {
-      const res = await fetch(`/api/admin/projects/${initial.id}`, {
+      const result = await adminFetch<{
+        compileResults?: Array<{ ok: boolean; language: string; error?: string }>
+      }>(`/api/admin/projects/${initial.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -152,15 +155,11 @@ export default function ProjectEditor({ initial }: { initial: ProjectEditorData 
           translations,
         }),
       })
-      const data = await res.json()
-      if (!res.ok) {
-        toast('error', data.error || '저장에 실패했습니다')
+      if (!result.ok) {
+        toast('error', result.error)
         return false
       }
-      const failures = (data.compileResults ?? []).filter((r: { ok: boolean }) => !r.ok) as Array<{
-        language: string
-        error?: string
-      }>
+      const failures = (result.data.compileResults ?? []).filter((r) => !r.ok)
       setLastSaved(currentSnapshot)
       if (failures.length > 0) {
         toast(
@@ -195,15 +194,14 @@ export default function ProjectEditor({ initial }: { initial: ProjectEditorData 
   const remove = async () => {
     setDeleting(true)
     try {
-      const res = await fetch(`/api/admin/projects/${initial.id}`, { method: 'DELETE' })
-      if (res.ok) {
+      const result = await adminFetch(`/api/admin/projects/${initial.id}`, { method: 'DELETE' })
+      if (result.ok) {
         setDirty(false)
         setDeleteOpen(false)
         router.push('/admin/projects')
         router.refresh()
       } else {
-        const data = await res.json()
-        toast('error', data.error || '삭제에 실패했습니다')
+        toast('error', result.error)
       }
     } finally {
       setDeleting(false)
@@ -213,17 +211,16 @@ export default function ProjectEditor({ initial }: { initial: ProjectEditorData 
   const openPreview = async () => {
     setPreviewLoading(true)
     try {
-      const res = await fetch('/api/admin/preview', {
+      const result = await adminFetch<{ code: string }>('/api/admin/preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contentJson: translations[activeLang].contentJson }),
       })
-      const data = await res.json()
-      if (!res.ok) {
-        toast('error', data.error || '미리보기 컴파일에 실패했습니다')
+      if (!result.ok) {
+        toast('error', result.error)
         return
       }
-      setPreview({ code: data.code, lang: activeLang })
+      setPreview({ code: result.data.code, lang: activeLang })
     } finally {
       setPreviewLoading(false)
     }

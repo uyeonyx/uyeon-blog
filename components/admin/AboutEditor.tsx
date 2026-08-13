@@ -6,6 +6,7 @@ import 'katex/dist/katex.css'
 import { Icon } from '@iconify/react'
 import { motion } from 'framer-motion'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { adminFetch } from '@/lib/admin/fetch'
 import { useDirtyGuard } from './DirtyGuard'
 import TiptapEditor from './editor/TiptapEditor'
 import { uploadImageFile } from './editor/upload'
@@ -153,7 +154,9 @@ export default function AboutEditor({ initial }: { initial: AboutEditorData }) {
       translations,
     })
     try {
-      const res = await fetch('/api/admin/about', {
+      const result = await adminFetch<{
+        compileResults?: Array<{ ok: boolean; language: string; error?: string }>
+      }>('/api/admin/about', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -178,15 +181,11 @@ export default function AboutEditor({ initial }: { initial: AboutEditorData }) {
           ),
         }),
       })
-      const data = await res.json()
-      if (!res.ok) {
-        toast('error', data.error || '저장에 실패했습니다')
+      if (!result.ok) {
+        toast('error', result.error)
         return false
       }
-      const failures = (data.compileResults ?? []).filter((r: { ok: boolean }) => !r.ok) as Array<{
-        language: string
-        error?: string
-      }>
+      const failures = (result.data.compileResults ?? []).filter((r) => !r.ok)
       setLastSaved(currentSnapshot)
       if (failures.length > 0) {
         toast(

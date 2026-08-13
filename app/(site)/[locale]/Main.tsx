@@ -2,11 +2,12 @@
 
 import { motion, useReducedMotion } from 'framer-motion'
 import Image from 'next/image'
-import { formatDate } from 'pliny/utils/formatDate'
 import { useEffect, useState } from 'react'
 import Link from '@/components/Link'
 import Tag from '@/components/Tag'
 import { useI18n } from '@/lib/i18n/i18n-context'
+import { formatDate } from '@/lib/i18n/utils'
+import type { PostCore } from '@/lib/types/post'
 
 const MAX_DISPLAY = 5
 
@@ -25,29 +26,14 @@ const item = {
   show: { opacity: 1, y: 0 },
 }
 
-export default function Home({ posts }) {
+export default function Home({ posts }: { posts: PostCore[] }) {
   const { locale, t } = useI18n()
   const reduceMotion = useReducedMotion()
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0)
   const [displayedText, setDisplayedText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // 언어별 문구들
-  const phrasesKo = [
-    '완성이 아닌 갱신',
-    '해답이 아닌 질문',
-    '깊은 생각, 빠른 실행',
-    '무지에 대한 인식',
-  ]
-
-  const phrasesEn = [
-    'Update, Not Completion',
-    'Questions, Not Answers',
-    'Deep thought, Fast execution',
-    'Awareness of Unknowing',
-  ]
-
-  const phrases = locale === 'ko' ? phrasesKo : phrasesEn
+  const phrases = [t('home.phrase1'), t('home.phrase2'), t('home.phrase3'), t('home.phrase4')]
   const currentPhrase = phrases[currentPhraseIndex]
 
   // 타이핑 효과 — 동작 줄이기 설정 시 무한 루프를 돌리지 않는다 (WCAG 2.2.2)

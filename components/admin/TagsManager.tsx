@@ -3,6 +3,7 @@
 import { Icon } from '@iconify/react'
 import { motion } from 'framer-motion'
 import { useCallback, useState } from 'react'
+import { adminFetch } from '@/lib/admin/fetch'
 import type { TagUsage } from '@/lib/admin/tag-service'
 import ConfirmDialog from './ui/ConfirmDialog'
 import { AdminButton, AdminInput, GlassCard } from './ui/primitives'
@@ -34,14 +35,13 @@ function TagRow({
   const save = async () => {
     setSaving(true)
     try {
-      const res = await fetch(`/api/admin/tags/${encodeURIComponent(tag.slug)}`, {
+      const result = await adminFetch(`/api/admin/tags/${encodeURIComponent(tag.slug)}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ labelKo, labelEn }),
       })
-      const data = await res.json()
-      if (!res.ok) {
-        toast('error', data.error || '저장에 실패했습니다')
+      if (!result.ok) {
+        toast('error', result.error)
         return
       }
       toast('success', '라벨이 저장되었습니다')
@@ -105,25 +105,21 @@ export default function TagsManager({ initialItems }: { initialItems: TagUsage[]
   const [deleteBusy, setDeleteBusy] = useState(false)
 
   const refresh = useCallback(async () => {
-    const res = await fetch('/api/admin/tags')
-    if (res.ok) {
-      const data = await res.json()
-      setItems(data.items)
-    }
+    const result = await adminFetch<{ items: TagUsage[] }>('/api/admin/tags')
+    if (result.ok) setItems(result.data.items)
   }, [])
 
   const registered = items.filter((t) => t.registered)
   const unregistered = items.filter((t) => !t.registered)
 
   const registerTag = async (slug: string) => {
-    const res = await fetch('/api/admin/tags', {
+    const result = await adminFetch('/api/admin/tags', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ slug, labelKo: slug, labelEn: slug }),
     })
-    const data = await res.json()
-    if (!res.ok) {
-      toast('error', data.error || '등록에 실패했습니다')
+    if (!result.ok) {
+      toast('error', result.error)
       return
     }
     toast('success', `'${slug}' 태그가 등록되었습니다`)
@@ -134,16 +130,19 @@ export default function TagsManager({ initialItems }: { initialItems: TagUsage[]
     if (!rename || !rename.to.trim()) return
     setRenameBusy(true)
     try {
-      const res = await fetch(`/api/admin/tags/${encodeURIComponent(rename.slug)}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ renameTo: rename.to }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        toast('error', data.error || '변경에 실패했습니다')
+      const result = await adminFetch<{ merged: boolean; postCount: number; projectCount: number }>(
+        `/api/admin/tags/${encodeURIComponent(rename.slug)}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ renameTo: rename.to }),
+        }
+      )
+      if (!result.ok) {
+        toast('error', result.error)
         return
       }
+      const data = result.data
       toast(
         'success',
         data.merged
@@ -161,12 +160,11 @@ export default function TagsManager({ initialItems }: { initialItems: TagUsage[]
     if (!deleteSlug) return
     setDeleteBusy(true)
     try {
-      const res = await fetch(`/api/admin/tags/${encodeURIComponent(deleteSlug)}`, {
+      const result = await adminFetch(`/api/admin/tags/${encodeURIComponent(deleteSlug)}`, {
         method: 'DELETE',
       })
-      const data = await res.json()
-      if (!res.ok) {
-        toast('error', data.error || '삭제에 실패했습니다')
+      if (!result.ok) {
+        toast('error', result.error)
         return
       }
       toast('success', '태그가 삭제되었습니다')

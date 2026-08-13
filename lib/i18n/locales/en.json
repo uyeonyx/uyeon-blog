@@ -157,5 +157,11 @@
     "untranslatedDescription": "This post hasn't been translated yet. You can read it in the language below.",
     "backToBlog": "Back to blog",
     "backToHome": "Home"
+  },
+  "home": {
+    "phrase1": "Update, Not Completion",
+    "phrase2": "Questions, Not Answers",
+    "phrase3": "Deep thought, Fast execution",
+    "phrase4": "Awareness of Unknowing"
   }
 }

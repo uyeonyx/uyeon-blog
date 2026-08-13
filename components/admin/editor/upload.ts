@@ -1,4 +1,5 @@
 import type { Editor } from '@tiptap/core'
+import { adminFetch } from '@/lib/admin/fetch'
 
 export interface UploadedImage {
   url: string
@@ -8,6 +9,7 @@ export interface UploadedImage {
 
 export type UploadScope = 'posts' | 'projects' | 'about'
 
+/** 호출부가 try/catch로 감싸 토스트를 띄우는 계약 — 실패는 메시지를 담아 던진다 */
 export async function uploadImageFile(
   file: File,
   slug?: string,
@@ -18,12 +20,14 @@ export async function uploadImageFile(
   if (slug) formData.append('slug', slug)
   formData.append('scope', scope)
 
-  const res = await fetch('/api/admin/upload', { method: 'POST', body: formData })
-  const data = await res.json()
-  if (!res.ok) {
-    throw new Error(data.error || '이미지 업로드에 실패했습니다')
+  const result = await adminFetch<UploadedImage>('/api/admin/upload', {
+    method: 'POST',
+    body: formData,
+  })
+  if (!result.ok) {
+    throw new Error(result.error)
   }
-  return data
+  return result.data
 }
 
 export async function insertImageFromFile(

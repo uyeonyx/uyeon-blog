@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { AdminButton, AdminInput, GlassCard } from '@/components/admin/ui/primitives'
+import { adminFetch } from '@/lib/admin/fetch'
 
 export default function NewPostPage() {
   const router = useRouter()
@@ -17,16 +18,16 @@ export default function NewPostPage() {
     setCreating(true)
     setError(null)
     try {
-      const res = await fetch('/api/admin/posts', {
+      const result = await adminFetch<{ id: string }>('/api/admin/posts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ slug }),
       })
-      const data = await res.json()
-      if (!res.ok) {
-        setError(data.error || '생성에 실패했습니다')
+      if (!result.ok) {
+        setError(result.error)
         return
       }
+      const data = result.data
       router.push(`/admin/${data.id}`)
     } finally {
       setCreating(false)

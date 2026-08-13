@@ -1,0 +1,25 @@
+# lint + typecheck만 수행한다.
+# build는 프리렌더가 live DB(DATABASE_URL)를 읽어야 해서 CI에서 돌리지 않는다 —
+# 실제 빌드 검증은 Vercel 배포 파이프라인이 담당한다. CI에서 빌드가 필요해지면
+# 읽기 전용 DB 계정의 DATABASE_URL 시크릿을 추가하고 build 잡을 붙일 것.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm prepare-assets # lib/generated/icon-bundle.ts 재생성 (typecheck 의존)
+      - run: pnpm lint:ci
+      - run: pnpm typecheck
