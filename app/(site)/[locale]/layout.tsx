@@ -4,11 +4,17 @@ import SiteChrome from '@/components/SiteChrome'
 import { TagLabelsProvider } from '@/components/TagLabelsProvider'
 import siteMetadata from '@/data/siteMetadata'
 import { getTagLabelMap } from '@/lib/db/tags'
-import { DEFAULT_LOCALE, HTML_LANG, isLocale, OG_LOCALE } from '@/lib/i18n/config'
+import { DEFAULT_LOCALE, HTML_LANG, isLocale, LOCALES, OG_LOCALE } from '@/lib/i18n/config'
 import { I18nProvider } from '@/lib/i18n/i18n-context'
 import { localePath } from '@/lib/i18n/paths'
 import { getTranslations } from '@/lib/i18n/translate'
 import { absoluteUrl } from '@/lib/seo/urls'
+
+// 로케일 세그먼트를 정적으로 열거해야 하위 라우트가 ISR(요청 시 렌더 후 캐시)로 동작한다.
+// 데이터는 전부 unstable_cache + revalidateTag라서 mutation 시 라우트 캐시까지 함께 퍼지된다.
+export function generateStaticParams() {
+  return LOCALES.map((locale) => ({ locale }))
+}
 
 /** 잘못된 세그먼트(`/foobar`)도 껍데기는 렌더해야 하므로 레이아웃은 관대하게 폴백한다 */
 async function resolve(params: Promise<{ locale: string }>) {

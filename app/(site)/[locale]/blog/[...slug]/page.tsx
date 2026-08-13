@@ -11,6 +11,7 @@ import {
   getPublishedCore,
   getPublishedCores,
 } from '@/lib/db/posts'
+import { isLocale } from '@/lib/i18n/config'
 import { assertLocale } from '@/lib/i18n/route'
 import { getTranslations } from '@/lib/i18n/translate'
 import { blogPostingJsonLd, breadcrumbJsonLd } from '@/lib/seo/jsonld'
@@ -18,8 +19,14 @@ import { localeUrl, postImageUrl } from '@/lib/seo/urls'
 import BlogPostClient from './BlogPostClient'
 import PostNotice from './PostNotice'
 
-// DB 조회 페이지 — 빌드 타임 프리렌더 대신 요청 시 렌더 (데이터는 'posts' 태그로 캐시됨)
-export const dynamic = 'force-dynamic'
+// ISR 필수 조건 — 동적 세그먼트는 generateStaticParams가 있어야 요청 시 렌더 결과가 캐시된다.
+// 새 글은 dynamicParams(기본 true)로 온디맨드 렌더 후 캐시된다.
+export async function generateStaticParams({ params }: { params: { locale: string } }) {
+  const { locale } = params
+  if (!isLocale(locale)) return []
+  const cores = await getPublishedCores(locale)
+  return cores.map((p) => ({ slug: p.slug.split('/') }))
+}
 
 async function resolve(params: Promise<{ locale: string; slug: string[] }>) {
   const { locale, slug } = await params

@@ -11,6 +11,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ loc
 
   const cores = await getPublishedCores(locale)
   return Response.json(cores, {
-    headers: { 'Cache-Control': 'public, max-age=0, must-revalidate' },
+    headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=86400' },
   })
 }

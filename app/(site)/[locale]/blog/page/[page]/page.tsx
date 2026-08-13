@@ -8,8 +8,10 @@ import { assertLocale } from '@/lib/i18n/route'
 import { getTranslations } from '@/lib/i18n/translate'
 import { pageSlice, totalPagesOf } from '@/lib/pagination'
 
-// DB 조회 페이지 — 빌드 타임 프리렌더 대신 요청 시 렌더 (데이터는 'posts' 태그로 캐시됨)
-export const dynamic = 'force-dynamic'
+// 빌드 타임 열거는 생략(페이지네이션은 드물게 조회) — 빈 배열이라도 있어야 온디맨드 ISR이 된다
+export function generateStaticParams() {
+  return []
+}
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string; page: string }>

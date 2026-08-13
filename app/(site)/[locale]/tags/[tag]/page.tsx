@@ -3,12 +3,17 @@ import type { Metadata } from 'next'
 import ListLayout from '@/layouts/ListLayoutWithTags'
 import { getCoresByTag, getTagCounts } from '@/lib/db/posts'
 import { getTagTitle } from '@/lib/db/tags'
+import { isLocale } from '@/lib/i18n/config'
 import { assertLocale } from '@/lib/i18n/route'
 import { getTranslations } from '@/lib/i18n/translate'
 import { pageSlice, totalPagesOf } from '@/lib/pagination'
 
-// DB 조회 페이지 — 빌드 타임 프리렌더 대신 요청 시 렌더 (데이터는 'posts' 태그로 캐시됨)
-export const dynamic = 'force-dynamic'
+// ISR 필수 조건 — generateStaticParams가 있어야 요청 시 렌더 결과가 캐시된다
+export async function generateStaticParams({ params }: { params: { locale: string } }) {
+  const { locale } = params
+  if (!isLocale(locale)) return []
+  return Object.keys(await getTagCounts(locale)).map((tag) => ({ tag }))
+}
 
 export async function generateMetadata(props: {
   params: Promise<{ locale: string; tag: string }>
