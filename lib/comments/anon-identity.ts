@@ -12,6 +12,7 @@
 // anon_id를 역산할 수 없으니, 응답에 실려 나간 시드를 보고 남의 쿠키를 만들어 낼 수 없다.
 import { createHmac, randomBytes } from 'node:crypto'
 import { cookies } from 'next/headers'
+import { getAnonIdentitySecret } from '@/lib/secrets'
 
 export const ANON_ID_COOKIE = 'anon_id'
 const ANON_ID_MAX_AGE = 60 * 60 * 24 * 365 // 1년
@@ -21,12 +22,10 @@ const ANON_ID_MAX_AGE = 60 * 60 * 24 * 365 // 1년
  */
 const SEED_LENGTH = 32
 
+// ⚠️ 파생 시드가 DB에 저장되어 권한 판정에 쓰인다 — 키·HMAC 입력 문자열·SEED_LENGTH 중
+// 무엇이 바뀌어도 기존 익명 작성자 전원이 수정/삭제 권한을 영구히 잃는다 (lib/secrets.ts 참고)
 function getSecret(): string {
-  const secret = process.env.ADMIN_SESSION_SECRET
-  if (!secret) {
-    throw new Error('ADMIN_SESSION_SECRET is not set')
-  }
-  return secret
+  return getAnonIdentitySecret()
 }
 
 /** 쿠키 값이 우리가 발급한 모양인지 — 손으로 넣은 값이 시드 계산에 섞이지 않게 한다 */

@@ -24,8 +24,15 @@
 ### 4. 나머지 환경변수
 ```bash
 ADMIN_SESSION_SECRET=$(openssl rand -base64 32)   # 세션 서명 키
+MCP_OAUTH_SECRET=$(openssl rand -base64 32)       # MCP OAuth 토큰 키 (admin 키와 분리)
+ANON_IDENTITY_SECRET=<ADMIN_SESSION_SECRET과 동일값>  # 익명 댓글 신원 키 — 아래 주의 참고
 ADMIN_GITHUB_LOGIN=uyeonyx                        # 로그인 허용 계정 (본인)
 ```
+
+시크릿 로테이션 영향 (lib/secrets.ts에도 문서화됨):
+- `ADMIN_SESSION_SECRET`: admin/댓글 로그인 전원 로그아웃 + 진행 중 PoW 챌린지 1회 실패. 영구 손실 없음 — 자유롭게 로테이션 가능.
+- `MCP_OAUTH_SECRET`: 발급된 MCP OAuth 토큰 전체 폐기(폐기 수단이 이것뿐) + Claude 커넥터 재인증 1회. 정적 `MCP_AUTH_TOKEN`은 무관.
+- `ANON_IDENTITY_SECRET`: **절대 로테이션 금지.** 파생 시드가 DB에 저장되어 익명 댓글의 수정/삭제 권한 판정에 쓰이므로, 바뀌면 기존 익명 작성자 전원이 권한을 영구히 잃는다. 기존 배포에 새로 도입할 때는 반드시 현재 `ADMIN_SESSION_SECRET` 값을 복사해 설정한다(신규 랜덤 금지).
 
 ### 5. DB 테이블 생성
 ```bash

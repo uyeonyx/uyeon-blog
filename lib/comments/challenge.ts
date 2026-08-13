@@ -6,6 +6,7 @@
 //
 // 목표는 "단순 봇 차단"이지 "결연한 공격자 차단"이 아니다. 대량 스팸에 계산 비용을 물리는 게 전부다.
 import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto'
+import { getAdminSessionSecret } from '@/lib/secrets'
 
 /**
  * 앞자리 0 비트 수. 16비트 = 기대 65,536회 ≈ 최신 노트북 0.8초, 보급형 모바일 2~3초.
@@ -29,12 +30,10 @@ export interface IssuedChallenge {
 
 export type ChallengeVerdict = { ok: true } | { ok: false; reason: string }
 
+// admin 키에서 파생한 용도별 서브키 — admin 세션 토큰과 서명 재료를 공유하지 않는다.
+// 챌린지는 5분 TTL이라 키가 바뀌어도 진행 중인 것 1회 실패 후 재시도로 회복된다.
 function getSecret(): string {
-  const secret = process.env.ADMIN_SESSION_SECRET
-  if (!secret) {
-    throw new Error('ADMIN_SESSION_SECRET is not set')
-  }
-  return secret
+  return createHash('sha256').update(`comment-challenge:${getAdminSessionSecret()}`).digest('hex')
 }
 
 function sign(salt: string, difficulty: number, issuedAt: number, exp: number): string {

@@ -5,6 +5,7 @@
 // 승인 단계는 기존 GitHub 관리자 로그인(admin_session)이 대신한다 — 관리자만 통과 가능.
 import { createHash } from 'node:crypto'
 import { jwtVerify, SignJWT } from 'jose'
+import { getMcpOauthSecret } from '@/lib/secrets'
 
 export const ACCESS_TOKEN_MAX_AGE = 60 * 60 * 24 * 30 // 30일
 export const REFRESH_TOKEN_MAX_AGE = 60 * 60 * 24 * 180 // 180일
@@ -15,10 +16,9 @@ const CODE_MAX_AGE = 60 * 10 // 10분
 //  공격자가 관리자에게 authorize 링크만 밟게 해도 토큰을 탈취할 수 있다)
 const ALLOWED_REDIRECT_HOSTS = ['claude.ai', 'claude.com', 'anthropic.com']
 
+// MCP 토큰의 유일한 폐기 수단이 키 로테이션이므로 admin 세션 키와 분리한다 (lib/secrets.ts)
 function getSecret() {
-  const secret = process.env.ADMIN_SESSION_SECRET
-  if (!secret) throw new Error('ADMIN_SESSION_SECRET is not set')
-  return new TextEncoder().encode(secret)
+  return new TextEncoder().encode(getMcpOauthSecret())
 }
 
 export function isAllowedRedirectUri(uri: string): boolean {

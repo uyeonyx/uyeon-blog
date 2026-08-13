@@ -2,9 +2,11 @@
 // 관리자 게이트가 verifySessionToken 안에 박혀 있어서, 그쪽에 "누구나 통과" 분기를 넣으면
 // proxy.ts가 지키는 /admin·/api/admin/* 전체가 열린다.
 //
-// 서명 키는 ADMIN_SESSION_SECRET을 공유하므로 교차 사용을 payload의 typ claim으로 막는다.
+// 서명 키는 ADMIN_SESSION_SECRET을 공유하고(서브키화하면 살아있는 30일 쿠키가 전부 무효),
+// 교차 사용은 payload의 typ claim으로 막는다.
 // 이 토큰에는 typ: 'user'가 들어가고, 관리자 검증기는 typ가 'user'면 거부한다.
 import { jwtVerify, SignJWT } from 'jose'
+import { getAdminSessionSecret } from '@/lib/secrets'
 
 export const USER_SESSION_COOKIE = 'user_session'
 export const USER_SESSION_MAX_AGE = 60 * 60 * 24 * 30 // 30일
@@ -24,11 +26,7 @@ export interface UserSession {
 }
 
 function getSecret() {
-  const secret = process.env.ADMIN_SESSION_SECRET
-  if (!secret) {
-    throw new Error('ADMIN_SESSION_SECRET is not set')
-  }
-  return new TextEncoder().encode(secret)
+  return new TextEncoder().encode(getAdminSessionSecret())
 }
 
 export async function createUserSessionToken(session: UserSession): Promise<string> {
