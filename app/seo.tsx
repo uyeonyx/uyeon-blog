@@ -16,7 +16,7 @@ interface PageSeoInput extends Omit<Partial<Metadata>, 'alternates' | 'title'> {
   availableLocales?: readonly Locale[]
   /** 페이지네이션처럼 언어 간 대응관계가 성립하지 않는 경로는 hreflang을 생략한다 */
   noHreflang?: boolean
-  /** 로케일 접두사를 뺀 RSS 경로. 'feed.xml' | 'tags/react/feed.xml' */
+  /** 로케일 접두사를 뺀 RSS 경로. 기본 로케일 피드 — 태그 페이지는 태그 피드로 덮어쓴다 */
   rssSeg?: string
   ogType?: 'website' | 'article'
   /** 글 상세 — og:type=article의 부가 필드 */
@@ -38,7 +38,8 @@ export function genPageMetadata({
   image,
   availableLocales = LOCALES,
   noHreflang,
-  rssSeg,
+  // alternates를 통째로 교체하므로 기본값이 없으면 레이아웃의 RSS autodiscovery가 사라진다
+  rssSeg = 'feed.xml',
   article,
   ogType = article ? 'article' : 'website',
   ...rest

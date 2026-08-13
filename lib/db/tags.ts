@@ -33,5 +33,8 @@ export async function getTagLabelMap(language: Locale): Promise<Record<string, s
 /** 태그 페이지 제목 — 마스터에 없으면 slug를 사람이 읽을 형태로 폴백 */
 export async function getTagTitle(tag: string, language: Locale): Promise<string> {
   const labels = await getTagLabelMap(language)
-  return labels[tag] ?? tag[0].toUpperCase() + tag.split(' ').join('-').slice(1)
+  if (labels[tag]) return labels[tag]
+  // slug는 하이픈 구분 소문자 — 첫 글자만 올린다 (빈 문자열 방어 포함)
+  const readable = tag.replace(/-/g, ' ')
+  return readable ? readable.charAt(0).toUpperCase() + readable.slice(1) : tag
 }
