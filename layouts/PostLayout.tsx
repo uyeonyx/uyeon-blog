@@ -23,7 +23,7 @@ interface LayoutProps {
   children: ReactNode
 }
 
-function AuthorAvatar({ author, locale }: { author: AuthorCore; locale: string }) {
+function AuthorAvatar({ author }: { author: AuthorCore }) {
   const { t } = useI18n()
   const cardRef = useRef<HTMLDivElement>(null)
   const mouseX = useMotionValue(0)
@@ -76,6 +76,7 @@ function AuthorAvatar({ author, locale }: { author: AuthorCore; locale: string }
             transformStyle: 'preserve-3d',
           }}
         >
+          {/* biome-ignore lint/performance/noImgElement: avatarUrl은 admin/MCP가 임의 호스트로 지정할 수 있어 next/image의 remotePatterns를 벗어나면 런타임에 실패한다 */}
           <img
             src={author.avatar}
             alt={`${author.name} ${t('blog.profilePhoto')}`}
@@ -141,7 +142,7 @@ export default function PostLayout({ content, authorDetails, next, prev, childre
                             className="flex items-center gap-3 xl:flex-col xl:items-center"
                             key={author.name}
                           >
-                            {author.avatar && <AuthorAvatar author={author} locale={locale} />}
+                            {author.avatar && <AuthorAvatar author={author} />}
                             <div className="min-w-0 flex-1 text-sm font-medium xl:text-center">
                               <Link
                                 href="/about"

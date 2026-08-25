@@ -45,6 +45,9 @@ export default function FloatingTOC({ toc }: FloatingTOCProps) {
     if (!toc || toc.length === 0) return
 
     let mutationObserver: MutationObserver | null = null
+    // 스크롤 리스너 해제 함수 — setupScrollListener는 DOM이 준비될 때까지 여러 번 불릴 수 있고,
+    // 실제로 리스너를 붙인 회차만 여기에 해제 함수를 남긴다
+    let detachScroll: (() => void) | null = null
 
     const updateActiveHeading = () => {
       const headingElements = toc
@@ -92,9 +95,7 @@ export default function FloatingTOC({ toc }: FloatingTOCProps) {
       }
 
       window.addEventListener('scroll', handleScroll, { passive: true })
-
-      // cleanup 함수 저장
-      ;(setupScrollListener as any).cleanup = () => {
+      detachScroll = () => {
         window.removeEventListener('scroll', handleScroll)
       }
 
@@ -126,12 +127,8 @@ export default function FloatingTOC({ toc }: FloatingTOCProps) {
     }
 
     return () => {
-      if (mutationObserver) {
-        mutationObserver.disconnect()
-      }
-      if ((setupScrollListener as any).cleanup) {
-        ;(setupScrollListener as any).cleanup()
-      }
+      mutationObserver?.disconnect()
+      detachScroll?.()
     }
   }, [toc])
 

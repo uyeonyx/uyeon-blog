@@ -40,7 +40,7 @@ export default function MathDialog({ state, onSubmit, onClose }: MathDialogProps
         throwOnError: false,
         displayMode: state?.type === 'block',
       })
-    } catch (e) {
+    } catch {
       return null
     }
   }, [latex, state?.type])
@@ -73,7 +73,6 @@ export default function MathDialog({ state, onSubmit, onClose }: MathDialogProps
             rows={3}
             placeholder="E = mc^2"
             className="font-mono"
-            // biome-ignore lint/a11y/noAutofocus: 다이얼로그 입력 필드 포커스는 의도된 동작
             autoFocus
           />
           <div className="min-h-16 overflow-x-auto rounded-lg bg-gray-100/60 p-4 dark:bg-gray-800/60">

@@ -86,6 +86,7 @@ export default function AuthorLayout({ children, content }: Props) {
                   transformStyle: 'preserve-3d',
                 }}
               >
+                {/* biome-ignore lint/performance/noImgElement: avatarUrl은 admin/MCP가 임의 호스트로 지정할 수 있어 next/image의 remotePatterns를 벗어나면 런타임에 실패한다 */}
                 <img
                   src={avatar}
                   alt={`${name} ${t('blog.profilePhoto')}`}

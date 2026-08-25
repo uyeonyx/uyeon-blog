@@ -284,13 +284,11 @@ export interface MdastToTiptapResult {
   warnings: string[]
 }
 
-// biome-ignore lint/suspicious/noExplicitAny: mdast 루트
 export function mdastToTiptap(root: any): TiptapNode {
   return mdastToTiptapWithWarnings(root).doc
 }
 
 /** 변환 + 손실 가능성 경고 목록 반환 (MCP 도구용) */
-// biome-ignore lint/suspicious/noExplicitAny: mdast 루트
 export function mdastToTiptapWithWarnings(root: any): MdastToTiptapResult {
   warnings = []
   const content = (root.children ?? []).flatMap(convertBlock)

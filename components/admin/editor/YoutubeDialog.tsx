@@ -50,7 +50,6 @@ export default function YoutubeDialog({ open, onSubmit, onClose }: YoutubeDialog
               }
             }}
             placeholder="https://www.youtube.com/watch?v=..."
-            // biome-ignore lint/a11y/noAutofocus: 다이얼로그 입력 필드 포커스는 의도된 동작
             autoFocus
           />
           {url.trim() && !videoId && (
