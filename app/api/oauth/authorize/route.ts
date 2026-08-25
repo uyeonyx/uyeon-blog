@@ -62,9 +62,17 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // 사람이 보는 폼 제출이므로 실패도 사람이 읽을 화면으로 돌려보낸다 (JSON 막다른 길 금지).
+  // 세션 없음은 동의 화면 경로가 proxy 매처에 걸려 자동으로 /admin/login으로 이어진다.
+  const back = (error: string) => {
+    const url = new URL('/admin/oauth/consent', request.nextUrl.origin)
+    url.searchParams.set('error', error)
+    return NextResponse.redirect(url, 303)
+  }
+
   // 방어선 1: 관리자 세션 (proxy 매처 밖 경로이므로 직접 검사)
   const session = await getAdminSession()
-  if (!session) return Response.json({ error: 'unauthorized' }, { status: 401 })
+  if (!session) return back('expired')
 
   // 방어선 2: 동일 출처 form 제출만 (동의 화면 외의 사이트가 POST를 대신 쏘지 못하게)
   const origin = request.headers.get('origin')
@@ -86,7 +94,7 @@ export async function POST(request: NextRequest) {
   }
 
   const consent = await verifyConsentToken(consentToken)
-  if (!consent) return Response.json({ error: 'invalid_consent' }, { status: 400 })
+  if (!consent) return back('expired')
 
   const target = new URL(consent.redirectUri)
   if (consent.state) target.searchParams.set('state', consent.state)
@@ -97,8 +105,10 @@ export async function POST(request: NextRequest) {
   }
 
   // 방어선 3: 동의 토큰 단일사용 — 같은 토큰으로 코드를 두 번 발급받을 수 없다
+  // (뒤로가기·이중클릭 재제출이 여기로 온다. 클라이언트로 error 리다이렉트를 보내면
+  //  진행 중이던 첫 승인 내비게이션까지 덮어쓰므로, 우리 화면에서 안내만 한다)
   const fresh = await consumeNonce(consent.jti, 'oauth_consent', new Date(consent.expiresAtMs))
-  if (!fresh) return Response.json({ error: 'consent_already_used' }, { status: 400 })
+  if (!fresh) return back('used')
 
   const code = await signAuthCode({
     clientId: consent.clientId,

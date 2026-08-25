@@ -1,26 +1,47 @@
 // MCP OAuth 동의 화면 — /api/oauth/authorize GET이 검증을 마친 뒤 여기로 보낸다.
 // (protected) 레이아웃 안이므로 requireAdmin + proxy 게이트를 이미 통과한 상태.
-// 코드 발급은 아래 form POST에서만 일어난다 (단일사용 동의 토큰).
+// 코드 발급은 ConsentForm의 POST에서만 일어난다 (단일사용 동의 토큰).
+// POST가 실패하면 JSON을 뱉는 대신 ?error=로 여기로 되돌아온다 — 막다른 길을 만들지 않는다.
+import { ConsentForm } from '@/components/admin/ConsentForm'
 import { verifyConsentToken } from '@/lib/mcp/oauth'
 
 export const metadata = { title: 'MCP 연결 승인' }
 
-export default async function OAuthConsentPage(props: { searchParams: Promise<{ ct?: string }> }) {
-  const { ct } = await props.searchParams
-  const consent = ct ? await verifyConsentToken(ct) : null
+const ERROR_MESSAGE: Record<string, { title: string; body: string }> = {
+  used: {
+    title: '이미 처리된 승인 요청입니다',
+    body: '승인 한 번당 코드 한 개만 발급됩니다. 이 화면을 새로고침하거나 뒤로 가서 다시 누를 수는 없고, 연결을 처음부터 다시 시작해야 합니다.',
+  },
+  expired: {
+    title: '승인 요청이 만료되었거나 잘못되었습니다',
+    body: '동의 화면은 5분간 유효합니다. 연결을 다시 시도해 주세요.',
+  },
+}
 
-  if (!consent) {
-    return (
-      <div className="mx-auto max-w-md py-16 text-center">
-        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">
-          승인 요청이 만료되었거나 잘못되었습니다
-        </h1>
-        <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-          연결을 다시 시도해 주세요 (동의 화면은 5분간 유효합니다).
-        </p>
-      </div>
-    )
+function Notice({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="mx-auto max-w-md py-16 text-center">
+      <h1 className="text-xl font-bold text-gray-900 dark:text-gray-50">{title}</h1>
+      <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">{body}</p>
+      <p className="mt-6 text-sm text-gray-500 dark:text-gray-500">
+        클라이언트(claude.ai)의 커넥터 설정에서 연결을 다시 시작하면 새 승인 화면이 열립니다.
+      </p>
+    </div>
+  )
+}
+
+export default async function OAuthConsentPage(props: {
+  searchParams: Promise<{ ct?: string; error?: string }>
+}) {
+  const { ct, error } = await props.searchParams
+
+  if (error) {
+    const message = ERROR_MESSAGE[error] ?? ERROR_MESSAGE.expired
+    return <Notice title={message.title} body={message.body} />
   }
+
+  const consent = ct ? await verifyConsentToken(ct) : null
+  if (!consent) return <Notice {...ERROR_MESSAGE.expired} />
 
   const redirectHost = new URL(consent.redirectUri).host
 
@@ -41,25 +62,10 @@ export default async function OAuthConsentPage(props: { searchParams: Promise<{ 
           <dd className="font-medium text-gray-900 dark:text-gray-50">admin (전체 콘텐츠 관리)</dd>
         </div>
       </dl>
-      <form method="post" action="/api/oauth/authorize" className="mt-8 flex gap-3">
-        <input type="hidden" name="ct" value={ct} />
-        <button
-          type="submit"
-          name="decision"
-          value="approve"
-          className="bg-primary-500 hover:bg-primary-600 flex-1 rounded-lg px-5 py-2.5 font-semibold text-white transition-colors"
-        >
-          승인
-        </button>
-        <button
-          type="submit"
-          name="decision"
-          value="deny"
-          className="flex-1 rounded-lg border border-gray-300 px-5 py-2.5 font-semibold text-gray-700 transition-colors hover:bg-gray-50 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800"
-        >
-          거부
-        </button>
-      </form>
+      <ConsentForm ct={ct as string} />
+      <p className="mt-4 text-xs text-gray-500 dark:text-gray-500">
+        승인 후 자동으로 {redirectHost}(으)로 돌아갑니다 — 버튼은 한 번만 누르세요.
+      </p>
     </div>
   )
 }
