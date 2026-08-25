@@ -4,7 +4,13 @@ import { getDb } from '@/lib/db/client'
 import { projects, projectTranslations } from '@/lib/db/schema'
 import { smartQuotes } from '@/lib/utils'
 import { prepareContent } from './content-compile'
-import { type CompileResult, LANGUAGES, type Language, SLUG_PATTERN } from './post-service'
+import {
+  type CompileResult,
+  type KeepContentOption,
+  LANGUAGES,
+  type Language,
+  SLUG_PATTERN,
+} from './post-service'
 import { registerTags } from './tag-service'
 
 export interface ProjectTranslationInput {
@@ -151,19 +157,36 @@ export async function updateProjectMeta(
 export async function saveProjectTranslation(
   projectId: string,
   language: Language,
-  input: ProjectTranslationInput
+  input: ProjectTranslationInput,
+  opts?: { keepContent?: KeepContentOption }
 ): Promise<CompileResult> {
   const db = getDb()
-  const prepared = await prepareContent(input.contentJson)
-
-  const values = {
-    projectId,
-    language,
+  const meta = {
     title: smartQuotes(input.title ?? ''),
     description: input.description ? smartQuotes(input.description) : '',
     period: input.period || null,
     role: input.role || null,
     company: input.company || null,
+  }
+
+  // 본문이 그대로면 MDX 컴파일과 본문 컬럼 쓰기를 모두 건너뛴다
+  if (opts?.keepContent) {
+    await db
+      .insert(projectTranslations)
+      .values({ projectId, language, ...meta })
+      .onConflictDoUpdate({
+        target: [projectTranslations.projectId, projectTranslations.language],
+        set: meta,
+      })
+    return { language, ok: opts.keepContent.compiledOk, skipped: true }
+  }
+
+  const prepared = await prepareContent(input.contentJson)
+
+  const values = {
+    projectId,
+    language,
+    ...meta,
     contentJson: input.contentJson ?? null,
     contentMd: prepared.contentMd,
     compiledCode: prepared.compiledCode,
@@ -188,6 +211,12 @@ export async function saveProjectTranslation(
     })
 
   return { language, ok: !prepared.error, error: prepared.error ?? undefined }
+}
+
+/** 번역 행만 — 프로젝트 행을 이미 확보한 호출자가 중복 SELECT를 내지 않게 */
+export async function getProjectTranslations(id: string) {
+  const db = getDb()
+  return db.select().from(projectTranslations).where(eq(projectTranslations.projectId, id))
 }
 
 export async function deleteProject(id: string): Promise<boolean> {

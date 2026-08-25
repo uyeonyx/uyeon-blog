@@ -5,7 +5,12 @@ import { authors, authorTranslations } from '@/lib/db/schema'
 import type { TechCategory, TimelineItem } from '@/lib/types/author'
 import { smartQuotes } from '@/lib/utils'
 import { prepareContent } from './content-compile'
-import { type CompileResult, LANGUAGES, type Language } from './post-service'
+import {
+  type CompileResult,
+  type KeepContentOption,
+  LANGUAGES,
+  type Language,
+} from './post-service'
 
 export interface AuthorMetaInput {
   avatarUrl?: string | null
@@ -103,19 +108,36 @@ export async function updateAuthorMeta(id: string, input: AuthorMetaInput) {
 export async function saveAuthorTranslation(
   authorId: string,
   language: Language,
-  input: AuthorTranslationInput
+  input: AuthorTranslationInput,
+  opts?: { keepContent?: KeepContentOption }
 ): Promise<CompileResult> {
   const db = getDb()
-  const prepared = await prepareContent(input.contentJson)
-
-  const values = {
-    authorId,
-    language,
+  const meta = {
     name: smartQuotes(input.name ?? ''),
     occupation: input.occupation || null,
     company: input.company || null,
     ...(input.techStack !== undefined ? { techStack: input.techStack } : {}),
     ...(input.timeline !== undefined ? { timeline: input.timeline } : {}),
+  }
+
+  // 소개글이 그대로면 MDX 컴파일과 본문 컬럼 쓰기를 모두 건너뛴다
+  if (opts?.keepContent) {
+    await db
+      .insert(authorTranslations)
+      .values({ authorId, language, ...meta })
+      .onConflictDoUpdate({
+        target: [authorTranslations.authorId, authorTranslations.language],
+        set: meta,
+      })
+    return { language, ok: opts.keepContent.compiledOk, skipped: true }
+  }
+
+  const prepared = await prepareContent(input.contentJson)
+
+  const values = {
+    authorId,
+    language,
+    ...meta,
     contentJson: input.contentJson ?? null,
     contentMd: prepared.contentMd,
     compiledCode: prepared.compiledCode,

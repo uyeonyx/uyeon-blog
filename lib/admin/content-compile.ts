@@ -26,7 +26,9 @@ export async function prepareContent(contentJson: unknown): Promise<PreparedCont
   }
 
   let compiled: { code: string; toc: unknown; readingTime: unknown } | null = null
-  if (!error) {
+  // 빈 본문에 esbuild를 띄우지 않는다 — 컴파일해도 렌더할 게 없고, 비어 있음은
+  // compiledCode가 아니라 contentMd로 판정한다 (validatePublishable / compileOk 모두 동일)
+  if (!error && contentMd.trim()) {
     try {
       compiled = await compilePostMdx(contentMd)
     } catch (e) {

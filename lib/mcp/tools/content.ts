@@ -13,6 +13,7 @@ import {
   createProject,
   deleteProject,
   getProjectForEdit,
+  getProjectTranslations,
   listProjects,
   saveProjectTranslation,
   touchProject,
@@ -20,14 +21,10 @@ import {
 } from '@/lib/admin/project-service'
 import { getDb } from '@/lib/db/client'
 import { projects } from '@/lib/db/schema'
-import {
-  mcpRevalidateTag,
-  type RevalidateResult,
-  revalidateWarning,
-} from '@/lib/mcp/request-context'
+import { mcpRevalidateTags, type RevalidateTag, revalidateWarning } from '@/lib/mcp/request-context'
 import { markdownToTiptap } from '@/lib/mdx/markdown-to-tiptap'
 import type { TechCategory, TimelineItem } from '@/lib/types/author'
-import { err, MARKDOWN_GUIDE, type McpServer, ok, UUID_PATTERN } from './shared'
+import { err, MARKDOWN_GUIDE, type McpServer, ok, sameContent, UUID_PATTERN } from './shared'
 
 async function resolveProjectId(idOrSlug: string): Promise<string | null> {
   if (UUID_PATTERN.test(idOrSlug)) return idOrSlug
@@ -152,15 +149,12 @@ export function registerContentTools(server: McpServer) {
           ? err('slug는 소문자/숫자/하이픈만 사용할 수 있습니다')
           : err(`이미 존재하는 slug입니다: ${slug}`)
       }
-      const revalidations: RevalidateResult[] = []
+      const tagsToRevalidate: RevalidateTag[] = ['projects']
       if (tags !== undefined) {
         const metaResult = await updateProjectMeta(result.id, { tags })
-        if (metaResult.ok && metaResult.createdTags.length > 0) {
-          revalidations.push(await mcpRevalidateTag('tags'))
-        }
+        if (metaResult.ok && metaResult.createdTags.length > 0) tagsToRevalidate.push('tags')
       }
-      revalidations.push(await mcpRevalidateTag('projects'))
-      const warning = revalidateWarning(revalidations)
+      const warning = revalidateWarning(await mcpRevalidateTags(tagsToRevalidate))
       return ok({ id: result.id, slug: result.slug, ...(warning ? { warning } : {}) })
     }
   )
@@ -214,38 +208,57 @@ export function registerContentTools(server: McpServer) {
       const compileResults: CompileResult[] = []
       const warnings: string[] = []
       if (translations) {
-        const found = await getProjectForEdit(id)
-        if (!found) return err('프로젝트를 찾을 수 없습니다')
+        // updateProjectMeta가 이미 프로젝트 행 존재를 확인했으므로 번역 행만 읽는다
+        const existing = await getProjectTranslations(id)
+        // 전부 준비한 뒤 병렬 실행 — 언어별 MDX 컴파일이 직렬로 쌓이지 않게
+        const jobs: Array<Promise<CompileResult>> = []
         for (const language of LANGUAGES) {
           const input = translations[language]
           if (!input) continue
-          const current = found.translations.find((t) => t.language === language)
+          const current = existing.find((t) => t.language === language)
           if (!current) return err(`${language} 번역 행이 없습니다 — 데이터 정합성 오류`)
 
+          // 본문이 실질적으로 그대로면 재컴파일하지 않는다
           let contentJson = current.contentJson
+          let bodyChanged = false
           if (input.markdown !== undefined) {
             const converted = markdownToTiptap(input.markdown)
-            contentJson = converted.doc
-            warnings.push(...converted.warnings.map((w) => `[${language}] ${w}`))
+            if (!sameContent(converted.doc, current.contentJson)) {
+              contentJson = converted.doc
+              bodyChanged = true
+              warnings.push(...converted.warnings.map((w) => `[${language}] ${w}`))
+            }
           }
 
-          compileResults.push(
-            await saveProjectTranslation(id, language, {
-              title: input.title ?? current.title,
-              description: input.description ?? current.description,
-              period: input.period === undefined ? current.period : input.period,
-              role: input.role === undefined ? current.role : input.role,
-              company: input.company === undefined ? current.company : input.company,
-              contentJson,
-            })
+          jobs.push(
+            saveProjectTranslation(
+              id,
+              language,
+              {
+                title: input.title ?? current.title,
+                description: input.description ?? current.description,
+                period: input.period === undefined ? current.period : input.period,
+                role: input.role === undefined ? current.role : input.role,
+                company: input.company === undefined ? current.company : input.company,
+                contentJson,
+              },
+              bodyChanged
+                ? undefined
+                : {
+                    keepContent: {
+                      compiledOk: !!current.compiledCode || !current.contentMd.trim(),
+                    },
+                  }
+            )
           )
         }
+        compileResults.push(...(await Promise.all(jobs)))
       }
 
       await touchProject(id)
-      const revalidations = [await mcpRevalidateTag('projects')]
-      if (metaResult.createdTags.length > 0) revalidations.push(await mcpRevalidateTag('tags'))
-      const revalidateWarn = revalidateWarning(revalidations)
+      const tagsToRevalidate: RevalidateTag[] = ['projects']
+      if (metaResult.createdTags.length > 0) tagsToRevalidate.push('tags')
+      const revalidateWarn = revalidateWarning(await mcpRevalidateTags(tagsToRevalidate))
       if (revalidateWarn) warnings.push(revalidateWarn)
       return ok({ ok: true, compileResults, ...(warnings.length > 0 ? { warnings } : {}) })
     }
@@ -268,7 +281,7 @@ export function registerContentTools(server: McpServer) {
       if (!id) return err(`프로젝트를 찾을 수 없습니다: ${idOrSlug}`)
       const deleted = await deleteProject(id)
       if (!deleted) return err('프로젝트를 찾을 수 없습니다')
-      const warning = revalidateWarning([await mcpRevalidateTag('projects')])
+      const warning = revalidateWarning(await mcpRevalidateTags(['projects']))
       return ok({ ok: true, ...(warning ? { warning } : {}) })
     }
   )
@@ -359,33 +372,51 @@ export function registerContentTools(server: McpServer) {
       const compileResults: CompileResult[] = []
       const warnings: string[] = []
       if (translations) {
+        const jobs: Array<Promise<CompileResult>> = []
         for (const language of LANGUAGES) {
           const input = translations[language]
           if (!input) continue
           const current = existing.find((t) => t.language === language)
           if (!current) return err(`${language} 번역 행이 없습니다 — 데이터 정합성 오류`)
 
+          // 소개글이 실질적으로 그대로면 재컴파일하지 않는다
           let contentJson = current.contentJson
+          let bodyChanged = false
           if (input.markdown !== undefined) {
             const converted = markdownToTiptap(input.markdown)
-            contentJson = converted.doc
-            warnings.push(...converted.warnings.map((w) => `[${language}] ${w}`))
+            if (!sameContent(converted.doc, current.contentJson)) {
+              contentJson = converted.doc
+              bodyChanged = true
+              warnings.push(...converted.warnings.map((w) => `[${language}] ${w}`))
+            }
           }
 
-          compileResults.push(
-            await saveAuthorTranslation(author.id, language, {
-              name: input.name ?? current.name,
-              occupation: input.occupation === undefined ? current.occupation : input.occupation,
-              company: input.company === undefined ? current.company : input.company,
-              techStack: (input.techStack as TechCategory[] | undefined) ?? undefined,
-              timeline: (input.timeline as TimelineItem[] | undefined) ?? undefined,
-              contentJson,
-            })
+          jobs.push(
+            saveAuthorTranslation(
+              author.id,
+              language,
+              {
+                name: input.name ?? current.name,
+                occupation: input.occupation === undefined ? current.occupation : input.occupation,
+                company: input.company === undefined ? current.company : input.company,
+                techStack: (input.techStack as TechCategory[] | undefined) ?? undefined,
+                timeline: (input.timeline as TimelineItem[] | undefined) ?? undefined,
+                contentJson,
+              },
+              bodyChanged
+                ? undefined
+                : {
+                    keepContent: {
+                      compiledOk: !!current.compiledCode || !current.contentMd.trim(),
+                    },
+                  }
+            )
           )
         }
+        compileResults.push(...(await Promise.all(jobs)))
       }
 
-      const revalidateWarn = revalidateWarning([await mcpRevalidateTag('authors')])
+      const revalidateWarn = revalidateWarning(await mcpRevalidateTags(['authors']))
       if (revalidateWarn) warnings.push(revalidateWarn)
       return ok({ ok: true, compileResults, ...(warnings.length > 0 ? { warnings } : {}) })
     }
