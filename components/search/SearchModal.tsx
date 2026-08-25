@@ -11,10 +11,11 @@ import { SEARCH_OPEN_EVENT } from './search-events'
 function OpenBridge({ openOnMount }: { openOnMount: boolean }) {
   const { query } = useKBar()
 
+  // 최초 마운트 시 1회만 — openOnMount는 이후 변하지 않는다.
+  // 억제 주석은 진단이 걸리는 useEffect 호출 바로 위에 있어야 한다 (본문 안에 두면 적용되지 않는다).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: 마운트 시 1회
   useEffect(() => {
     if (openOnMount) query.toggle()
-    // 최초 마운트 시 1회만 — openOnMount는 이후 변하지 않는다
-    // biome-ignore lint/correctness/useExhaustiveDependencies: 마운트 시 1회
   }, [])
 
   useEffect(() => {
