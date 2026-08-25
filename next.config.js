@@ -2,9 +2,17 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true',
 })
 
+// MCP 동의 폼은 같은 출처(/api/oauth/authorize)로 POST하지만 그 응답이 클라이언트
+// 콜백(claude.ai 등)으로 303을 낸다. Firefox·Safari는 form-action을 리다이렉트 체인에도
+// 적용하므로 'self'만으로는 승인 직후 내비게이션이 막힌다(리포트에는 리다이렉트 목적지 대신
+// 원래 URL이 찍혀 동일 출처가 막힌 것처럼 보인다). lib/mcp/oauth.ts의 redirect_uri
+// 화이트리스트와 같은 호스트만 연다.
+const OAUTH_CALLBACK_HOSTS =
+  'https://claude.ai https://*.claude.ai https://claude.com https://*.claude.com https://anthropic.com https://*.anthropic.com'
+
 // 공개 라우트는 MDX를 서버에서 평가하므로 'unsafe-eval'이 필요 없다.
 // /admin만 예외 — 에디터 프리뷰(PreviewDialog)가 미저장 본문을 클라이언트에서 평가한다.
-const buildCsp = ({ allowEval }) => `
+const buildCsp = ({ allowEval, formAction = "'self'" }) => `
   default-src 'self';
   script-src 'self' ${allowEval ? "'unsafe-eval' " : ''}'unsafe-inline' umami.uyeon.dev;
   style-src 'self' 'unsafe-inline';
@@ -14,7 +22,7 @@ const buildCsp = ({ allowEval }) => `
   font-src 'self';
   frame-src www.youtube-nocookie.com;
   base-uri 'self';
-  form-action 'self';
+  form-action ${formAction};
   frame-ancestors 'none'
 `
 // TODO: connect-src * 는 DB 데이터 기반 아이콘의 api.iconify.design 폴백 때문 —
@@ -116,6 +124,13 @@ module.exports = () => {
         {
           source: '/admin/:path*',
           headers: securityHeaders(buildCsp({ allowEval: true })),
+        },
+        // 동의 화면만 form-action을 넓힌다 — 승인 POST의 303이 클라이언트 콜백으로 나간다
+        {
+          source: '/admin/oauth/consent',
+          headers: securityHeaders(
+            buildCsp({ allowEval: true, formAction: `'self' ${OAUTH_CALLBACK_HOSTS}` })
+          ),
         },
       ]
     },
