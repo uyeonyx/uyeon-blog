@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import type { NextRequest } from 'next/server'
 import { LANGUAGES, revalidatePosts, SLUG_PATTERN, saveTranslation } from '@/lib/admin/post-service'
 import { requireAdminApi } from '@/lib/admin/session'
@@ -43,6 +43,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
         {
           title: t.title,
           summary: t.summary,
+          coverImage: t.coverImage,
           contentJson: t.contentJson,
           compileOk: !!t.compiledCode || !t.contentMd.trim(),
         },
@@ -124,6 +125,17 @@ export async function PUT(request: NextRequest, { params }: Params) {
           contentJson: input.contentJson ?? null,
         })
       )
+      // 언어 전용 대표 이미지: 문자열 → 저장, null/빈문자 → 제거(공통 이미지 사용), undefined → 유지
+      if (input.coverImage !== undefined) {
+        const coverImage =
+          typeof input.coverImage === 'string' && input.coverImage.trim()
+            ? input.coverImage.trim()
+            : null
+        await db
+          .update(postTranslations)
+          .set({ coverImage })
+          .where(and(eq(postTranslations.postId, id), eq(postTranslations.language, language)))
+      }
     }
   }
 

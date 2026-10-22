@@ -30,7 +30,12 @@ export default async function EditPostPage(props: { params: Promise<{ id: string
     translations: Object.fromEntries(
       translations.map((t) => [
         t.language,
-        { title: t.title, summary: t.summary, contentJson: t.contentJson },
+        {
+          title: t.title,
+          summary: t.summary,
+          coverImage: t.coverImage,
+          contentJson: t.contentJson,
+        },
       ])
     ),
   }

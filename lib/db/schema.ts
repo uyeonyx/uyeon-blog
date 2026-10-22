@@ -47,6 +47,9 @@ export const postTranslations = pgTable(
     language: text('language').notNull(),
     title: text('title').notNull().default(''),
     summary: text('summary'),
+    // 이 언어 전용 대표 이미지 — null이면 posts.images[0](공통)을 쓴다.
+    // 썸네일에 글자가 들어가는 경우 언어마다 다른 이미지가 필요해서 둔다.
+    coverImage: text('cover_image'),
     contentJson: jsonb('content_json'), // Tiptap(ProseMirror) 문서 — 편집 source of truth
     contentMd: text('content_md').notNull().default(''), // JSON에서 직렬화한 MDX (컴파일 입력)
     compiledCode: text('compiled_code'), // bundleMDX 출력

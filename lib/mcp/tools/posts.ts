@@ -47,6 +47,32 @@ const MAX_BASE64_SOURCE = 3 * 1024 * 1024
 /** 컴파일 성공 여부를 SQL에서 계산 — compiled_code 본문을 끌어오지 않기 위함 */
 const compiledOkExpr = sql<boolean>`(${postTranslations.compiledCode} IS NOT NULL OR btrim(${postTranslations.contentMd}) = '')`
 
+/** 언어 전용 대표 이미지만 갱신 — 본문/제목 저장(saveTranslation)과 독립적으로 다룬다 */
+async function setTranslationCovers(
+  postId: string,
+  translations: Partial<Record<'ko' | 'en', { coverImage?: string | null }>> | undefined
+) {
+  if (!translations) return
+  const db = getDb()
+  await Promise.all(
+    LANGUAGES.flatMap((language) => {
+      const coverImage = translations[language]?.coverImage
+      if (coverImage === undefined) return []
+      return [
+        db
+          .update(postTranslations)
+          .set({ coverImage })
+          .where(and(eq(postTranslations.postId, postId), eq(postTranslations.language, language))),
+      ]
+    })
+  )
+}
+
+/** 제목/요약/본문 중 하나라도 들어왔는지 — coverImage만 바꾸는 요청은 번역 저장을 건너뛴다 */
+function hasTextInput(input: { title?: string; summary?: string | null; markdown?: string }) {
+  return input.title !== undefined || input.summary !== undefined || input.markdown !== undefined
+}
+
 async function resolvePost(idOrSlug: string) {
   const db = getDb()
   const columns = {
@@ -74,6 +100,14 @@ const translationInputSchema = z
       .optional()
       .describe('요약 (생략 시 기존 값 유지, null이면 제거)'),
     markdown: z.string().optional().describe('본문 마크다운 (생략 시 기존 본문 유지)'),
+    coverImage: z
+      .string()
+      .url()
+      .nullable()
+      .optional()
+      .describe(
+        '이 언어 전용 대표 이미지 URL — 썸네일에 글자가 들어가 언어별로 달라야 할 때 쓴다. 생략 시 유지, null이면 제거(공통 coverImage로 대체)'
+      ),
   })
   .describe('언어별 부분 업데이트 — 제공한 필드만 변경된다')
 
@@ -107,6 +141,7 @@ export function registerPostTools(server: McpServer) {
         '글 하나를 id 또는 slug로 조회한다. 본문은 마크다운으로 반환된다.',
         '한 언어만 필요하면 language를 지정할 것 — 기본은 ko/en 본문을 모두 반환하므로 응답이 두 배가 된다.',
         '메타데이터만 필요하면 body: false.',
+        'coverImage는 공통 대표 이미지, translations.<언어>.coverImage는 그 언어 전용 이미지(있으면 우선)다.',
       ].join('\n'),
       inputSchema: {
         idOrSlug: z.string(),
@@ -123,6 +158,7 @@ export function registerPostTools(server: McpServer) {
           language: postTranslations.language,
           title: postTranslations.title,
           summary: postTranslations.summary,
+          coverImage: postTranslations.coverImage,
           markdown: postTranslations.contentMd,
           compileOk: compiledOkExpr,
         })
@@ -147,6 +183,7 @@ export function registerPostTools(server: McpServer) {
             {
               title: t.title,
               summary: t.summary,
+              coverImage: t.coverImage,
               ...(body ? { markdown: t.markdown } : {}),
               compileOk: t.compileOk,
             },
@@ -214,7 +251,7 @@ export function registerPostTools(server: McpServer) {
         // 새 행이라 기존 본문이 없다 — markdown이 없는 언어는 컴파일할 것도 없다
         const jobs = LANGUAGES.flatMap((language) => {
           const input = translations[language]
-          if (!input) return []
+          if (!input || !hasTextInput(input)) return []
           if (input.markdown === undefined) {
             return [
               saveTranslation(
@@ -236,6 +273,7 @@ export function registerPostTools(server: McpServer) {
           ]
         })
         compileResults.push(...(await Promise.all(jobs)))
+        await setTranslationCovers(result.id, translations)
       }
 
       const tagsToRevalidate: RevalidateTag[] = ['posts']
@@ -261,6 +299,7 @@ export function registerPostTools(server: McpServer) {
         '글의 메타데이터와 본문을 수정한다. 제공한 필드만 변경된다 (부분 업데이트).',
         '본문 일부만 고칠 때는 post_edit_body가 더 빠르고 싸다 — 전문을 다시 올리지 않아도 된다.',
         'slug 변경은 draft 상태에서만 가능하다. 발행 조건: ko/en 모두 제목과 컴파일 성공한 본문 필요.',
+        '대표 이미지: coverImage는 공통, translations.<언어>.coverImage는 그 언어 전용(있으면 우선).',
         MARKDOWN_GUIDE,
       ].join('\n'),
       inputSchema: {
@@ -336,7 +375,7 @@ export function registerPostTools(server: McpServer) {
         const jobs: Array<Promise<CompileResult>> = []
         for (const language of LANGUAGES) {
           const input = translations[language]
-          if (!input) continue
+          if (!input || !hasTextInput(input)) continue
           const current = existing.find((t) => t.language === language)
           if (!current) return err(`${language} 번역 행이 없습니다 — 데이터 정합성 오류`)
 
@@ -368,6 +407,7 @@ export function registerPostTools(server: McpServer) {
           )
         }
         compileResults.push(...(await Promise.all(jobs)))
+        await setTranslationCovers(post.id, translations)
       }
 
       // touchPost를 따로 부르지 않는다 — 위 UPDATE가 이미 updatedAt/lastmod를 쓴다
@@ -539,7 +579,8 @@ export function registerPostTools(server: McpServer) {
         '이미지를 Vercel Blob에 업로드하고 본문에 넣을 마크다운 스니펫을 반환한다.',
         'url(서버가 직접 다운로드)을 강하게 권장한다 — base64는 요청 전체가 모델 컨텍스트를 통과하므로 소형 이미지에만 쓸 것.',
         '지원 형식: png/jpg/gif/webp/avif. 최대 10MB(url) / 3MB(base64).',
-        '반환된 url을 post_update의 coverImage로 전달하면 대표 이미지로 설정할 수 있다.',
+        '반환된 url을 post_update의 coverImage로 전달하면 대표 이미지로 설정할 수 있다',
+        '(언어별로 다른 이미지는 translations.<언어>.coverImage).',
       ].join('\n'),
       inputSchema: {
         scope: z

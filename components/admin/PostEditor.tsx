@@ -24,6 +24,8 @@ const LANGUAGES: Language[] = ['ko', 'en']
 interface TranslationState {
   title: string
   summary: string
+  /** 이 언어 전용 대표 이미지 — 빈 문자열이면 공통 대표 이미지를 쓴다 */
+  coverImage: string
   // biome-ignore lint/suspicious/noExplicitAny: Tiptap JSON 문서
   contentJson: any
 }
@@ -37,7 +39,10 @@ export interface PostEditorData {
   date: string | null
   coverImage: string | null
   translations: Partial<
-    Record<Language, { title: string; summary: string | null; contentJson: unknown }>
+    Record<
+      Language,
+      { title: string; summary: string | null; coverImage: string | null; contentJson: unknown }
+    >
   >
 }
 
@@ -107,11 +112,13 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
     ko: {
       title: initial.translations.ko?.title ?? '',
       summary: initial.translations.ko?.summary ?? '',
+      coverImage: initial.translations.ko?.coverImage ?? '',
       contentJson: initial.translations.ko?.contentJson ?? null,
     },
     en: {
       title: initial.translations.en?.title ?? '',
       summary: initial.translations.en?.summary ?? '',
+      coverImage: initial.translations.en?.coverImage ?? '',
       contentJson: initial.translations.en?.contentJson ?? null,
     },
   })
@@ -298,6 +305,8 @@ export default function PostEditor({ initial }: { initial: PostEditorData }) {
           setLayout={setLayout}
           coverImage={coverImage}
           setCoverImage={setCoverImage}
+          langCovers={{ ko: translations.ko.coverImage, en: translations.en.coverImage }}
+          setLangCover={(lang, v) => updateTranslation(lang, { coverImage: v })}
         />
       </motion.div>
 

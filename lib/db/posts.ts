@@ -43,6 +43,7 @@ const loadPublishedCores = unstable_cache(
         language: postTranslations.language,
         title: postTranslations.title,
         summary: postTranslations.summary,
+        coverImage: postTranslations.coverImage,
         toc: postTranslations.toc,
         readingTime: postTranslations.readingTime,
         compiledOk: isNotNull(postTranslations.compiledCode).mapWith(Boolean),
@@ -85,7 +86,8 @@ const loadPublishedCores = unstable_cache(
           draft: false,
           language: tr.language,
           layout: post.layout ?? undefined,
-          images,
+          // 언어 전용 대표 이미지가 있으면 그것이 images[0](OG/썸네일/배너)이 된다
+          images: tr.coverImage ? [tr.coverImage, ...(images ?? [])] : images,
           hasMath: tr.hasMath,
           toc: tr.toc ?? [],
           readingTime: tr.readingTime ?? { text: '', minutes: 0, time: 0, words: 0 },
